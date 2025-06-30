@@ -42,6 +42,8 @@ dependencies:
   shared_preferences: ^2.5.3
   cached_network_image: ^3.4.1
   flutter_svg: ^2.2.0
+  file_picker: ^10.2.0
+  dotted_border: ^3.1.0
   #scaffold_gradient_background: ^1.0.3+1
 
 

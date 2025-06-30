@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/theme/text_style_helper.dart';
-import 'package:helphub/widgets/auth/logo_section.dart';
-import 'package:helphub/widgets/custom_checkbox.dart';
-import 'package:helphub/widgets/custom_dropdown.dart';
-import 'package:helphub/widgets/custom_elevated_button.dart';
+import 'package:helphub/widgets/custom_document_upload_field.dart';
 import 'package:provider/provider.dart';
+
+import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
-import '../../view_models/auth/volunteer_register_view_model.dart';
-import '../../widgets/auth/footer_link.dart';
+import '../../view_models/auth/organization_register_view_model.dart';
+import '../../widgets/auth/logo_section.dart';
+import '../../widgets/custom_checkbox.dart';
+import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/text_field.dart';
 
-class RegisterVolunteerScreen extends StatelessWidget {
-  const RegisterVolunteerScreen({super.key});
+class RegisterOrganizationStep2Screen extends StatelessWidget {
+  const RegisterOrganizationStep2Screen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<VolunteerRegisterViewModel>(
+    return Consumer<OrganizationRegisterViewModel>(
       builder: (context, controller, child) {
         return Scaffold(
           body: Container(
@@ -35,11 +35,23 @@ class RegisterVolunteerScreen extends StatelessWidget {
                   constraints: const BoxConstraints(maxWidth: 400),
                   child: Column(
                     children: [
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 20),
+                      // Кнопка "Назад"
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: appThemeColors.primaryWhite,
+                          ),
+                        ),
+                      ),
                       buildLogoSection(120, 164),
                       _buildWelcomeText(),
                       const SizedBox(height: 20),
-                      _buildRegistrationForm(context, controller)
+                      _buildRegistrationForm(context, controller),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -61,7 +73,7 @@ class RegisterVolunteerScreen extends StatelessWidget {
 
   Widget _buildRegistrationForm(
     BuildContext context,
-    VolunteerRegisterViewModel controller,
+    OrganizationRegisterViewModel controller,
   ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -80,42 +92,13 @@ class RegisterVolunteerScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AuthTextField(
-            label: 'Ім\'я та прізвище',
-            hintText: 'Введіть ваше ім\'я та прізвище',
-            controller: controller.fullNameController,
-            inputType: TextInputType.name,
-            onChanged: (value) => controller.updateFullName(value),
-          ),
-          /*
-          const SizedBox(height: 12),
-          AuthTextField(
-            label: 'Нікнейм',
-            hintText: '@username',
-            controller: controller.usernameController,
-            inputType: TextInputType.text,
-            onChanged: (value) => controller.updateUsername(value),
-          ),*/
-          const SizedBox(height: 12),
-          AuthTextField(
-            label: 'Електронна пошта',
-            hintText: 'your.email@example.com',
-            controller: controller.emailController,
-            inputType: TextInputType.emailAddress,
-            onChanged: (value) => controller.updateEmail(value),
-          ),
-          const SizedBox(height: 12),
-          CustomDropdown(
-            labelText: 'Місто',
-            value: controller.selectedCity,
-            hintText: 'Оберіть місто',
-            items: controller.cities,
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                controller.updateCity(newValue);
-              }
-            },
-            menuMaxHeight: 200,
+          CustomDocumentUploadField(
+            label: 'Документи для верифікації',
+            description:
+                'Завантажте документи, що підтверджують легальний статус вашої організації',
+            onTap: controller.pickDocument,
+            fileNames: controller.selectedDocuments.map((e)=>e.name).toList(),
+            isLoading: controller.isLoading,
           ),
           const SizedBox(height: 12),
           AuthTextField(
@@ -143,7 +126,7 @@ class RegisterVolunteerScreen extends StatelessWidget {
               controller.updateAgreement(newValue ?? false);
             },
             text:
-                'Я погоджуюсь з умовами використання та політикою конфіденційності',
+                'Я підтверджую, що маю право представляти організацію та погоджуюсь з умовами використання',
           ),
           const SizedBox(height: 16),
           CustomElevatedButton(
@@ -151,13 +134,11 @@ class RegisterVolunteerScreen extends StatelessWidget {
             isLoading: controller.isLoading,
             onPressed: controller.isLoading
                 ? null
-                : () => controller.handleRegistration(context),
+                : () => controller.handleRegistrationStep2(context),
           ),
           const SizedBox(height: 12),
-          buildFooterLink(context),
         ],
       ),
     );
   }
-
 }

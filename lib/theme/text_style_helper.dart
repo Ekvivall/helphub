@@ -24,6 +24,12 @@ class TextStyleHelper {
     fontFamily: 'Roboto',
   );
 
+  TextStyle get title18Bold => TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.w700,
+    fontFamily: 'Roboto',
+  );
+
   TextStyle get title16ExtraBold => TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w800,
@@ -38,8 +44,21 @@ class TextStyleHelper {
     fontFamily: 'Roboto',
   );
 
-  TextStyle get bodyTextRegular => TextStyle(
+  TextStyle get title13Regular => TextStyle(
+    fontSize: 13,
     fontWeight: FontWeight.w400,
-    fontFamily: 'Open Sans',
+    color: appThemeColors.blueAccent,
+    fontFamily: 'Roboto',
   );
+
+  TextStyle get title14Regular => TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w400,
+    color: appThemeColors.blueAccent,
+    fontFamily: 'Roboto',
+  );
+
+  TextStyle get bodyTextRegular =>
+      TextStyle(fontWeight: FontWeight.w400, fontFamily: 'Open Sans');
+
 }

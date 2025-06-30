@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
-import 'package:helphub/view_models/splash_view_model.dart';
+import 'package:helphub/view_models/splash/splash_view_model.dart';
 import 'package:helphub/widgets/custom_image_view.dart';
 import 'package:provider/provider.dart';
 
