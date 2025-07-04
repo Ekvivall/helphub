@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:helphub/models/authentication_model.dart';
 import 'package:helphub/models/user_model.dart';
 import 'package:helphub/theme/theme_helper.dart';
 
+import '../../core/utils/constants.dart';
 import '../../routes/app_router.dart';
 
 class AuthViewModel extends ChangeNotifier {
@@ -10,16 +13,13 @@ class AuthViewModel extends ChangeNotifier {
   late TextEditingController passwordController;
   AuthenticationModel _authenticationModel = AuthenticationModel();
   bool _isLoading = false;
-  String _email = '';
-  String _password = '';
+  bool _showValidationErrors = false;
 
   AuthenticationModel get authenticationModel => _authenticationModel;
 
   bool get isLoading => _isLoading;
 
-  String get email => _email;
-
-  String get password => _password;
+  bool get showValidationErrors => _showValidationErrors;
 
   AuthViewModel() {
     emailController = TextEditingController();
@@ -34,60 +34,53 @@ class AuthViewModel extends ChangeNotifier {
     super.dispose();
   }
 
-  void updateEmail(String value) {
-    _email = value;
-    _authenticationModel.email = value;
-    notifyListeners();
-  }
-
-  void updatePassword(String value) {
-    _password = value;
-    _authenticationModel.password = value;
-    notifyListeners();
-  }
-
-  String? validateEmail(String email) {
-    if (email.isEmpty) return 'Електронна пошта не може бути пустою\n';
-    if (!RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      return 'Введіть коректну електронну пошту';
-    }
-    return null;
-  }
-
-  String? validatePassword(String password) {
-    if (password.isEmpty) {
-      return 'Пароль не може бути пустим';
-    } else if (password.length < 6)
-      return 'Пароль повинен містити мінімум 6 символів';
-    return null;
-  }
-
-  String get isFormValid {
-    String result = '';
-    String? validEmail = validateEmail(_email);
-    String? validPassword = validatePassword(_password);
-    if (validEmail != null) {
-      result += validEmail;
-    }
-    if (validPassword != null) {
-      result += validPassword;
-    }
-    return result;
-  }
-
-  Future<void> handleLogin(BuildContext context) async {
+  Future<void> handleLogin(
+    BuildContext context,
+    GlobalKey<FormState> formKey,
+  ) async {
     FocusScope.of(context).unfocus();
-    String isValid = isFormValid;
-    if (isValid != '') {
-      _showErrorMessage(context, isValid);
+    if (!formKey.currentState!.validate()) {
+      _showValidationErrors = true;
+      notifyListeners();
       return;
     }
+    _authenticationModel.email = emailController.text;
+    _authenticationModel.password = passwordController.text;
+    _showValidationErrors = false;
     _setLoading(true);
     try {
-      await Future.delayed(Duration(seconds: 1));
-      _showSuccessMessage(context, 'Успішний вхід!');
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+      User? user = userCredential.user;
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'email': user.email,
+          'lastSignInAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        Constants.showSuccessMessage(context, 'Успішний вхід!');
+        Navigator.of(context).pushNamed(AppRoutes.eventMapScreen);
+      } else {
+        Constants.showErrorMessage(
+          context,
+          'Помилка входу: Користувача не знайдено',
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Помилка входу: ${e.message ?? 'Невідома помилка автентифікації'}';
+      if (e.code == 'user-not-found' ||
+          e.code == 'wrong-password' ||
+          e.code == 'invalid-credential') {
+        errorMessage = 'Неправильна електронна пошта або пароль.';
+      } else if (e.code == 'user-disabled') {
+        errorMessage = 'Ваш обліковий запис вимкнено.';
+      }
+      Constants.showErrorMessage(context, errorMessage); //
     } catch (e) {
-      _showErrorMessage(context, 'Помилка входу: ${e.toString()}');
+      Constants.showErrorMessage(context, 'Помилка входу: ${e.toString()}');
     } finally {
       _setLoading(false);
     }
@@ -96,33 +89,6 @@ class AuthViewModel extends ChangeNotifier {
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
-  }
-
-  void _showErrorMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: appThemeColors.errorRed,
-      ),
-    );
-  }
-
-  void _showSuccessMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: appThemeColors.successGreen,
-      ),
-    );
-  }
-
-  void handleGoogleSignIn(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Вхід через Google...'),
-        backgroundColor: appThemeColors.blueAccent,
-      ),
-    );
   }
 
   void handleForgotPassword(BuildContext context) {
@@ -144,7 +110,9 @@ class AuthViewModel extends ChangeNotifier {
     if (role == UserRole.volunteer) {
       Navigator.of(context).pushNamed(AppRoutes.registerVolunteerScreen);
     } else {
-      Navigator.of(context).pushNamed(AppRoutes.registerOrganizationStep1Screen);
+      Navigator.of(
+        context,
+      ).pushNamed(AppRoutes.registerOrganizationStep1Screen);
     }
   }
 

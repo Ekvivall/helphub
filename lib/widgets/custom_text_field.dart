@@ -3,15 +3,17 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/custom_input_field.dart';
 
-class AuthTextField extends StatelessWidget {
+class CustomTextField extends StatelessWidget {
   final String label;
   final String hintText;
   final TextEditingController controller;
   final bool isPassword;
   final TextInputType? inputType;
   final Function(String)? onChanged;
+  final String? Function(String? value)? validator;
+  final bool showErrorsLive;
 
-  const AuthTextField({
+  const CustomTextField({
     super.key,
     required this.label,
     required this.hintText,
@@ -19,6 +21,8 @@ class AuthTextField extends StatelessWidget {
     this.isPassword = false,
     this.inputType,
     this.onChanged,
+    this.validator,
+    this.showErrorsLive = false
   });
 
   @override
@@ -48,6 +52,8 @@ class AuthTextField extends StatelessWidget {
           height: 42,
           borderRadius: 12,
           onChanged: onChanged,
+          validator: validator,
+          showErrorsLive: showErrorsLive,
         ),
       ],
     );

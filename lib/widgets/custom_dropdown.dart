@@ -20,12 +20,16 @@ class CustomDropdown extends StatelessWidget {
     this.dropdownIconColor,
     this.itemTextStyle,
     this.hintTextStyle,
-    this.menuMaxHeight
+    this.menuMaxHeight,
+    this.validator,
+    this.showErrorsLive = false
   });
 
   final String labelText;
 
   final String? value;
+
+  final bool showErrorsLive;
 
   final String hintText;
 
@@ -54,6 +58,8 @@ class CustomDropdown extends StatelessWidget {
   final TextStyle? hintTextStyle;
 
   final double? menuMaxHeight;
+
+  final String? Function(String? value)? validator;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +93,7 @@ class CustomDropdown extends StatelessWidget {
         Text(labelText, style: defaultLabelTextStyle),
         const SizedBox(height: 8),
         Container(
-          height: containerHeight ?? 42,
+          //height: containerHeight ?? 42,
           width: double.infinity,
           padding:
               containerPadding ?? const EdgeInsets.symmetric(horizontal: 12),
@@ -99,11 +105,25 @@ class CustomDropdown extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(defaultContainerBorderRadius),
           ),
-          child: DropdownButton<String>(
+          child: DropdownButtonFormField<String>(
             value: value,
             hint: Text(hintText, style: defaultHintTextStyle),
             isExpanded: true,
-            underline: const SizedBox(),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              errorBorder: InputBorder.none,
+              disabledBorder: InputBorder.none,
+              filled: false,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 8,
+                horizontal: 0
+              ),
+              isDense: true,
+              errorMaxLines: 2,
+              errorStyle: TextStyleHelper.instance.title13Regular.copyWith(color: appThemeColors.errorRed)
+            ),
             icon: Icon(
               Icons.keyboard_arrow_down,
               color: defaultDropdownIconColor,
@@ -116,6 +136,8 @@ class CustomDropdown extends StatelessWidget {
               );
             }).toList(),
             onChanged: onChanged,
+            validator: validator,
+            autovalidateMode: showErrorsLive ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
           ),
         ),
       ],

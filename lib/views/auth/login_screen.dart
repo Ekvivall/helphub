@@ -1,16 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
+import 'package:helphub/validators/auth_validator.dart';
 import 'package:helphub/view_models/auth/auth_view_model.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
-import 'package:helphub/widgets/text_field.dart';
+import 'package:helphub/widgets/custom_text_field.dart';
 import 'package:helphub/widgets/auth/divider.dart';
 import 'package:helphub/widgets/auth/google_login_button.dart';
 import 'package:helphub/widgets/auth/logo_section.dart';
 import 'package:provider/provider.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -29,18 +37,21 @@ class LoginScreen extends StatelessWidget {
             ),
             child: SafeArea(
               child: SingleChildScrollView(
-                child: Container(
-                  width: double.infinity,
-                  constraints: BoxConstraints(maxWidth: 400),
-                  margin: EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    children: [
-                      SizedBox(height: 106),
-                      buildLogoSection(177, 242),
-                      _buildWelcomeText(),
-                      SizedBox(height: 44),
-                      _buildLoginForm(context, controller),
-                    ],
+                child: Form(
+                  key: _formKey,
+                  child: Container(
+                    width: double.infinity,
+                    constraints: BoxConstraints(maxWidth: 400),
+                    margin: EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 100),
+                        buildLogoSection(177, 242),
+                        _buildWelcomeText(),
+                        SizedBox(height: 40),
+                        _buildLoginForm(context, controller),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -77,21 +88,23 @@ class LoginScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AuthTextField(
+          CustomTextField(
             label: 'Електронна пошта',
             hintText: 'Введіть електронну пошту',
             controller: controller.emailController,
             inputType: TextInputType.emailAddress,
-            onChanged: (value) => controller.updateEmail(value),
+            validator: AuthValidator.validateEmail,
+            showErrorsLive: controller.showValidationErrors,
           ),
           SizedBox(height: 12),
-          AuthTextField(
-            label: 'Пароль',
+          CustomTextField(
+              label: 'Пароль',
             hintText: 'Введіть пароль',
             controller: controller.passwordController,
             inputType: TextInputType.text,
             isPassword: true,
-            onChanged: (value) => controller.updatePassword(value),
+            validator: AuthValidator.validatePasswordSimple,
+            showErrorsLive: controller.showValidationErrors,
           ),
           SizedBox(height: 12),
           CustomElevatedButton(
@@ -99,7 +112,7 @@ class LoginScreen extends StatelessWidget {
             isLoading: controller.isLoading,
             onPressed: controller.isLoading
                 ? null
-                : () => controller.handleLogin(context),
+                : () => controller.handleLogin(context, _formKey),
           ),
           SizedBox(height: 12),
           buildDivider(appThemeColors.blueAccent),

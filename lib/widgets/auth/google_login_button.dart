@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:helphub/core/utils/constants.dart';
 import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
@@ -13,7 +14,7 @@ Widget buildGoogleSignInButton(
     width: double.infinity,
     height: 48,
     child: OutlinedButton(
-      onPressed: () => controller.handleGoogleSignIn(context),
+      onPressed: () => Constants.handleGoogleSignIn(context),
       style: OutlinedButton.styleFrom(
         backgroundColor: appThemeColors.backgroundLightGrey,
         side: BorderSide(color: appThemeColors.blueAccent, width: 1),

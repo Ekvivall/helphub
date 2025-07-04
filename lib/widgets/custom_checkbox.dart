@@ -2,59 +2,79 @@ import 'package:flutter/material.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 
-class CustomCheckboxWithText extends StatelessWidget {
-  const CustomCheckboxWithText({
+class CustomCheckboxWithText extends FormField<bool> {
+  CustomCheckboxWithText({
     super.key,
-    required this.value,
-    required this.onChanged,
-    required this.text,
-    this.activeColor,
-    this.checkColor,
-    this.textStyle,
-    this.crossAxisAlignment = CrossAxisAlignment.start,
-  });
+    bool super.initialValue = false,
+    required String text,
+    super.onSaved,
+    super.validator,
+    ValueChanged<bool?>? onChanged,
 
-  final bool value;
+    Color? activeColor,
+    Color? checkColor,
+    TextStyle? textStyle,
+    CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start,
+    bool showErrorsLive = false,
+  }) : super(
+         autovalidateMode: showErrorsLive
+             ? AutovalidateMode.onUserInteraction
+             : AutovalidateMode.disabled,
+         builder: (FormFieldState<bool> state) {
+           final defaultActiveColor = activeColor ?? appThemeColors.blueAccent;
+           final defaultCheckColor =
+               checkColor ?? appThemeColors.backgroundLightGrey;
+           final defaultTextStyle =
+               textStyle ??
+               TextStyleHelper.instance.title13Regular.copyWith(
+                 height: 1.2,
+                 color: appThemeColors.primaryBlack,
+               );
 
-  final ValueChanged<bool?> onChanged;
-
-  final String text;
-
-  final Color? activeColor;
-
-  final Color? checkColor;
-
-  final TextStyle? textStyle;
-
-  final CrossAxisAlignment crossAxisAlignment;
-
-  @override
-  Widget build(BuildContext context) {
-    final defaultActiveColor = activeColor ?? appThemeColors.blueAccent;
-    final defaultCheckColor = checkColor ?? appThemeColors.backgroundLightGrey;
-    final defaultTextStyle = textStyle ??
-        TextStyleHelper.instance.title13Regular.copyWith(
-          height: 1.2,
-          color: appThemeColors.primaryBlack,
-        );
-
-    return Row(
-      crossAxisAlignment: crossAxisAlignment,
-      children: [
-        Checkbox(
-          value: value,
-          onChanged: onChanged,
-          activeColor: defaultActiveColor,
-          checkColor: defaultCheckColor,
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        ),
-        Expanded(
-          child: Text(
-            text,
-            style: defaultTextStyle,
-          ),
-        ),
-      ],
-    );
-  }
+           return Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+               Row(
+                 crossAxisAlignment: crossAxisAlignment,
+                 children: [
+                   Checkbox(
+                     value: state.value ?? false,
+                     onChanged: (bool? newValue) {
+                       state.didChange(newValue);
+                       if (onChanged != null) {
+                         onChanged(newValue);
+                       }
+                     },
+                     activeColor: defaultActiveColor,
+                     checkColor: defaultCheckColor,
+                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                   ),
+                   Expanded(
+                     child: GestureDetector(
+                       onTap: () {
+                         bool? newValue = !(state.value ?? false);
+                         state.didChange(newValue);
+                         if (onChanged != null) {
+                           onChanged(newValue);
+                         }
+                       },
+                       child: Text(text, style: defaultTextStyle),
+                     ),
+                   ),
+                 ],
+               ),
+               if (state.hasError)
+                 Padding(
+                   padding: const EdgeInsets.only(left: 16.0, top: 4.0),
+                   child: Text(
+                     state.errorText!,
+                     style: TextStyleHelper.instance.title13Regular.copyWith(
+                       color: appThemeColors.errorRed,
+                     ),
+                   ),
+                 ),
+             ],
+           );
+         },
+       );
 }

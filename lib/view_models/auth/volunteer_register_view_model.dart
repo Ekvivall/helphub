@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/utils/constants.dart';
 import '../../routes/app_router.dart';
-import '../../theme/theme_helper.dart';
 
 class VolunteerRegisterViewModel extends ChangeNotifier {
   late TextEditingController fullNameController;
@@ -10,51 +12,17 @@ class VolunteerRegisterViewModel extends ChangeNotifier {
   late TextEditingController confirmPasswordController;
   bool _isLoading = false;
   bool _isAgreementAccepted = false;
-  String _fullName = '';
-  String _email = '';
-  String _password = '';
-  String _confirmPassword = '';
   String? _selectedCity;
-
-  final List<String> cities = [
-    'Київ',
-    'Харків',
-    'Одеса',
-    'Дніпро',
-    'Запоріжжя',
-    'Львів',
-    'Кривий Ріг',
-    'Миколаїв',
-    'Маріуполь',
-    'Вінниця',
-    'Херсон',
-    'Полтава',
-    'Чернігів',
-    'Черкаси',
-    'Житомир',
-    'Суми',
-    'Хмельницький',
-    'Чернівці',
-    'Івано-Франківськ',
-    'Тернопіль',
-    'Луцьк',
-    'Рівне',
-    'Ужгород',
-  ];
 
   bool get isLoading => _isLoading;
 
   bool get isAgreementAccepted => _isAgreementAccepted;
 
-  String get fullName => _fullName;
-
-  String get email => _email;
-
-  String get password => _password;
-
-  String get confirmPassword => _confirmPassword;
-
   String? get selectedCity => _selectedCity;
+
+  bool _showValidationErrors = false;
+
+  bool get showValidationErrors => _showValidationErrors;
 
   VolunteerRegisterViewModel() {
     fullNameController = TextEditingController();
@@ -72,42 +40,6 @@ class VolunteerRegisterViewModel extends ChangeNotifier {
     super.dispose();
   }
 
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
-  }
-
-  bool get isFormValid {
-    return _fullName.isNotEmpty &&
-        _email.isNotEmpty &&
-        _password.isNotEmpty &&
-        _confirmPassword.isNotEmpty &&
-        _selectedCity != null &&
-        _isAgreementAccepted &&
-        _password == _confirmPassword &&
-        _isValidEmail(_email) &&
-        _password.length >= 6;
-  }
-
-  void updateFullName(String value) {
-    _fullName = value;
-    notifyListeners();
-  }
-
-  void updateEmail(String value) {
-    _email = value;
-    notifyListeners();
-  }
-
-  void updatePassword(String value) {
-    _password = value;
-    notifyListeners();
-  }
-
-  void updateConfirmPassword(String value) {
-    _confirmPassword = value;
-    notifyListeners();
-  }
-
   void updateCity(String newValue) {
     _selectedCity = newValue;
     notifyListeners();
@@ -118,59 +50,58 @@ class VolunteerRegisterViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> handleRegistration(BuildContext context) async {
-    if (!isFormValid) {
-      _showErrorMessage(
-        context,
-        'Перевірте правильність заповнення всіх полів',
-      );
+  Future<void> handleRegistration(
+    BuildContext context,
+    GlobalKey<FormState> formKey,
+  ) async {
+    FocusScope.of(context).unfocus();
+    if (!formKey.currentState!.validate()) {
+      _showValidationErrors = true;
+      notifyListeners();
       return;
     }
-
-    if (_password != _confirmPassword) {
-      _showErrorMessage(context, 'Паролі не співпадають');
-      return;
-    }
+    _showValidationErrors = false;
     _isLoading = true;
     notifyListeners();
     try {
-      await Future.delayed(const Duration(seconds: 2));
-      _showSuccessMessage(context, 'Реєстрацію успішно завершено!');
-      Navigator.of(context).pushReplacementNamed(AppRoutes.loginScreen);
+      // Створення користувача в FirebaseAuth
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: emailController.text.trim(),
+            password: passwordController.text.trim(),
+          );
+      User? user = userCredential.user;
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'email': emailController.text.trim(),
+          'role': 'volunteer',
+          'fullName': fullNameController.text.trim(),
+          'city': _selectedCity,
+          'createdAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true));
+        Constants.showSuccessMessage(context, 'Реєстрацію успішно завершено!');
+        Navigator.of(context).pushNamed(AppRoutes.eventMapScreen);
+      } else {
+        Constants.showErrorMessage(
+          context,
+          'Помилка реєстрації: Користувача не створено',
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String errorMessage = 'Помилка реєстрації: ${e.message}';
+      if (e.code == 'email-already-in-use') {
+        errorMessage = 'Ця електронна пошта вже використовується';
+      }
+      Constants.showErrorMessage(context, errorMessage);
     } catch (e) {
-      _showErrorMessage(context, 'Помилка реєстрації: ${e.toString()}');
+      Constants.showErrorMessage(
+        context,
+        'Помилка реєстрації: ${e.toString()}',
+      );
     } finally {
       _isLoading = false;
       notifyListeners();
     }
   }
-
-
-  void _showErrorMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: appThemeColors.errorRed,
-      ),
-    );
-  }
-
-  void _showSuccessMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: appThemeColors.successGreen,
-      ),
-    );
-  }
-
-  void handleGoogleSignIn(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Вхід через Google...'),
-        backgroundColor: appThemeColors.blueAccent,
-      ),
-    );
-  }
-
 }

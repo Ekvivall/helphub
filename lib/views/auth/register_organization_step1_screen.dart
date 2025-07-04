@@ -1,17 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/theme/theme_helper.dart';
+import 'package:helphub/validators/auth_validator.dart';
 import 'package:helphub/view_models/auth/organization_register_view_model.dart';
 import 'package:helphub/widgets/auth/footer_link.dart';
 import 'package:helphub/widgets/auth/logo_section.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/utils/constants.dart';
 import '../../theme/text_style_helper.dart';
 import '../../widgets/custom_dropdown.dart';
 import '../../widgets/custom_elevated_button.dart';
-import '../../widgets/text_field.dart';
+import '../../widgets/custom_text_field.dart';
 
-class RegisterOrganizationStep1Screen extends StatelessWidget {
+class RegisterOrganizationStep1Screen extends StatefulWidget {
   const RegisterOrganizationStep1Screen({super.key});
+
+  @override
+  State<RegisterOrganizationStep1Screen> createState() =>
+      _RegisterOrganizationStep1ScreenState();
+}
+
+class _RegisterOrganizationStep1ScreenState
+    extends State<RegisterOrganizationStep1Screen> {
+  final GlobalKey<FormState> _formKeyStep1 = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -30,29 +41,31 @@ class RegisterOrganizationStep1Screen extends StatelessWidget {
             ),
             child: SafeArea(
               child: SingleChildScrollView(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  constraints: const BoxConstraints(maxWidth: 400),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 32),
-                      // Кнопка "Назад"
-                      Align(
-                        alignment: Alignment.topLeft,
-                        child: IconButton(
-                          onPressed: ()=>Navigator.of(context).pop(),
-                          icon: Icon(
-                            Icons.arrow_back,
-                            color: appThemeColors.primaryWhite,
+                child: Form(
+                  key: _formKeyStep1,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    constraints: const BoxConstraints(maxWidth: 400),
+                    child: Column(
+                      children: [
+                        // Кнопка "Назад"
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: IconButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            icon: Icon(
+                              Icons.arrow_back,
+                              color: appThemeColors.primaryWhite,
+                            ),
                           ),
                         ),
-                      ),
-                      buildLogoSection(120, 164),
-                      _buildWelcomeText(),
-                      const SizedBox(height: 20,),
-                      _buildRegistrationForm(context, controller),
-                      const SizedBox(height: 20,)
-                    ],
+                        buildLogoSection(120, 164),
+                        _buildWelcomeText(),
+                        const SizedBox(height: 14),
+                        _buildRegistrationForm(context, controller),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -62,6 +75,7 @@ class RegisterOrganizationStep1Screen extends StatelessWidget {
       },
     );
   }
+
   Widget _buildWelcomeText() {
     return Text(
       'Реєстрація',
@@ -71,9 +85,9 @@ class RegisterOrganizationStep1Screen extends StatelessWidget {
   }
 
   Widget _buildRegistrationForm(
-      BuildContext context,
-      OrganizationRegisterViewModel controller,
-      ) {
+    BuildContext context,
+    OrganizationRegisterViewModel controller,
+  ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.all(16),
@@ -91,51 +105,56 @@ class RegisterOrganizationStep1Screen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AuthTextField(
+          CustomTextField(
             label: 'Назва організації',
             hintText: 'Введіть назву організації',
             controller: controller.organizationNameController,
             inputType: TextInputType.text,
-            onChanged: (value) => controller.updateOrganizationName(value),
+            validator: AuthValidator.validateOrganizationName,
+            showErrorsLive: controller.showValidationErrors,
           ),
           const SizedBox(height: 12),
-          AuthTextField(
+          CustomTextField(
             label: 'Електронна пошта',
             hintText: 'your.email@example.com',
             controller: controller.emailController,
             inputType: TextInputType.emailAddress,
-            onChanged: (value) => controller.updateEmail(value),
+            validator: AuthValidator.validateEmail,
+            showErrorsLive: controller.showValidationErrors,
           ),
           const SizedBox(height: 12),
-          AuthTextField(
+          CustomTextField(
             label: 'Веб-сайт (необов\'язково)',
             hintText: 'https://yourorganization.org',
             controller: controller.websiteController,
             inputType: TextInputType.url,
-            onChanged: (value) => controller.updateWebsite(value),
+            validator: AuthValidator.validateWebsite,
+            showErrorsLive: controller.showValidationErrors,
           ),
           const SizedBox(height: 12),
-        CustomDropdown(
-          labelText: 'Місто',
-          value: controller.selectedCity,
-          hintText: 'Оберіть місто',
-          items: controller.cities,
-          onChanged: (String? newValue) {
-            if (newValue != null) {
-              controller.updateCity(newValue);
-            }
-          },
-          menuMaxHeight: 200,
-        ),
+          CustomDropdown(
+            labelText: 'Місто',
+            value: controller.selectedCity,
+            hintText: 'Оберіть місто',
+            items: Constants.cities,
+            onChanged: (String? newValue) {
+              if (newValue != null) {
+                controller.updateCity(newValue);
+              }
+            },
+            menuMaxHeight: 200,
+            validator: AuthValidator.validateSelectedCity,
+            showErrorsLive: controller.showValidationErrors,
+          ),
           const SizedBox(height: 16),
           CustomElevatedButton(
             text: 'Далі',
             isLoading: controller.isLoading,
             onPressed: controller.isLoading
                 ? null
-                : () => controller.handleRegistrationStep1(context),
+                : () => controller.handleRegistrationStep1(context, _formKeyStep1),
           ),
-          const SizedBox(height: 12,),
+          const SizedBox(height: 12),
           buildFooterLink(context),
         ],
       ),
