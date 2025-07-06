@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../models/user_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
 
@@ -74,60 +75,63 @@ class Constants {
           .signInWithCredential(credential);
       User? user = userCredential.user;
       if (user != null) {
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'uid': user.uid,
-          'email': user.email,
-          'displayName': user.displayName,
-          'photoUrl': user.photoURL,
-          'role': 'volunteer',
-          'lastSignInAt': FieldValue.serverTimestamp(),
-          'createdAt': userCredential.additionalUserInfo?.isNewUser == true
-              ? FieldValue.serverTimestamp()
-              : FieldValue.delete(),
-        }, SetOptions(merge: true));
-        Constants.showSuccessMessage(
-          context,
-          'Вхід через Google успішно завершено!',
-        );
-        Navigator.of(context).pushNamed(AppRoutes.eventMapScreen);
-      }
-      else {
-        Constants.showErrorMessage(
-            context, 'Не вдалося увійти через Google. Користувача не знайдено.');
-      }
+        UserModel googleUser = UserModel(
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          photoUrl: user.photoURL,
+          role: UserRole.volunteer,
+          lastSignInAt: DateTime.now(),
+          createdAt: userCredential.additionalUserInfo?.isNewUser == true
+              ? DateTime.now()
+              : null,);
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .set(googleUser.toMap(), SetOptions(merge: true));
+    Constants.showSuccessMessage(
+    context,
+    'Вхід через Google успішно завершено!',
+    );
+    Navigator.of(context).pushNamed(AppRoutes.eventMapScreen);
+    }
+    else {
+    Constants.showErrorMessage(
+    context, 'Не вдалося увійти через Google. Користувача не знайдено.');
+    }
     } on FirebaseAuthException catch (e) {
-      String errorMessage;
-      switch (e.code) {
-        case 'account-exists-with-different-credential':
-          errorMessage =
-          'Обліковий запис вже існує з іншими обліковими даними. Спробуйте увійти іншим способом.';
-          break;
-        case 'invalid-credential':
-          errorMessage =
-          'Невірні облікові дані Google. Будь ласка, спробуйте ще раз.';
-          break;
-        case 'user-disabled':
-          errorMessage =
-          'Ваш обліковий запис вимкнено. Зв\'яжіться з підтримкою.';
-          break;
-        case 'operation-not-allowed':
-          errorMessage =
-          'Вхід за допомогою Google не ввімкнено у Firebase для цього проекту.';
-          break;
-        case 'network-request-failed':
-          errorMessage =
-          'Помилка мережі. Перевірте ваше підключення до Інтернету.';
-          break;
-        default:
-          errorMessage = 'Невідома помилка входу через Google: ${e.message}';
-          break;
-      }
-      Constants.showErrorMessage(context, errorMessage);
+    String errorMessage;
+    switch (e.code) {
+    case 'account-exists-with-different-credential':
+    errorMessage =
+    'Обліковий запис вже існує з іншими обліковими даними. Спробуйте увійти іншим способом.';
+    break;
+    case 'invalid-credential':
+    errorMessage =
+    'Невірні облікові дані Google. Будь ласка, спробуйте ще раз.';
+    break;
+    case 'user-disabled':
+    errorMessage =
+    'Ваш обліковий запис вимкнено. Зв\'яжіться з підтримкою.';
+    break;
+    case 'operation-not-allowed':
+    errorMessage =
+    'Вхід за допомогою Google не ввімкнено у Firebase для цього проекту.';
+    break;
+    case 'network-request-failed':
+    errorMessage =
+    'Помилка мережі. Перевірте ваше підключення до Інтернету.';
+    break;
+    default:
+    errorMessage = 'Невідома помилка входу через Google: ${e.message}';
+    break;
+    }
+    Constants.showErrorMessage(context, errorMessage);
     } catch (e) {
-      Constants.showErrorMessage(
-        context,
-        'Помилка входу через Google: ${e.toString()}',
-      );
+    Constants.showErrorMessage(
+    context,
+    'Помилка входу через Google: ${e.toString()}',
+    );
     }
   }
 }

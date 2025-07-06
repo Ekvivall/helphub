@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:helphub/models/user_model.dart';
 import 'package:helphub/routes/app_router.dart';
 
 import '../../core/utils/constants.dart';
@@ -122,43 +123,53 @@ class OrganizationRegisterViewModel extends ChangeNotifier {
       if (user != null) {
         // 2. Завантаження документів у Firebase Storage
         List<String> documentUrls = [];
-        if(_selectedDocuments.isNotEmpty){
+        if (_selectedDocuments.isNotEmpty) {
           Constants.showSuccessMessage(context, 'Завантаження документів...');
-          for(PlatformFile file in _selectedDocuments){
-            try{
+          for (PlatformFile file in _selectedDocuments) {
+            try {
               //Створення унікального шляху для файлу в Storage
-              final String filePath = 'users/${user.uid}/documents/${DateTime.now().microsecondsSinceEpoch}_${file.name}';
-              final Reference storageRef = FirebaseStorage.instance.ref().child(filePath);
+              final String filePath =
+                  'users/${user.uid}/documents/${DateTime.now().microsecondsSinceEpoch}_${file.name}';
+              final Reference storageRef = FirebaseStorage.instance.ref().child(
+                filePath,
+              );
               UploadTask uploadTask;
-              if(file.bytes != null){
+              if (file.bytes != null) {
                 uploadTask = storageRef.putData(file.bytes!);
-              }
-              else if(file.path != null){
+              } else if (file.path != null) {
                 uploadTask = storageRef.putFile(File(file.path!));
-              }
-              else{
+              } else {
                 throw Exception('Немає даних файлу для завантаження.');
               }
-              final TaskSnapshot snapshot = await uploadTask.whenComplete((){});
+              final TaskSnapshot snapshot = await uploadTask.whenComplete(
+                () {},
+              );
               final String downloadUrl = await snapshot.ref.getDownloadURL();
               documentUrls.add(downloadUrl);
-            } catch(storageError){
-              Constants.showErrorMessage(context, 'Помилка завантаження файлу ${file.name}: ${storageError.toString()}');
+            } catch (storageError) {
+              Constants.showErrorMessage(
+                context,
+                'Помилка завантаження файлу ${file.name}: ${storageError.toString()}',
+              );
             }
           }
         }
         // 3. Збереження інформації про організацію до Firestore
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'uid': user.uid,
-          'email': emailController.text.trim(),
-          'role': 'organization',
-          'organizationName': organizationNameController.text.trim(),
-          'website': websiteController.text.trim(),
-          'city': _selectedCity,
-          'documents': documentUrls,
-          'isVerification': false,
-          'createdAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+        UserModel newOrganization = UserModel(
+          uid: user.uid,
+          email: emailController.text.trim(),
+          role: UserRole.organization,
+          organizationName: organizationNameController.text.trim(),
+          website: websiteController.text.trim(),
+          city: _selectedCity,
+          documents: documentUrls,
+          isVerification: false,
+          createdAt: DateTime.now(),
+        );
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .set(newOrganization.toMap(), SetOptions(merge: true));
         Constants.showSuccessMessage(
           context,
           'Благодійний фонд успішно зареєстрований!',
@@ -172,7 +183,7 @@ class OrganizationRegisterViewModel extends ChangeNotifier {
       }
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'Помилка реєстрації: ${e.message}';
-      if(e.code == 'email-already-in-use'){
+      if (e.code == 'email-already-in-use') {
         errorMessage = 'Ця електронна пошта вже використовується';
       }
       Constants.showErrorMessage(context, errorMessage);

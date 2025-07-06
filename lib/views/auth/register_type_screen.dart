@@ -54,7 +54,7 @@ class RegistrationTypeScreen extends StatelessWidget {
                         label: 'Благодійний фонд',
                         iconPath: ImageConstant.foundationIcon,
                         onTap: () =>
-                            controller.selectRole(context, UserRole.foundation),
+                            controller.selectRole(context, UserRole.organization),
                       ),
                       const SizedBox(height: 20),
                       buildDivider(appThemeColors.backgroundLightGrey),

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:helphub/models/user_model.dart';
 
 import '../../core/utils/constants.dart';
 import '../../routes/app_router.dart';
@@ -72,14 +73,18 @@ class VolunteerRegisterViewModel extends ChangeNotifier {
           );
       User? user = userCredential.user;
       if (user != null) {
-        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
-          'uid': user.uid,
-          'email': emailController.text.trim(),
-          'role': 'volunteer',
-          'fullName': fullNameController.text.trim(),
-          'city': _selectedCity,
-          'createdAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
+        UserModel newUser = UserModel(
+          uid: user.uid,
+          email: emailController.text.trim(),
+          role: UserRole.volunteer,
+          fullName: fullNameController.text.trim(),
+          city: _selectedCity,
+          createdAt: DateTime.now(),
+        );
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .set(newUser.toMap(), SetOptions(merge: true));
         Constants.showSuccessMessage(context, 'Реєстрацію успішно завершено!');
         Navigator.of(context).pushNamed(AppRoutes.eventMapScreen);
       } else {
