@@ -11,6 +11,12 @@ class TextStyleHelper {
     return _instance!;
   }
 
+  TextStyle get title32Bold => TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    fontFamily: 'Roboto',
+  );
+
   TextStyle get headline24SemiBold => TextStyle(
     fontSize: 24,
     fontWeight: FontWeight.w600,
@@ -60,5 +66,4 @@ class TextStyleHelper {
 
   TextStyle get bodyTextRegular =>
       TextStyle(fontWeight: FontWeight.w400, fontFamily: 'Open Sans');
-
 }

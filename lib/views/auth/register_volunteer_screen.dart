@@ -101,15 +101,6 @@ class _RegisterVolunteerScreenState extends State<RegisterVolunteerScreen> {
             validator: AuthValidator.validateFullName,
             showErrorsLive: controller.showValidationErrors,
           ),
-          /*
-          const SizedBox(height: 12),
-          AuthTextField(
-            label: 'Нікнейм',
-            hintText: '@username',
-            controller: controller.usernameController,
-            inputType: TextInputType.text,
-            onChanged: (value) => controller.updateUsername(value),
-          ),*/
           const SizedBox(height: 7),
           CustomTextField(
             label: 'Електронна пошта',

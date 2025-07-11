@@ -46,9 +46,23 @@ class LightCodeColors {
 
   Color get successGreen => const Color(0xFF4CAF50);
 
+  Color get orangeAccent => const Color(0xFFFF6B2C);
+
+  Color get orangeLight => const Color(0x33FF6B2C);
+
+  Color get blueTransparent => const Color(0x7FF8F9FA);
+
   Color get grey400 => Colors.grey.shade400;
 
   Color get grey200 => Colors.grey.shade200;
 
   Color get grey100 => Colors.grey.shade100;
+
+  Color get appBarBg => const Color(0x66757575).withAlpha(70);
+
+  Color get bottomBg => const Color(0xFF2E6FD3).withAlpha(90);
+
+  Color get blueMixedColor => const Color(0xFFCDDAEE);
+
+  Color get lightGreenColor => const Color(0xFFCDDC39);
 }

@@ -5,7 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:helphub/models/user_model.dart';
+import 'package:helphub/models/organization_model.dart';
 import 'package:helphub/routes/app_router.dart';
 
 import '../../core/utils/constants.dart';
@@ -155,10 +155,9 @@ class OrganizationRegisterViewModel extends ChangeNotifier {
           }
         }
         // 3. Збереження інформації про організацію до Firestore
-        UserModel newOrganization = UserModel(
+        OrganizationModel newOrganization = OrganizationModel(
           uid: user.uid,
           email: emailController.text.trim(),
-          role: UserRole.organization,
           organizationName: organizationNameController.text.trim(),
           website: websiteController.text.trim(),
           city: _selectedCity,

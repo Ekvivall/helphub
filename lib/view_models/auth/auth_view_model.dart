@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:helphub/models/user_model.dart';
+import 'package:helphub/models/base_profile_model.dart';
 import 'package:helphub/theme/theme_helper.dart';
 
 import '../../core/utils/constants.dart';
@@ -13,13 +13,9 @@ class AuthViewModel extends ChangeNotifier {
   bool _isLoading = false;
   bool _showValidationErrors = false;
 
-  UserModel? _currentUser;
-
   bool get isLoading => _isLoading;
 
   bool get showValidationErrors => _showValidationErrors;
-
-  UserModel? get currentUser => _currentUser;
 
   AuthViewModel() {
     emailController = TextEditingController();
@@ -53,21 +49,6 @@ class AuthViewModel extends ChangeNotifier {
           );
       User? user = userCredential.user;
       if (user != null) {
-        _currentUser = await fetchUserProfile(user.uid);
-        if (_currentUser == null) {
-          _currentUser = UserModel(
-            uid: user.uid,
-            email: user.email,
-            role: UserRole.volunteer,
-            lastSignInAt: DateTime.now(),
-            createdAt: user.metadata.creationTime,
-          );
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .set(_currentUser!.toMap(), SetOptions(merge: true));
-        } else {
-          _currentUser = _currentUser!.copyWith(lastSignInAt: DateTime.now());
           await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
@@ -77,12 +58,6 @@ class AuthViewModel extends ChangeNotifier {
         }
         Constants.showSuccessMessage(context, 'Успішний вхід!');
         Navigator.of(context).pushNamed(AppRoutes.eventMapScreen);
-      } else {
-        Constants.showErrorMessage(
-          context,
-          'Помилка входу: Користувача не знайдено',
-        );
-      }
     } on FirebaseAuthException catch (e) {
       String errorMessage =
           'Помилка входу: ${e.message ?? 'Невідома помилка автентифікації'}';
@@ -99,17 +74,6 @@ class AuthViewModel extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
-  }
-
-  Future<UserModel?> fetchUserProfile(String uid) async {
-    final doc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(uid)
-        .get();
-    if (doc.exists) {
-      return UserModel.fromMap(doc.data()!);
-    }
-    return null;
   }
 
   void _setLoading(bool loading) {

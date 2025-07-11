@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:helphub/models/user_model.dart';
+import 'package:helphub/models/volunteer_model.dart';
 
 import '../../core/utils/constants.dart';
 import '../../routes/app_router.dart';
@@ -73,10 +73,9 @@ class VolunteerRegisterViewModel extends ChangeNotifier {
           );
       User? user = userCredential.user;
       if (user != null) {
-        UserModel newUser = UserModel(
+        VolunteerModel newUser = VolunteerModel(
           uid: user.uid,
           email: emailController.text.trim(),
-          role: UserRole.volunteer,
           fullName: fullNameController.text.trim(),
           city: _selectedCity,
           createdAt: DateTime.now(),

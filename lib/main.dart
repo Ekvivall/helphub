@@ -5,6 +5,7 @@ import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/auth/auth_view_model.dart';
 import 'package:helphub/view_models/auth/organization_register_view_model.dart';
+import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:helphub/view_models/splash/splash_view_model.dart';
 import 'package:helphub/view_models/auth/volunteer_register_view_model.dart';
 import 'package:provider/provider.dart';
@@ -30,6 +31,7 @@ class HelpHubApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
         ChangeNotifierProvider(create: (_) => VolunteerRegisterViewModel()),
         ChangeNotifierProvider(create: (_) => OrganizationRegisterViewModel()),
+        ChangeNotifierProvider(create: (_) => ProfileViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

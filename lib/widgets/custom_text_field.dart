@@ -12,6 +12,14 @@ class CustomTextField extends StatelessWidget {
   final Function(String)? onChanged;
   final String? Function(String? value)? validator;
   final bool showErrorsLive;
+  final Color? labelColor;
+  final double height;
+  final int? minLines;
+  final int? maxLines;
+  final bool readOnly;
+  final Color? fillColor;
+  final Widget? prefixIcon;
+
 
   const CustomTextField({
     super.key,
@@ -22,7 +30,14 @@ class CustomTextField extends StatelessWidget {
     this.inputType,
     this.onChanged,
     this.validator,
-    this.showErrorsLive = false
+    this.showErrorsLive = false,
+    this.labelColor,
+    this.height = 42,
+    this.maxLines = 1,
+    this.minLines,
+    this.readOnly = false,
+    this.fillColor,
+    this.prefixIcon
   });
 
   @override
@@ -33,6 +48,7 @@ class CustomTextField extends StatelessWidget {
         Text(
           label,
           style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            color: labelColor ?? appThemeColors.blueAccent,
             height: 1.2,
           ),
         ),
@@ -43,17 +59,21 @@ class CustomTextField extends StatelessWidget {
           inputType: inputType!,
           isRequired: true,
           isPassword: isPassword,
-          backgroundColor: appThemeColors.backgroundLightGrey,
+          backgroundColor: fillColor ?? appThemeColors.backgroundLightGrey,
           borderColor: appThemeColors.textMediumGrey,
           focusedBorderColor: appThemeColors.blueAccent,
           textColor: appThemeColors.primaryBlack,
           hintTextColor: appThemeColors.textMediumGrey,
           fontSize: 16,
-          height: 42,
+          height: height,
           borderRadius: 12,
           onChanged: onChanged,
           validator: validator,
           showErrorsLive: showErrorsLive,
+          minLines: minLines,
+          maxLines: maxLines,
+          readOnly: readOnly,
+          prefixIcon: prefixIcon,
         ),
       ],
     );

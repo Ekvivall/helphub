@@ -30,6 +30,8 @@ class CustomInputField extends StatefulWidget {
     this.textColor,
     this.hintTextColor,
     this.fontSize,
+    this.minLines,
+    this.maxLines
   });
 
   final TextEditingController? controller;
@@ -80,6 +82,10 @@ class CustomInputField extends StatefulWidget {
 
   final double? fontSize;
 
+  final int? minLines;
+
+  final int? maxLines;
+
   @override
   State<CustomInputField> createState() => _CustomInputFieldState();
 }
@@ -109,6 +115,8 @@ class _CustomInputFieldState extends State<CustomInputField> {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      minLines: widget.minLines,
+      maxLines: widget.maxLines,
       controller: widget.controller,
       keyboardType: widget.inputType,
       obscureText: _isObscure && widget.isPassword,
