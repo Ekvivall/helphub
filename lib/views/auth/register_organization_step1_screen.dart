@@ -130,6 +130,7 @@ class _RegisterOrganizationStep1ScreenState
             inputType: TextInputType.url,
             validator: AuthValidator.validateWebsite,
             showErrorsLive: controller.showValidationErrors,
+            isRequired: false,
           ),
           const SizedBox(height: 12),
           CustomDropdown(

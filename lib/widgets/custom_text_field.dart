@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/custom_input_field.dart';
@@ -19,6 +20,9 @@ class CustomTextField extends StatelessWidget {
   final bool readOnly;
   final Color? fillColor;
   final Widget? prefixIcon;
+  final bool isRequired;
+  final List<TextInputFormatter>? inputFormatters;
+
 
 
   const CustomTextField({
@@ -37,7 +41,9 @@ class CustomTextField extends StatelessWidget {
     this.minLines,
     this.readOnly = false,
     this.fillColor,
-    this.prefixIcon
+    this.prefixIcon,
+    this.isRequired = true,
+    this.inputFormatters
   });
 
   @override
@@ -57,7 +63,7 @@ class CustomTextField extends StatelessWidget {
           controller: controller,
           hintText: hintText,
           inputType: inputType!,
-          isRequired: true,
+          isRequired: isRequired,
           isPassword: isPassword,
           backgroundColor: fillColor ?? appThemeColors.backgroundLightGrey,
           borderColor: appThemeColors.textMediumGrey,
@@ -74,6 +80,7 @@ class CustomTextField extends StatelessWidget {
           maxLines: maxLines,
           readOnly: readOnly,
           prefixIcon: prefixIcon,
+          inputFormatters: inputFormatters,
         ),
       ],
     );

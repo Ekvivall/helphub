@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:helphub/views/auth/forgot_password_screen.dart';
 import 'package:helphub/views/auth/register_organization_step1_screen.dart';
 import 'package:helphub/views/auth/register_type_screen.dart';
 import 'package:helphub/views/auth/register_volunteer_screen.dart';
@@ -24,6 +25,7 @@ class AppRoutes {
   static const String volunteerProfileScreen = '/volunteer_profile';
   static const String organizationProfileScreen = '/organization_profile';
   static const String editUserProfileScreen = '/edit_user_profile';
+  static const String forgotPasswordScreen = '/forgot_password';
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
     loginScreen: (context) => LoginScreen(),
@@ -37,5 +39,6 @@ class AppRoutes {
     volunteerProfileScreen: (context) => VolunteerProfileScreen(),
     organizationProfileScreen: (context) => OrganizationProfileScreen(),
     editUserProfileScreen: (context) => EditUserProfileScreen(),
+    forgotPasswordScreen: (context) => ForgotPasswordScreen(),
   };
 }

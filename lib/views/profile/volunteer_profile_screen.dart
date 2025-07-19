@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/models/achievement_item_model.dart';
@@ -9,6 +11,7 @@ import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:helphub/widgets/custom_image_view.dart';
 import 'package:helphub/widgets/profile/achievement_item.dart';
 import 'package:helphub/widgets/profile/statistic_item_widget.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -19,9 +22,11 @@ import '../../widgets/profile/category_chip_widget.dart';
 import '../../widgets/profile/medal_item.dart';
 
 class VolunteerProfileScreen extends StatelessWidget {
-  const VolunteerProfileScreen({super.key, this.userId});
+  VolunteerProfileScreen({super.key, this.userId});
 
   final String? userId; //ID користувача, чий профіль переглядаємо
+  final ImagePicker _picker = ImagePicker();
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -107,7 +112,7 @@ class VolunteerProfileScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           //Блок інформації про користувача (шапка)
-                          _buildProfileSection(volunteer!, isOwner),
+                          _buildProfileSection(volunteer!, isOwner, viewModel),
                           _buildLevelCard(volunteer, isOwner),
                           _buildStatistics(volunteer),
                           if (volunteer.aboutMe != null) _buildBio(volunteer),
@@ -144,7 +149,11 @@ class VolunteerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileSection(VolunteerModel user, bool isOwner) {
+  Widget _buildProfileSection(
+    VolunteerModel user,
+    bool isOwner,
+    ProfileViewModel viewModel,
+  ) {
     final String displayName = user.fullName ?? user.displayName ?? 'Волонтер';
     final String displayCity = user.city != null && user.city!.isNotEmpty
         ? 'м. ${user.city}'
@@ -185,6 +194,14 @@ class VolunteerProfileScreen extends StatelessWidget {
                     imagePath: ImageConstant.penIcon,
                     height: 32,
                     width: 32,
+                    onTap: () async {
+                      final XFile? image = await _picker.pickImage(
+                        source: ImageSource.gallery,
+                      );
+                      if (image != null) {
+                        await viewModel.updateProfilePhoto(File(image.path));
+                      }
+                    },
                   ),
                 ),
             ],

@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
 import 'package:helphub/widgets/profile/trust_badge_widget.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -16,9 +19,11 @@ import '../../widgets/custom_image_view.dart';
 import '../../widgets/profile/statistic_item_widget.dart';
 
 class OrganizationProfileScreen extends StatelessWidget {
-  const OrganizationProfileScreen({super.key, this.userId});
+  OrganizationProfileScreen({super.key, this.userId});
 
   final String? userId; //ID користувача, чий профіль переглядаємо
+  final ImagePicker _picker = ImagePicker();
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -103,13 +108,17 @@ class OrganizationProfileScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           //Блок інформації про користувача (шапка)
-                          _buildProfileSection(organization!, isOwner),
+                          _buildProfileSection(
+                            organization!,
+                            isOwner,
+                            viewModel,
+                          ),
                           if (organization.isVerification != null &&
                               !organization.isVerification!)
                             _buildVerificationStatus(viewModel),
                           _buildStatistics(organization),
-                          if(organization.aboutMe != null)
-                          _buildBio(organization),
+                          if (organization.aboutMe != null)
+                            _buildBio(organization),
                           _buildContactInfo(context, organization),
                           if (organization.trustBadges != null)
                             _buildOrganizationStatusBadges(organization),
@@ -131,7 +140,11 @@ class OrganizationProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileSection(OrganizationModel user, bool isOwner) {
+  Widget _buildProfileSection(
+    OrganizationModel user,
+    bool isOwner,
+    ProfileViewModel viewModel,
+  ) {
     final String displayName = user.organizationName ?? 'Благодійний фонд';
     final String displayCity = user.city != null && user.city!.isNotEmpty
         ? 'м. ${user.city}'
@@ -165,6 +178,14 @@ class OrganizationProfileScreen extends StatelessWidget {
                     imagePath: ImageConstant.penIcon,
                     height: 32,
                     width: 32,
+                    onTap: () async {
+                      final XFile? image = await _picker.pickImage(
+                        source: ImageSource.gallery,
+                      );
+                      if (image != null) {
+                        await viewModel.updateProfilePhoto(File(image.path));
+                      }
+                    },
                   ),
                 ),
             ],

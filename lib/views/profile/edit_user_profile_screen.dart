@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/models/base_profile_model.dart';
@@ -8,6 +10,8 @@ import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:helphub/widgets/custom_image_view.dart';
 import 'package:helphub/widgets/custom_text_field.dart';
 import 'package:helphub/widgets/profile/category_chip_widget_with_icon.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/constants.dart';
@@ -24,6 +28,12 @@ class EditUserProfileScreen extends StatefulWidget {
 
 class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final MaskTextInputFormatter _phoneNumberFormatter = MaskTextInputFormatter(
+    mask: '+380 ## ### ## ##',
+    filter: {'#': RegExp(r'[0-9]')},
+    type: MaskAutoCompletionType.lazy,
+  );
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -107,7 +117,10 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // Блок фото профілю та рамки
-                              _buildProfilePictureAndFrameSection(user),
+                              _buildProfilePictureAndFrameSection(
+                                user,
+                                viewModel,
+                              ),
                               const SizedBox(height: 16),
                               if (user.role == UserRole.volunteer)
                                 CustomTextField(
@@ -140,6 +153,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                   inputType: TextInputType.text,
                                   labelColor:
                                       appThemeColors.backgroundLightGrey,
+                                  isRequired: false,
                                 ),
                               if (user.role == UserRole.organization)
                                 CustomTextField(
@@ -150,6 +164,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                   labelColor:
                                       appThemeColors.backgroundLightGrey,
                                   validator: AuthValidator.validateWebsite,
+                                  isRequired: false,
                                 ),
                               const SizedBox(height: 16),
                               CustomTextField(
@@ -172,6 +187,8 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                 inputType: TextInputType.phone,
                                 validator: AuthValidator.validatePhoneNumber,
                                 labelColor: appThemeColors.backgroundLightGrey,
+                                isRequired: false,
+                                inputFormatters: [_phoneNumberFormatter],
                               ),
                               const SizedBox(height: 16),
                               CustomDropdown(
@@ -207,6 +224,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                 labelColor: appThemeColors.backgroundLightGrey,
                                 minLines: 3,
                                 maxLines: null,
+                                isRequired: false,
                               ),
                               const SizedBox(height: 24),
                               Text(
@@ -231,6 +249,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                   Icons.telegram,
                                   color: appThemeColors.textMediumGrey,
                                 ),
+                                isRequired: false,
                               ),
                               const SizedBox(height: 16),
                               CustomTextField(
@@ -245,6 +264,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                   width: 12,
                                   margin: EdgeInsets.all(10),
                                 ),
+                                isRequired: false,
                               ),
                             ],
                           ),
@@ -279,8 +299,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                           child: CustomElevatedButton(
                             text: 'Зберегти',
                             onPressed: () async {
-                              await viewModel.updateUserData();
-                              Navigator.of(context).pop();
+                              await viewModel.updateUserData(context, _formKey);
                             },
                             backgroundColor: appThemeColors.successGreen,
                             textStyle: TextStyleHelper.instance.title16ExtraBold
@@ -300,7 +319,10 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
     );
   }
 
-  Widget _buildProfilePictureAndFrameSection(BaseProfileModel user) {
+  Widget _buildProfilePictureAndFrameSection(
+    BaseProfileModel user,
+    ProfileViewModel viewModel,
+  ) {
     final VolunteerModel? volunteer = user is VolunteerModel ? user : null;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -344,8 +366,13 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
           children: [
             CustomElevatedButton(
               text: 'Змінити фото',
-              onPressed: () {
-                //TODO: Додати логіку зміни фото,
+              onPressed: () async {
+                final XFile? image = await _picker.pickImage(
+                  source: ImageSource.gallery,
+                );
+                if (image != null) {
+                  await viewModel.updateProfilePhoto(File(image.path));
+                }
               },
               backgroundColor: appThemeColors.textMediumGrey,
               borderRadius: 12,
@@ -383,7 +410,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
         Wrap(
           spacing: 18,
           runSpacing: 8,
-          children: Constants.availableInterests.map((interest) {
+          children: viewModel.availableInterests.map((interest) {
             final bool isSelected = viewModel.selectedInterests.any(
               (selected) => selected.title == interest.title,
             );

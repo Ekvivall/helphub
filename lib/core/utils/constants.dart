@@ -2,8 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:helphub/core/utils/image_constant.dart';
-import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/models/volunteer_model.dart';
 
 import '../../routes/app_router.dart';
@@ -138,43 +136,4 @@ class Constants {
     }
   }
 
-  // Можливі сфери інтересів
-  static final List<CategoryChipModel> availableInterests = [
-    CategoryChipModel(
-      title: 'Діти',
-      imagePath: ImageConstant.categoryChildIcon,
-      backgroundColor: Colors.orange.shade200,
-      textColor: appThemeColors.primaryBlack,
-    ),
-    CategoryChipModel(
-      title: 'Екологія',
-      imagePath: ImageConstant.categoryEcologyIcon,
-      backgroundColor: Colors.green.shade200,
-      textColor: appThemeColors.primaryBlack,
-    ),
-    CategoryChipModel(
-      title: 'ЗСУ',
-      imagePath: ImageConstant.categoryAfuIcon,
-      backgroundColor: Colors.blue.shade200,
-      textColor: appThemeColors.primaryBlack,
-    ),
-    CategoryChipModel(
-      title: 'Медицина',
-      imagePath: ImageConstant.categoryMedicalIcon,
-      backgroundColor: Colors.red.shade200,
-      textColor: appThemeColors.primaryBlack,
-    ),
-    CategoryChipModel(
-      title: 'Освіта',
-      imagePath: ImageConstant.categoryEducationIcon,
-      backgroundColor: Colors.purple.shade200,
-      textColor: appThemeColors.primaryBlack,
-    ),
-    CategoryChipModel(
-      title: 'Тварини',
-      imagePath: ImageConstant.categoryAnimalIcon,
-      backgroundColor: Colors.brown.shade200,
-      textColor: appThemeColors.primaryBlack,
-    ),
-  ];
 }

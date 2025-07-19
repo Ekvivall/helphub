@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/validators/auth_validator.dart';
@@ -130,7 +131,9 @@ class _LoginScreenState extends State<LoginScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         GestureDetector(
-          onTap: () => controller.handleForgotPassword(context),
+          onTap: () {
+            Navigator.of(context).pushNamed(AppRoutes.forgotPasswordScreen);
+          },
           child: Text(
             'Забули пароль?',
             style: TextStyleHelper.instance.title16Regular.copyWith(

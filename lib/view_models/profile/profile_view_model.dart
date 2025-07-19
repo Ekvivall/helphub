@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:helphub/core/services/category_service.dart';
 import 'package:helphub/models/base_profile_model.dart';
 import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/models/organization_model.dart';
@@ -9,11 +13,14 @@ import 'package:helphub/models/volunteer_model.dart';
 class ProfileViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
+  final CategoryService _categoryService = CategoryService();
 
   BaseProfileModel? _user; // Поточні дані користувача
   bool _isLoading = false;
   bool _isEditing = false;
   String? _selectedCity;
+  List<CategoryChipModel> _availableInterests = [];
   List<CategoryChipModel> _selectedInterests = [];
 
   late TextEditingController fullNameController;
@@ -33,6 +40,8 @@ class ProfileViewModel extends ChangeNotifier {
 
   String? get selectedCity => _selectedCity;
 
+  List<CategoryChipModel> get availableInterests => _availableInterests;
+
   List<CategoryChipModel> get selectedInterests => _selectedInterests;
 
   final String? _viewingUserId; // ID користувача, який переглядається
@@ -46,6 +55,8 @@ class ProfileViewModel extends ChangeNotifier {
     phoneNumberController = TextEditingController();
     telegramLinkController = TextEditingController();
     instagramLinkController = TextEditingController();
+
+    _loadCategories();
 
     // Автоматичне завантаження профілю при ініціалізації ViewModel
     // Якщо ще не завантажено
@@ -108,8 +119,15 @@ class ProfileViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> updateUserData() async {
+  Future<void> updateUserData(
+    BuildContext context,
+    GlobalKey<FormState> formKey,
+  ) async {
     if (_user == null) return;
+    if (!formKey.currentState!.validate()) {
+      notifyListeners();
+      return;
+    }
     _setLoading(true);
     try {
       if (_user is VolunteerModel) {
@@ -174,8 +192,36 @@ class ProfileViewModel extends ChangeNotifier {
         _user = updatedOrganization;
       }
       _isEditing = false;
+      Navigator.of(context).pop();
     } catch (e) {
       print('Error updating user data: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> updateProfilePhoto(File imageFile) async {
+    if (_user == null || _user!.uid == null) {
+      return;
+    }
+    _setLoading(true);
+    try {
+      final String userId = _user!.uid!;
+      final String fileName = 'profile_photos/$userId/profile.jpg';
+      final Reference storageRef = _storage.ref().child(fileName);
+      try {
+        await storageRef.delete();
+      } catch (e) {}
+      await storageRef.putFile(imageFile);
+      final String downloadUrl = await storageRef.getDownloadURL();
+      await _firestore.collection('users').doc(userId).update({
+        'photoUrl': downloadUrl,
+      });
+      if (_user is VolunteerModel) {
+        _user = (_user as VolunteerModel).copyWith(photoUrl: downloadUrl);
+      } else if (_user is OrganizationModel) {
+        _user = (_user as OrganizationModel).copyWith(photoUrl: downloadUrl);
+      }
     } finally {
       _setLoading(false);
     }
@@ -230,7 +276,9 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   void toggleInterest(CategoryChipModel interest) {
-    final existingInterestIndex = _selectedInterests.indexWhere((element) => element.title == interest.title);
+    final existingInterestIndex = _selectedInterests.indexWhere(
+      (element) => element.title == interest.title,
+    );
     if (existingInterestIndex != -1) {
       _selectedInterests.removeAt(existingInterestIndex);
     } else {
@@ -243,5 +291,11 @@ class ProfileViewModel extends ChangeNotifier {
     _isEditing = false;
     _fillControllersFromUser();
     notifyListeners();
+  }
+
+  Future<void> _loadCategories() async {
+    _setLoading(true);
+    _availableInterests = await _categoryService.fetchCategories();
+    _setLoading(false);
   }
 }

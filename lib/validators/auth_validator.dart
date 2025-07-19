@@ -1,7 +1,6 @@
 import 'package:file_picker/file_picker.dart';
 
 class AuthValidator {
-
   static String? validateEmail(String? email) {
     if (email == null || email.trim().isEmpty) {
       return 'Електронна пошта не може бути пустою';
@@ -93,43 +92,27 @@ class AuthValidator {
     }
     // Перевірка на наявність принаймні двох слів
     final parts = name.trim().split(RegExp(r'\s+'));
-    if(parts.length < 2){
+    if (parts.length < 2) {
       return 'Будь ласка, введіть Ім\'я Прізвище';
     }
-    if(RegExp(r'[0-9]').hasMatch(name)){
+    if (RegExp(r'[0-9]').hasMatch(name)) {
       return 'Ім\'я не повинно містити цифр';
     }
     return null;
   }
+
   static String? validatePhoneNumber(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Будь ласка, введіть номер телефону';
-    }
-
-
-    final cleanedValue = value.replaceAll(RegExp(r'\D'), '');
-
-    if (cleanedValue.isEmpty) {
-      return 'Будь ласка, введіть коректний номер телефону';
-    }
-
-    if (cleanedValue.startsWith('0') && cleanedValue.length == 10) {
-      return null; // Коректний формат 0XXXXXXXXX
-    }
-
-    if (cleanedValue.startsWith('380') && cleanedValue.length == 12) {
-      return null; // Коректний формат 380XXXXXXXXX
-    }
-
-    if (cleanedValue.startsWith('+380') && cleanedValue.length == 13) {
-      return null; // Коректний формат +380XXXXXXXXX
-    }
-
-    // Загальна перевірка довжини для 9 цифр, якщо префікс відсутній або не відповідає
-    if (cleanedValue.length == 9) {
       return null;
     }
 
-    return 'Будь ласка, введіть коректний український номер телефону (наприклад, +380XXXXXXXXX або 0XXXXXXXXX)';
+    // "+380 97 123 45 67" стане "380971234567"
+    final cleanedValue = value.replaceAll(RegExp(r'\D'), '');
+
+    if (cleanedValue.startsWith('380') && cleanedValue.length == 12) {
+      return null;
+    }
+
+    return 'Будь ласка, введіть коректний український номер телефону (формат: +380 ХХ ХХХ ХХ ХХ)';
   }
 }
