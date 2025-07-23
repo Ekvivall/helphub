@@ -19,6 +19,7 @@ class CustomInputField extends StatefulWidget {
     this.prefixIcon,
     this.suffixIcon,
     this.inputFormatters,
+    this.errorColor,
     this.maxLength,
     this.enabled = true,
     this.readOnly = false,
@@ -77,6 +78,8 @@ class CustomInputField extends StatefulWidget {
   final Color? focusedBorderColor;
 
   final Color? textColor;
+
+  final Color? errorColor;
 
   final Color? hintTextColor;
 
@@ -176,18 +179,18 @@ class _CustomInputFieldState extends State<CustomInputField> {
           defaultRadiusValue: 12,
         ),
         errorBorder: _buildOutlineInputBorder(
-          color: appThemeColors.errorRed,
+          color: widget.errorColor??appThemeColors.errorLight,
           width: 1,
           defaultRadiusValue: 12,
         ),
         focusedErrorBorder: _buildOutlineInputBorder(
-          color: appThemeColors.errorRed,
+          color: widget.errorColor??appThemeColors.errorLight,
           width: 2,
           defaultRadiusValue: 12,
         ),
         errorMaxLines: 2,
         errorStyle: TextStyleHelper.instance.title13Regular.copyWith(
-          color: appThemeColors.errorRed
+          color: widget.errorColor??appThemeColors.errorLight
         ),
         counterText: widget.maxLength != null ? null : "",
       ),

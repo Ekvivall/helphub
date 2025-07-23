@@ -25,7 +25,7 @@ class CustomElevatedButton extends StatelessWidget {
 
   final bool isLoading;
 
-  final double width;
+  final double? width;
 
   final double height;
 

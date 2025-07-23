@@ -100,6 +100,7 @@ class _RegisterVolunteerScreenState extends State<RegisterVolunteerScreen> {
             inputType: TextInputType.name,
             validator: AuthValidator.validateFullName,
             showErrorsLive: controller.showValidationErrors,
+            errorColor: appThemeColors.errorRed,
           ),
           const SizedBox(height: 7),
           CustomTextField(
@@ -109,6 +110,7 @@ class _RegisterVolunteerScreenState extends State<RegisterVolunteerScreen> {
             inputType: TextInputType.emailAddress,
             validator: AuthValidator.validateEmail,
             showErrorsLive: controller.showValidationErrors,
+            errorColor: appThemeColors.errorRed,
           ),
           const SizedBox(height: 7),
           CustomDropdown(
@@ -134,6 +136,7 @@ class _RegisterVolunteerScreenState extends State<RegisterVolunteerScreen> {
             inputType: TextInputType.text,
             validator: AuthValidator.validatePassword,
             showErrorsLive: controller.showValidationErrors,
+            errorColor: appThemeColors.errorRed,
           ),
           const SizedBox(height: 7),
           CustomTextField(
@@ -147,6 +150,7 @@ class _RegisterVolunteerScreenState extends State<RegisterVolunteerScreen> {
               controller.passwordController.text,
             ),
             showErrorsLive: controller.showValidationErrors,
+            errorColor: appThemeColors.errorRed,
           ),
           const SizedBox(height: 12),
           CustomCheckboxWithText(

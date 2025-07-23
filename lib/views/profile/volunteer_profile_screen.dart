@@ -15,6 +15,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/utils/constants.dart';
+import '../../models/friend_request_model.dart';
 import '../../models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
@@ -34,13 +36,18 @@ class VolunteerProfileScreen extends StatelessWidget {
           ProfileViewModel(viewingUserId: userId)..fetchUserProfile(),
       child: Consumer<ProfileViewModel>(
         builder: (context, viewModel, child) {
-          final bool isOwner = userId == null || userId == viewModel.user?.uid;
+          final bool isOwner =
+              userId == null || userId == viewModel.currentAuthUserId;
 
           if (viewModel.user != null &&
               viewModel.user!.role != UserRole.volunteer) {
-            Navigator.of(
-              context,
-            ).pushNamed(AppRoutes.organizationProfileScreen);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (ModalRoute.of(context)?.isCurrent ?? false) {
+                Navigator.of(
+                  context,
+                ).pushReplacementNamed(AppRoutes.organizationProfileScreen);
+              }
+            });
           }
           final VolunteerModel? volunteer = viewModel.user is VolunteerModel
               ? viewModel.user as VolunteerModel
@@ -119,7 +126,7 @@ class VolunteerProfileScreen extends StatelessWidget {
                           _buildContactInfo(context, volunteer),
                           if (volunteer.categoryChips != null)
                             _buildBadge(volunteer),
-                          _buildEditProfileButton(context, viewModel, isOwner),
+                          _buildEditProfileButton(context, viewModel),
                           if (volunteer.achievements != null)
                             _buildAchievementsSection(volunteer),
                           if (volunteer.achievements != null)
@@ -131,14 +138,10 @@ class VolunteerProfileScreen extends StatelessWidget {
                           _buildRecentActivityScreen(viewModel),
                           if (isOwner) _buildSavedFees(viewModel),
                           if (isOwner) _buildProjectApplications(viewModel),
-                          if (isOwner &&
-                              volunteer.friendsCount != null &&
-                              volunteer.friendsCount! > 0)
-                            _buildMyFriends(viewModel),
-                          if (isOwner &&
-                              volunteer.friendsCount != null &&
-                              volunteer.friendsCount! > 0)
-                            _buildFooterMyFriends(viewModel),
+                          if (isOwner) _buildMyFriends(context, viewModel),
+                          if (isOwner) _buildFriendList(context, viewModel),
+                          if (isOwner)
+                            _buildFooterMyFriends(context, viewModel),
                         ],
                       ),
                     ),
@@ -362,57 +365,150 @@ class VolunteerProfileScreen extends StatelessWidget {
   Widget _buildEditProfileButton(
     BuildContext context,
     ProfileViewModel viewModel,
-    bool isOwner,
   ) {
-    if (isOwner) {
-      return Container(
-        margin: EdgeInsets.symmetric(horizontal: 28, vertical: 7),
-        child: CustomElevatedButton(
-          text: 'Редагувати профіль',
-          onPressed: () {
-            Navigator.of(
-              context,
-            ).pushNamed(AppRoutes.editUserProfileScreen).then((_) {
-              viewModel.fetchUserProfile();
-            });
-          },
-          width: double.infinity,
-          height: 44,
-          borderRadius: 24,
-          textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-            color: appThemeColors.backgroundLightGrey,
-          ),
-        ),
-      );
-    }
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 28, vertical: 7),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          CustomElevatedButton(
-            text: 'Додати в друзі',
-            onPressed: () {},
-            width: double.infinity,
-            height: 44,
-            borderRadius: 24,
-            textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-              color: appThemeColors.backgroundLightGrey,
-            ),
-          ),
-          CustomElevatedButton(
-            text: 'Написати',
-            onPressed: viewModel.toggleEditing,
-            width: double.infinity,
-            height: 44,
-            borderRadius: 24,
-            backgroundColor: appThemeColors.blueTransparent,
-            textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-              color: appThemeColors.backgroundLightGrey,
-            ),
-          ),
-        ],
-      ),
+    return FutureBuilder<FriendshipStatus>(
+      future: viewModel.getFriendshipStatus(viewModel.user!.uid!),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          );
+        }
+        if (snapshot.hasError) {
+          return Text('Помилка: ${snapshot.error}');
+        }
+        final FriendshipStatus status =
+            snapshot.data ?? FriendshipStatus.notFriends;
+        switch (status) {
+          case FriendshipStatus.self:
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+              child: CustomElevatedButton(
+                text: 'Редагувати профіль',
+                onPressed: () {
+                  Navigator.of(
+                    context,
+                  ).pushNamed(AppRoutes.editUserProfileScreen).then((_) {
+                    viewModel.fetchUserProfile();
+                  });
+                },
+                width: double.infinity,
+                height: 44,
+                borderRadius: 24,
+                textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                  color: appThemeColors.backgroundLightGrey,
+                ),
+              ),
+            );
+          case FriendshipStatus.notFriends:
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+              child: CustomElevatedButton(
+                text: 'Додати в друзі',
+                onPressed: () => viewModel.sendFriendRequest(userId!),
+                width: double.infinity,
+                height: 44,
+                borderRadius: 24,
+                textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                  color: appThemeColors.backgroundLightGrey,
+                ),
+                backgroundColor: appThemeColors.successGreen,
+              ),
+            );
+          case FriendshipStatus.requestSent:
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+              child: CustomElevatedButton(
+                text: 'Запит відправлено',
+                onPressed: null,
+                // Disabled button
+                width: double.infinity,
+                height: 44,
+                borderRadius: 24,
+                backgroundColor: appThemeColors.blueTransparent,
+                textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                  color: appThemeColors.backgroundLightGrey.withAlpha(179),
+                ),
+              ),
+            );
+          case FriendshipStatus.requestReceived:
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: CustomElevatedButton(
+                      text: 'Прийняти',
+                      onPressed: () =>
+                          viewModel.acceptFriendRequestFromUser(userId!),
+                      height: 44,
+                      borderRadius: 24,
+                      textStyle: TextStyleHelper.instance.title16Regular
+                          .copyWith(color: appThemeColors.backgroundLightGrey),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: CustomElevatedButton(
+                      text: 'Відхилити',
+                      onPressed: () =>
+                          viewModel.rejectFriendRequestFromUser(userId!),
+                      height: 44,
+                      borderRadius: 24,
+                      backgroundColor: appThemeColors.blueTransparent,
+                      textStyle: TextStyleHelper.instance.title16Regular
+                          .copyWith(color: appThemeColors.backgroundLightGrey),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          case FriendshipStatus.friends:
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: CustomElevatedButton(
+                      text: 'Написати',
+                      onPressed: () {
+                        // TODO: Implement navigation to chat screen
+                      },
+                      height: 44,
+                      borderRadius: 24,
+                      backgroundColor: appThemeColors.blueTransparent,
+                      textStyle: TextStyleHelper.instance.title16Regular
+                          .copyWith(color: appThemeColors.primaryBlack),
+                    ),
+                  ),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: CustomElevatedButton(
+                      text: 'Видалити з друзів',
+                      onPressed: () {
+                        Constants.showConfirmationDialog(
+                          context,
+                          'Підтвердження видалення',
+                          'Ви впевнені, що хочете видалити цього користувача зі своїх друзів?',
+                          'Видалити',
+                          viewModel,
+                          userId!,
+                        );
+                      },
+                      height: 44,
+                      borderRadius: 24,
+                      backgroundColor: appThemeColors.errorRed.withAlpha(120),
+                      textStyle: TextStyleHelper.instance.title16Regular
+                          .copyWith(color: appThemeColors.primaryWhite),
+                    ),
+                  ),
+                ],
+              ),
+            );
+        }
+      },
     );
   }
 
@@ -617,7 +713,7 @@ class VolunteerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMyFriends(ProfileViewModel viewModel) {
+  Widget _buildMyFriends(BuildContext context, ProfileViewModel viewModel) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
       child: Row(
@@ -629,8 +725,11 @@ class VolunteerProfileScreen extends StatelessWidget {
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
+
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.friendsListScreen);
+            },
             child: Text(
               'Переглянути всі',
               style: TextStyleHelper.instance.title16Regular.copyWith(
@@ -645,14 +744,109 @@ class VolunteerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFooterMyFriends(ProfileViewModel viewModel) {
+  Widget _buildFriendList(BuildContext context, ProfileViewModel viewModel) {
+    final int friendsToShow = viewModel.friendProfiles.length > 3
+        ? 3
+        : viewModel.friendProfiles.length;
+    if (friendsToShow == 0) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        children: List.generate(friendsToShow, (index) {
+          final friend = viewModel.friendProfiles[index];
+          return Card(
+            color: appThemeColors.backgroundLightGrey,
+            margin: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              // Дозволяє натискати на картку
+              onTap: () {
+                Navigator.of(context).pushNamed(
+                  AppRoutes.volunteerProfileScreen,
+                  arguments: friend.uid,
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: appThemeColors.lightGreenColor,
+                          backgroundImage: friend.photoUrl != null
+                              ? NetworkImage(friend.photoUrl!)
+                              : null,
+                          child: friend.photoUrl == null
+                              ? Icon(
+                                  Icons.person,
+                                  size: 40,
+                                  color: appThemeColors.primaryWhite,
+                                )
+                              : null,
+                        ),
+                        if (friend.frame != null && friend.frame!.isNotEmpty)
+                          CustomImageView(
+                            imagePath: friend.frame!,
+                            height: 40,
+                            width: 40,
+                            fit: BoxFit.contain,
+                          ),
+                      ],
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            friend.fullName ??
+                                friend.displayName ??
+                                'Невідомий користувач',
+                            style: TextStyleHelper.instance.title14Regular
+                                .copyWith(
+                                  color: appThemeColors.primaryBlack,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                          if (friend.city != null && friend.city!.isNotEmpty)
+                            Text(
+                              'м. ${friend.city!}',
+                              style: TextStyleHelper.instance.title13Regular
+                                  .copyWith(
+                                    color: appThemeColors.textMediumGrey,
+                                  ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildFooterMyFriends(
+    BuildContext context,
+    ProfileViewModel viewModel,
+  ) {
+    final int requestCount = viewModel.incomingFriendRequestsCount;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.findFriendsScreen);
+            },
             child: Text(
               'Знайти і додати друга',
               style: TextStyleHelper.instance.title16Regular.copyWith(
@@ -663,7 +857,9 @@ class VolunteerProfileScreen extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.friendRequestsScreen);
+            },
             child: Row(
               children: [
                 Text(
@@ -674,22 +870,24 @@ class VolunteerProfileScreen extends StatelessWidget {
                     decorationColor: appThemeColors.lightGreenColor,
                   ),
                 ),
-                SizedBox(width: 7),
-                Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: appThemeColors.lightGreenColor,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    '0',
-                    style: TextStyleHelper.instance.title14Regular.copyWith(
-                      color: appThemeColors.textMediumGrey,
+                if (requestCount > 0) ...[
+                  SizedBox(width: 7),
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: appThemeColors.lightGreenColor,
+                      shape: BoxShape.circle,
                     ),
-                    textAlign: TextAlign.center,
+                    child: Text(
+                      '$requestCount',
+                      style: TextStyleHelper.instance.title14Regular.copyWith(
+                        color: appThemeColors.textMediumGrey,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

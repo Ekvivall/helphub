@@ -38,6 +38,7 @@ class HelpHubApp extends StatelessWidget {
         theme: appThemeData,
         initialRoute: AppRoutes.splashScreen,
         routes: AppRoutes.routes,
+        onGenerateRoute: AppRoutes.onGenerateRoute,
         builder: (context, child) {
           return MediaQuery(
             data: MediaQuery.of(

@@ -124,6 +124,7 @@ class _RegisterOrganizationStep2ScreenState
             inputType: TextInputType.text,
             validator: AuthValidator.validatePassword,
             showErrorsLive: controller.showValidationErrors,
+            errorColor: appThemeColors.errorRed,
           ),
           const SizedBox(height: 7),
           CustomTextField(
@@ -137,6 +138,7 @@ class _RegisterOrganizationStep2ScreenState
               controller.passwordController.text,
             ),
             showErrorsLive: controller.showValidationErrors,
+            errorColor: appThemeColors.errorRed,
           ),
           const SizedBox(height: 12),
           CustomCheckboxWithText(

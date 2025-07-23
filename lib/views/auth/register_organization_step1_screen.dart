@@ -112,6 +112,7 @@ class _RegisterOrganizationStep1ScreenState
             inputType: TextInputType.text,
             validator: AuthValidator.validateOrganizationName,
             showErrorsLive: controller.showValidationErrors,
+            errorColor: appThemeColors.errorRed,
           ),
           const SizedBox(height: 12),
           CustomTextField(
@@ -121,6 +122,7 @@ class _RegisterOrganizationStep1ScreenState
             inputType: TextInputType.emailAddress,
             validator: AuthValidator.validateEmail,
             showErrorsLive: controller.showValidationErrors,
+            errorColor: appThemeColors.errorRed,
           ),
           const SizedBox(height: 12),
           CustomTextField(
@@ -131,6 +133,7 @@ class _RegisterOrganizationStep1ScreenState
             validator: AuthValidator.validateWebsite,
             showErrorsLive: controller.showValidationErrors,
             isRequired: false,
+            errorColor: appThemeColors.errorRed,
           ),
           const SizedBox(height: 12),
           CustomDropdown(

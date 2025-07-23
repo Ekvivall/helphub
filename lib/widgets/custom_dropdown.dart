@@ -22,7 +22,7 @@ class CustomDropdown extends StatelessWidget {
     this.hintTextStyle,
     this.menuMaxHeight,
     this.validator,
-    this.showErrorsLive = false
+    this.showErrorsLive = false,
   });
 
   final String labelText;

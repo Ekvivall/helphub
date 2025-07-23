@@ -16,7 +16,6 @@ class OrganizationModel extends BaseProfileModel {
     // Поля базового класу
     super.uid,
     super.email,
-    super.displayName,
     super.photoUrl,
     super.lastSignInAt,
     super.createdAt,
@@ -44,7 +43,6 @@ class OrganizationModel extends BaseProfileModel {
       'uid': uid,
       'email': email,
       'role': role?.name,
-      'displayName': displayName,
       'photoUrl': photoUrl,
       'lastSignInAt': lastSignInAt != null
           ? Timestamp.fromDate(lastSignInAt!)
@@ -81,7 +79,6 @@ class OrganizationModel extends BaseProfileModel {
     return OrganizationModel(
       uid: map['uid'] as String?,
       email: map['email'] as String?,
-      displayName: map['displayName'] as String?,
       photoUrl: map['photoUrl'] as String?,
       lastSignInAt: _timestampToDateTime(map['lastSignInAt']),
       createdAt: _timestampToDateTime(map['createdAt']),
@@ -111,7 +108,6 @@ class OrganizationModel extends BaseProfileModel {
   OrganizationModel copyWith({
     String? uid,
     String? email,
-    String? displayName,
     String? photoUrl,
     DateTime? lastSignInAt,
     DateTime? createdAt,
@@ -133,7 +129,6 @@ class OrganizationModel extends BaseProfileModel {
     return OrganizationModel(
       uid: uid ?? this.uid,
       email: email ?? this.email,
-      displayName: displayName ?? this.displayName,
       photoUrl: photoUrl ?? this.photoUrl,
       lastSignInAt: lastSignInAt ?? this.lastSignInAt,
       createdAt: createdAt ?? this.createdAt,

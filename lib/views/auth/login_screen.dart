@@ -96,6 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
             inputType: TextInputType.emailAddress,
             validator: AuthValidator.validateEmail,
             showErrorsLive: controller.showValidationErrors,
+            errorColor: appThemeColors.errorRed,
           ),
           SizedBox(height: 12),
           CustomTextField(
@@ -106,6 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
             isPassword: true,
             validator: AuthValidator.validatePasswordSimple,
             showErrorsLive: controller.showValidationErrors,
+            errorColor: appThemeColors.errorRed,
           ),
           SizedBox(height: 12),
           CustomElevatedButton(

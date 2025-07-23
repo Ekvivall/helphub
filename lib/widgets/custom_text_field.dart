@@ -22,8 +22,7 @@ class CustomTextField extends StatelessWidget {
   final Widget? prefixIcon;
   final bool isRequired;
   final List<TextInputFormatter>? inputFormatters;
-
-
+  final Color? errorColor;
 
   const CustomTextField({
     super.key,
@@ -43,7 +42,8 @@ class CustomTextField extends StatelessWidget {
     this.fillColor,
     this.prefixIcon,
     this.isRequired = true,
-    this.inputFormatters
+    this.inputFormatters,
+    this.errorColor
   });
 
   @override
@@ -81,6 +81,7 @@ class CustomTextField extends StatelessWidget {
           readOnly: readOnly,
           prefixIcon: prefixIcon,
           inputFormatters: inputFormatters,
+          errorColor: errorColor,
         ),
       ],
     );

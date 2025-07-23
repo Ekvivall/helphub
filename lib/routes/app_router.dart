@@ -1,16 +1,20 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:helphub/views/auth/forgot_password_screen.dart';
 import 'package:helphub/views/auth/register_organization_step1_screen.dart';
 import 'package:helphub/views/auth/register_type_screen.dart';
 import 'package:helphub/views/auth/register_volunteer_screen.dart';
 import 'package:helphub/views/auth/login_screen.dart';
 import 'package:helphub/views/profile/edit_user_profile_screen.dart';
+import 'package:helphub/views/profile/find_friends_screen.dart';
+import 'package:helphub/views/profile/friends_list_screen.dart';
 import 'package:helphub/views/profile/organization_profile_screen.dart';
 import 'package:helphub/views/profile/volunteer_profile_screen.dart';
 import 'package:helphub/views/splash/splash_screen.dart';
 
 import '../views/auth/register_organization_step2_screen.dart';
 import '../views/event/event_map_screen.dart';
+import '../views/profile/friend_requests_screen.dart';
 
 class AppRoutes {
   static const String splashScreen = '/splash';
@@ -26,6 +30,9 @@ class AppRoutes {
   static const String organizationProfileScreen = '/organization_profile';
   static const String editUserProfileScreen = '/edit_user_profile';
   static const String forgotPasswordScreen = '/forgot_password';
+  static const String findFriendsScreen = '/find_friends';
+  static const String friendRequestsScreen = '/friend_requests';
+  static const String friendsListScreen = '/friends_list';
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
     loginScreen: (context) => LoginScreen(),
@@ -36,9 +43,39 @@ class AppRoutes {
     registerOrganizationStep2Screen: (context) =>
         RegisterOrganizationStep2Screen(),
     eventMapScreen: (context) => EventMapScreen(),
-    volunteerProfileScreen: (context) => VolunteerProfileScreen(),
-    organizationProfileScreen: (context) => OrganizationProfileScreen(),
     editUserProfileScreen: (context) => EditUserProfileScreen(),
     forgotPasswordScreen: (context) => ForgotPasswordScreen(),
+    findFriendsScreen: (context) => FindFriendsScreen(),
+    friendRequestsScreen: (context) => FriendRequestsScreen(),
+    friendsListScreen: (context) => FriendsListScreen()
   };
+  static Route<dynamic> onGenerateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case volunteerProfileScreen:
+        final String? userId = settings.arguments as String?;
+        return MaterialPageRoute(
+          builder: (context) => VolunteerProfileScreen(userId: userId),
+        );
+      case organizationProfileScreen:
+        final String? userId = settings.arguments as String?;
+        return MaterialPageRoute(
+          builder: (context) => OrganizationProfileScreen(userId: userId),
+        );
+      default:
+
+        if (routes.containsKey(settings.name)) {
+          return MaterialPageRoute(
+            builder: routes[settings.name]!,
+            settings: settings,
+          );
+        }
+        return MaterialPageRoute(
+          builder: (context) => const Scaffold(
+            body: Center(
+              child: Text('Error: Unknown route'),
+            ),
+          ),
+        );
+    }
+  }
 }

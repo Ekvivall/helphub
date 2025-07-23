@@ -154,6 +154,12 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                   labelColor:
                                       appThemeColors.backgroundLightGrey,
                                   isRequired: false,
+                                  validator: (value) {
+                                    if (value == null || value.trim().isEmpty) {
+                                      return 'Будь ласка, введіть нікнейм';
+                                    }
+                                    return null;
+                                  },
                                 ),
                               if (user.role == UserRole.organization)
                                 CustomTextField(
@@ -299,7 +305,21 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                           child: CustomElevatedButton(
                             text: 'Зберегти',
                             onPressed: () async {
-                              await viewModel.updateUserData(context, _formKey);
+                              if (_formKey.currentState!.validate()) {
+                                bool success = await viewModel.updateUserData();
+                                if (success) {
+                                  Constants.showSuccessMessage(
+                                    context,
+                                    'Профіль успішно оновлено!',
+                                  );
+                                  Navigator.of(context).pop();
+                                } else {
+                                  Constants.showErrorMessage(
+                                    context,
+                                    'Нікнейм "${viewModel.nicknameController.text.trim()}" вже зайнятий. Будь ласка, виберіть інший.',
+                                  );
+                                }
+                              }
                             },
                             backgroundColor: appThemeColors.successGreen,
                             textStyle: TextStyleHelper.instance.title16ExtraBold

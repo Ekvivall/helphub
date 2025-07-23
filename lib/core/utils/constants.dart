@@ -3,6 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:helphub/models/volunteer_model.dart';
+import 'package:helphub/theme/text_style_helper.dart';
+import 'package:helphub/view_models/profile/profile_view_model.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
@@ -136,4 +139,63 @@ class Constants {
     }
   }
 
+  static String generateUniqueDisplayName(String email) {
+    String baseName = email.split('@')[0];
+    if (baseName.length > 15) {
+      baseName = baseName.substring(0, 15);
+    }
+    var uuid = const Uuid();
+    String uniqueId = uuid.v4().substring(0, 6);
+    return '${baseName}_$uniqueId';
+  }
+
+  static void showConfirmationDialog(
+    BuildContext context,
+    String title,
+    String content,
+    String actionTitle,
+    ProfileViewModel viewModel,
+    String userId,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title, style: TextStyleHelper.instance.title16ExtraBold),
+          content: Text(
+            content,
+            style: TextStyleHelper.instance.title14Regular,
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text(
+                'Скасувати',
+                style: TextStyleHelper.instance.title14Regular.copyWith(
+                  color: appThemeColors.textMediumGrey,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: appThemeColors.errorRed,
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                viewModel.unfriendViewingUser(userId);
+              },
+              child: Text(
+                'Видалити',
+                style: TextStyleHelper.instance.title14Regular.copyWith(
+                  color: appThemeColors.primaryWhite,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

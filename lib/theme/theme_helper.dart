@@ -44,6 +44,8 @@ class LightCodeColors {
 
   Color get errorRed => const Color(0xFFFF5252);
 
+  Color get errorLight => const Color(0xFFFFCDD2);
+
   Color get successGreen => const Color(0xFF4CAF50);
 
   Color get orangeAccent => const Color(0xFFFF6B2C);

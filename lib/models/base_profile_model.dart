@@ -6,7 +6,6 @@ abstract class BaseProfileModel {
   final String? uid;
   final String? email;
   final UserRole? role; // Важливо зберегти роль для розрізнення
-  final String? displayName;
   final String? photoUrl;
   final DateTime? lastSignInAt;
   final DateTime? createdAt;
@@ -23,7 +22,6 @@ abstract class BaseProfileModel {
     this.uid,
     this.email,
     this.role,
-    this.displayName,
     this.photoUrl,
     this.lastSignInAt,
     this.createdAt,
@@ -34,7 +32,7 @@ abstract class BaseProfileModel {
     this.categoryChips,
     this.phoneNumber,
     this.telegramLink,
-    this.instagramLink
+    this.instagramLink,
   });
 
   Map<String, dynamic> toMap();

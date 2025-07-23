@@ -7,6 +7,7 @@ import 'medal_item_model.dart';
 
 class VolunteerModel extends BaseProfileModel {
   final String? fullName;
+  final String? displayName;
   final String? frame;
   final String? levelTitle;
   final int? levelProgress;
@@ -16,13 +17,11 @@ class VolunteerModel extends BaseProfileModel {
   final int? achievementsCount;
   final List<AchievementItemModel>? achievements;
   final List<MedalItemModel>? medals;
-  final int? friendsCount;
 
   VolunteerModel({
     // Поля базового класу
     super.uid,
     super.email,
-    super.displayName,
     super.photoUrl,
     super.lastSignInAt,
     super.createdAt,
@@ -36,6 +35,7 @@ class VolunteerModel extends BaseProfileModel {
     super.instagramLink,
     // Поля VolunteerModel
     this.fullName,
+    this.displayName,
     this.frame,
     this.levelTitle,
     this.levelProgress,
@@ -45,8 +45,6 @@ class VolunteerModel extends BaseProfileModel {
     this.achievementsCount,
     this.achievements,
     this.medals,
-    this.friendsCount,
-
   }) : super(role: UserRole.volunteer); // Встановлюємо роль для волонтера
 
   @override
@@ -58,16 +56,18 @@ class VolunteerModel extends BaseProfileModel {
       'role': role?.name,
       'displayName': displayName,
       'photoUrl': photoUrl,
-      'lastSignInAt': lastSignInAt != null ? Timestamp.fromDate(lastSignInAt!) : null,
+      'lastSignInAt': lastSignInAt != null
+          ? Timestamp.fromDate(lastSignInAt!)
+          : null,
       'createdAt': createdAt != null ? Timestamp.fromDate(createdAt!) : null,
       'city': city,
       'aboutMe': aboutMe,
       'projectsCount': projectsCount,
       'eventsCount': eventsCount,
       'categoryChips': categoryChips?.map((e) => e.toMap()).toList(),
-      'phoneNumber':phoneNumber,
-      'telegramLink':telegramLink,
-      'instagramLink':instagramLink,
+      'phoneNumber': phoneNumber,
+      'telegramLink': telegramLink,
+      'instagramLink': instagramLink,
       // Поля VolunteerModel
       'fullName': fullName,
       'frame': frame,
@@ -79,7 +79,6 @@ class VolunteerModel extends BaseProfileModel {
       'achievementsCount': achievementsCount,
       'achievements': achievements?.map((e) => e.toMap()).toList(),
       'medals': medals?.map((e) => e.toMap()).toList(),
-      'friendsCount': friendsCount,
     };
   }
 
@@ -119,7 +118,6 @@ class VolunteerModel extends BaseProfileModel {
       medals: (map['medals'] as List<dynamic>?)
           ?.map((e) => MedalItemModel.fromMap(e as Map<String, dynamic>))
           .toList(),
-      friendsCount: map['friendsCount'] as int?,
       categoryChips: (map['categoryChips'] as List<dynamic>?)
           ?.map((e) => CategoryChipModel.fromMap(e as Map<String, dynamic>))
           .toList(),
@@ -150,7 +148,6 @@ class VolunteerModel extends BaseProfileModel {
     int? achievementsCount,
     List<AchievementItemModel>? achievements,
     List<MedalItemModel>? medals,
-    int? friendsCount,
     List<CategoryChipModel>? categoryChips,
     String? phoneNumber,
     String? telegramLink,
@@ -177,7 +174,6 @@ class VolunteerModel extends BaseProfileModel {
       achievementsCount: achievementsCount ?? this.achievementsCount,
       achievements: achievements ?? this.achievements,
       medals: medals ?? this.medals,
-      friendsCount: friendsCount ?? this.friendsCount,
       categoryChips: categoryChips ?? this.categoryChips,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       telegramLink: telegramLink ?? this.telegramLink,
