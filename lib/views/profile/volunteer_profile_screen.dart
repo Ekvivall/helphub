@@ -136,12 +136,17 @@ class VolunteerProfileScreen extends StatelessWidget {
                           if (volunteer.medals != null)
                             _buildMedalsList(volunteer),
                           _buildRecentActivityScreen(viewModel),
-                          if (isOwner) _buildSavedFees(viewModel),
-                          if (isOwner) _buildProjectApplications(viewModel),
-                          if (isOwner) _buildMyFriends(context, viewModel),
-                          if (isOwner) _buildFriendList(context, viewModel),
-                          if (isOwner)
+                          if (isOwner) ...[
+                            _buildSavedFees(viewModel),
+                            _buildProjectApplications(viewModel),
+                            _buildFollowedOrganizationsSection(
+                              context,
+                              viewModel,
+                            ),
+                            _buildMyFriends(context, viewModel),
+                            _buildFriendList(context, viewModel),
                             _buildFooterMyFriends(context, viewModel),
+                          ],
                         ],
                       ),
                     ),
@@ -725,7 +730,7 @@ class VolunteerProfileScreen extends StatelessWidget {
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
-
+          if (viewModel.friendProfiles.length > 3)
           GestureDetector(
             onTap: () {
               Navigator.of(context).pushNamed(AppRoutes.friendsListScreen);
@@ -1066,6 +1071,115 @@ class VolunteerProfileScreen extends StatelessWidget {
                 ),
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFollowedOrganizationsSection(
+    BuildContext context,
+    ProfileViewModel viewModel,
+  ) {
+    final int organizationsToShow = viewModel.followedOrganizations.length > 2
+        ? 2
+        : viewModel.followedOrganizations.length;
+    if (organizationsToShow == 0) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Підписані фонди',
+                style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+                  color: appThemeColors.backgroundLightGrey,
+                ),
+              ),
+              if (viewModel.followedOrganizations.length > organizationsToShow)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: CustomElevatedButton(
+                    text: 'Показати всі підписки',
+                    onPressed: () {
+                      Navigator.of(
+                        context,
+                      ).pushNamed(AppRoutes.allFollowedOrganizationsScreen);
+                    },
+                    backgroundColor: appThemeColors.lightGreenColor,
+                    borderRadius: 8,
+                    textStyle: TextStyleHelper.instance.title16ExtraBold
+                        .copyWith(color: appThemeColors.primaryWhite),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 10.0,
+              mainAxisSpacing: 10.0,
+              childAspectRatio: 1.0,
+            ),
+            itemCount: organizationsToShow,
+            // Use limited count here
+            itemBuilder: (context, index) {
+              final organization = viewModel.followedOrganizations[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pushNamed(
+                    AppRoutes.organizationProfileScreen,
+                    arguments: organization.uid,
+                  );
+                },
+                child: Card(
+                  color: appThemeColors.blueTransparent,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: appThemeColors.transparent,
+                        backgroundImage: organization.photoUrl != null
+                            ? NetworkImage(organization.photoUrl!)
+                            : null,
+                        child: organization.photoUrl == null
+                            ? Icon(
+                                Icons.business,
+                                size: 80,
+                                color: appThemeColors.primaryWhite,
+                              )
+                            : null,
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          organization.organizationName ?? 'Невідомий Фонд',
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyleHelper.instance.title16ExtraBold
+                              .copyWith(color: appThemeColors.primaryWhite),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

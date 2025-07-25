@@ -5,6 +5,7 @@ import 'package:helphub/views/auth/register_organization_step1_screen.dart';
 import 'package:helphub/views/auth/register_type_screen.dart';
 import 'package:helphub/views/auth/register_volunteer_screen.dart';
 import 'package:helphub/views/auth/login_screen.dart';
+import 'package:helphub/views/profile/all_followed_organizations_screen.dart';
 import 'package:helphub/views/profile/edit_user_profile_screen.dart';
 import 'package:helphub/views/profile/find_friends_screen.dart';
 import 'package:helphub/views/profile/friends_list_screen.dart';
@@ -33,6 +34,8 @@ class AppRoutes {
   static const String findFriendsScreen = '/find_friends';
   static const String friendRequestsScreen = '/friend_requests';
   static const String friendsListScreen = '/friends_list';
+  static const String allFollowedOrganizationsScreen =
+      '/all_followed_organizations';
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
     loginScreen: (context) => LoginScreen(),
@@ -47,8 +50,11 @@ class AppRoutes {
     forgotPasswordScreen: (context) => ForgotPasswordScreen(),
     findFriendsScreen: (context) => FindFriendsScreen(),
     friendRequestsScreen: (context) => FriendRequestsScreen(),
-    friendsListScreen: (context) => FriendsListScreen()
+    friendsListScreen: (context) => FriendsListScreen(),
+    allFollowedOrganizationsScreen: (context) =>
+        AllFollowedOrganizationsScreen(),
   };
+
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case volunteerProfileScreen:
@@ -62,7 +68,6 @@ class AppRoutes {
           builder: (context) => OrganizationProfileScreen(userId: userId),
         );
       default:
-
         if (routes.containsKey(settings.name)) {
           return MaterialPageRoute(
             builder: routes[settings.name]!,
@@ -70,11 +75,8 @@ class AppRoutes {
           );
         }
         return MaterialPageRoute(
-          builder: (context) => const Scaffold(
-            body: Center(
-              child: Text('Error: Unknown route'),
-            ),
-          ),
+          builder: (context) =>
+              const Scaffold(body: Center(child: Text('Error: Unknown route'))),
         );
     }
   }

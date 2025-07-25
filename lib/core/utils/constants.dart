@@ -7,6 +7,7 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../models/activity_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
 
@@ -197,5 +198,18 @@ class Constants {
         );
       },
     );
+  }
+
+  static Future<void> logActivity(String uid, ActivityModel activity) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .collection('activities')
+          .doc(activity.id)
+          .set(activity.toMap());
+    } catch (e) {
+      print('Error logging activity: $e');
+    }
   }
 }

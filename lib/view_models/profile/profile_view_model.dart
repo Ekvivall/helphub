@@ -6,12 +6,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:helphub/core/services/category_service.dart';
+import 'package:helphub/core/services/follow_service.dart';
 import 'package:helphub/core/services/friend_service.dart';
+import 'package:helphub/core/services/fundraiser_application_service.dart';
+import 'package:helphub/core/services/fundraiser_service.dart';
+import 'package:helphub/core/services/project_application_service.dart';
 import 'package:helphub/core/utils/user_role_extension.dart';
+import 'package:helphub/models/activity_model.dart';
 import 'package:helphub/models/base_profile_model.dart';
 import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/models/friend_request_model.dart';
+import 'package:helphub/models/fundraiser.dart';
+import 'package:helphub/models/fundraiser_application_model.dart';
 import 'package:helphub/models/organization_model.dart';
+import 'package:helphub/models/project_application_model.dart';
 import 'package:helphub/models/volunteer_model.dart';
 
 class ProfileViewModel extends ChangeNotifier {
@@ -20,6 +28,12 @@ class ProfileViewModel extends ChangeNotifier {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final CategoryService _categoryService = CategoryService();
   final FriendService _friendService = FriendService();
+  final FundraiserService _fundraiserService = FundraiserService();
+  final ProjectApplicationService _projectApplicationService =
+      ProjectApplicationService();
+  final FundraiserApplicationService _fundraiserApplicationService =
+      FundraiserApplicationService();
+  final FollowService _followService = FollowService();
 
   BaseProfileModel? _user; // Поточні дані користувача
   bool _isLoading = false;
@@ -28,12 +42,42 @@ class ProfileViewModel extends ChangeNotifier {
   List<CategoryChipModel> _availableInterests = [];
   List<CategoryChipModel> _selectedInterests = [];
 
+  List<Fundraiser> _savedFundraisers = [];
+  StreamSubscription<List<Fundraiser>>? _savedFundraiserSubscription;
+  List<ProjectApplicationModel> _volunteerProjectApplications = [];
+  List<FundraiserApplicationModel> _volunteerFundraiserApplications = [];
+  List<ProjectApplicationModel> _organizerProjectApplications = [];
+  List<FundraiserApplicationModel> _organizationFundraiserApplications = [];
+  StreamSubscription<List<ProjectApplicationModel>>?
+  _projectApplicationsForVolunteerSubscription;
+  StreamSubscription<List<FundraiserApplicationModel>>?
+  _fundraiserApplicationsForVolunteerSubscription;
+  StreamSubscription<List<ProjectApplicationModel>>?
+  _projectApplicationsForOrganizerSubscription;
+  StreamSubscription<List<FundraiserApplicationModel>>?
+  _fundraiserApplicationsForOrganizationSubscription;
+
   FriendshipStatus _friendshipStatus = FriendshipStatus.self;
   List<FriendRequestModel> _incomingFriendRequests = [];
   List<String> _friendsList = [];
   List<VolunteerModel> _friendProfiles = [];
   StreamSubscription? _incomingRequestsSubscription;
   StreamSubscription? _friendsListSubscription;
+
+  bool? _isFollowing;
+  int _followersCount = 0;
+  StreamSubscription<bool>? _isFollowingSubscription;
+  StreamSubscription<int>? _followersCountSubscription;
+  List<OrganizationModel> _followedOrganizations = [];
+  StreamSubscription<List<String>>? _followingOrganizationsSubscription;
+  List<VolunteerModel> _filteredFriendProfiles = [];
+  List<OrganizationModel> _filteredFollowedOrganizations = [];
+  String _currentFriendSearchQuery = '';
+  String _currentFollowedOrgSearchQuery = '';
+
+  List<ActivityModel> _latestActivities = [];
+  bool _isActivitiesLoading = false;
+  String? _activitiesError;
 
   late TextEditingController fullNameController;
   late TextEditingController organizationNameController;
@@ -47,7 +91,6 @@ class ProfileViewModel extends ChangeNotifier {
   List<VolunteerModel> _searchResults = [];
   bool _isSearching = false;
   String? _searchError; // Для повідомлень про помилки пошуку
-
   List<VolunteerModel> get searchResults => _searchResults;
 
   bool get isSearching => _isSearching;
@@ -77,6 +120,46 @@ class ProfileViewModel extends ChangeNotifier {
 
   int get incomingFriendRequestsCount => _incomingFriendRequests.length;
 
+  List<Fundraiser> get savedFundraiser => _savedFundraisers;
+
+  List<ProjectApplicationModel> get volunteerProjectApplications =>
+      _volunteerProjectApplications;
+
+  List<FundraiserApplicationModel> get volunteerFundraiserApplications =>
+      _volunteerFundraiserApplications;
+
+  List<ProjectApplicationModel> get organizerProjectApplications =>
+      _organizerProjectApplications;
+
+  List<FundraiserApplicationModel> get organizationFundraiserApplications =>
+      _organizationFundraiserApplications;
+
+  bool? get isFollowing => _isFollowing;
+
+  int get followersCount => _followersCount;
+
+  List<OrganizationModel> get followedOrganizations => _followedOrganizations;
+
+  List<VolunteerModel> get filteredFriendProfiles {
+    if (_currentFriendSearchQuery.isEmpty) {
+      return _friendProfiles;
+    }
+    return _filteredFriendProfiles;
+  }
+
+  List<OrganizationModel> get filteredFollowedProfiles {
+    if (_currentFollowedOrgSearchQuery.isEmpty) {
+      return _followedOrganizations;
+    }
+    return _filteredFollowedOrganizations;
+  }
+
+  List<ActivityModel> get latestActivities => _latestActivities;
+
+  bool get isActivitiesLoading => _isActivitiesLoading;
+
+  String? get activitiesError => _activitiesError;
+
   final String? _viewingUserId; // ID користувача, який переглядається
   String? _currentAuthUserId; // UID поточного авторизованого користувача
   String? get currentAuthUserId => _currentAuthUserId;
@@ -99,8 +182,7 @@ class ProfileViewModel extends ChangeNotifier {
       _currentAuthUserId = user?.uid;
       if ((_viewingUserId != null || user != null) && _user == null) {
         fetchUserProfile();
-      }
-      else if (_viewingUserId != null && _viewingUserId != user?.uid) {
+      } else if (_viewingUserId != null && _viewingUserId != user?.uid) {
         fetchUserProfile();
       }
     });
@@ -118,6 +200,14 @@ class ProfileViewModel extends ChangeNotifier {
     instagramLinkController.dispose();
     _incomingRequestsSubscription?.cancel();
     _friendsListSubscription?.cancel();
+    _savedFundraiserSubscription?.cancel();
+    _projectApplicationsForVolunteerSubscription?.cancel();
+    _fundraiserApplicationsForVolunteerSubscription?.cancel();
+    _projectApplicationsForOrganizerSubscription?.cancel();
+    _fundraiserApplicationsForOrganizationSubscription?.cancel();
+    _followersCountSubscription?.cancel();
+    _isFollowingSubscription?.cancel();
+    _followingOrganizationsSubscription?.cancel();
     super.dispose();
   }
 
@@ -138,11 +228,42 @@ class ProfileViewModel extends ChangeNotifier {
       if (doc.exists && doc.data() != null) {
         final data = doc.data();
         final roleString = data?['role'] as String?;
+        await fetchLatestActivities(uidToFetch);
         if (roleString == UserRole.volunteer.name) {
           _user = VolunteerModel.fromMap(doc.data()!);
-          _listenToFriendRelatedData();
-        } else {
+          if (viewingUserId == null ||
+              viewingUserId == _auth.currentUser!.uid) {
+            _listenToFriendRelatedData();
+            _listenToSavedFundraisers();
+            _listenToProjectApplicationsForVolunteer(_user!.uid!);
+            _listenToFundraiserApplicationsForVolunteer(_user!.uid!);
+            _listenToFollowingOrganizations(_user!.uid!);
+          }
+        }
+        else {
           _user = OrganizationModel.fromMap(doc.data()!);
+          if (viewingUserId == null ||
+              viewingUserId == _auth.currentUser!.uid) {
+            _listenToProjectApplicationsForOrganization(_user!.uid!);
+            _listenToFundraiserApplicationsForOrganization(_user!.uid!);
+            _listenToFollowersCount(_user!.uid!);
+          } else {
+            if (_auth.currentUser?.uid != null &&
+                _auth.currentUser?.uid != _user!.uid) {
+              final doc = await _firestore
+                  .collection('users')
+                  .doc(_auth.currentUser?.uid)
+                  .get();
+              if (doc.data()?['role'] == UserRole.volunteer.name) {
+                _listenToIsFollowing(_auth.currentUser!.uid, _user!.uid!);
+              } else {
+                _isFollowing = null;
+              }
+            } else {
+              _isFollowing = null;
+            }
+            _listenToFollowersCount(_user!.uid!);
+          }
         }
         if (uidToFetch == _currentAuthUserId) {
           _fillControllersFromUser();
@@ -207,29 +328,29 @@ class ProfileViewModel extends ChangeNotifier {
         _fetchFriendProfiles();
         notifyListeners();
       });
-
     }
   }
 
-  Future<void>_fetchFriendProfiles() async{
-    if(_friendsList.isEmpty){
+  Future<void> _fetchFriendProfiles() async {
+    if (_friendsList.isEmpty) {
       _friendProfiles = [];
       notifyListeners();
       return;
     }
     List<VolunteerModel> fetchedProfiles = [];
-    for(String friendUid in _friendsList){
-      try{
+    for (String friendUid in _friendsList) {
+      try {
         final doc = await _firestore.collection('users').doc(friendUid).get();
-        if(doc.exists && doc.data() != null){
+        if (doc.exists && doc.data() != null) {
           final data = doc.data()!;
           fetchedProfiles.add(VolunteerModel.fromMap(data));
         }
-      }catch(e){
+      } catch (e) {
         debugPrint('Error fetching friend profile for $friendUid: $e');
       }
     }
     _friendProfiles = fetchedProfiles;
+    _filteredFriendProfiles = List.from(fetchedProfiles);
     notifyListeners();
   }
 
@@ -529,5 +650,293 @@ class ProfileViewModel extends ChangeNotifier {
   void clearSearchResults() {
     _searchResults = [];
     notifyListeners();
+  }
+
+  Future<void> saveFundraiser(String fundId) async {
+    if (_user?.uid != null) {
+      try {
+        await _fundraiserService.saveFundraiser(_user!.uid!, fundId);
+        notifyListeners();
+      } catch (e) {
+        print('Error saving fundraiser in ViewModel: $e');
+      }
+    }
+  }
+
+  Future<void> unsaveFundraiser(String fundId) async {
+    if (_user?.uid != null) {
+      try {
+        await _fundraiserService.unsaveFundraiser(_user!.uid!, fundId);
+        notifyListeners();
+      } catch (e) {
+        print('Error unsaving fundraiser in ViewModel: $e');
+      }
+    }
+  }
+
+  void _listenToSavedFundraisers() {
+    _savedFundraiserSubscription?.cancel();
+    if (_user?.uid != null) {
+      _savedFundraiserSubscription = _fundraiserService
+          .getSavedFundraisers(_user!.uid!)
+          .listen(
+            (fundraisers) {
+              _savedFundraisers = fundraisers;
+              notifyListeners();
+            },
+            onError: (error) {
+              print('Error listening to saved fundraisers: $error');
+            },
+          );
+    }
+  }
+
+  Future<void> submitProjectApplication({
+    required String projectId,
+    String? taskId,
+    String? message,
+  }) async {
+    if (_user?.uid == null) {
+      return;
+    }
+    _setLoading(true);
+    try {
+      final newApplication = ProjectApplicationModel(
+        id: _firestore.collection('projectApplications').doc().id,
+        volunteerId: _user!.uid!,
+        projectId: projectId,
+        taskId: taskId,
+        message: message,
+        timestamp: Timestamp.now(),
+      );
+      await _projectApplicationService.submitProjectApplication(newApplication);
+      notifyListeners();
+    } catch (e) {
+      print('Error submitting project application: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> submitFundraiserApplication({
+    required String organizationId,
+    required String title,
+    required List<CategoryChipModel> categories,
+    required String description,
+    required double requiredAmount,
+    required Timestamp deadline,
+    List<String>? supportingDocuments,
+    required String contactInfo,
+  }) async {
+    if (_user?.uid == null) {
+      return;
+    }
+    _setLoading(true);
+    try {
+      final newApplication = FundraiserApplicationModel(
+        id: _firestore.collection('fundraiserApplications').doc().id,
+        volunteerId: _user!.uid!,
+        organizationId: organizationId,
+        title: title,
+        categories: categories,
+        description: description,
+        requiredAmount: requiredAmount,
+        deadline: deadline,
+        supportingDocuments: supportingDocuments,
+        contactInfo: contactInfo,
+        timestamp: Timestamp.now(),
+      );
+      await _fundraiserApplicationService.submitFundraiserApplication(
+        newApplication,
+      );
+      notifyListeners();
+    } catch (e) {
+      print('Error submitting fundraiser application: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  void _listenToProjectApplicationsForVolunteer(String volunteerUid) {
+    _projectApplicationsForVolunteerSubscription?.cancel();
+    _projectApplicationsForVolunteerSubscription = _projectApplicationService
+        .getProjectApplicationsForVolunteer(volunteerUid)
+        .listen((applications) {
+          _volunteerProjectApplications = applications;
+          notifyListeners();
+        });
+  }
+
+  void _listenToFundraiserApplicationsForVolunteer(String volunteerUid) {
+    _fundraiserApplicationsForVolunteerSubscription?.cancel();
+    _fundraiserApplicationsForVolunteerSubscription =
+        _fundraiserApplicationService
+            .getFundraiserApplicationsForVolunteer(volunteerUid)
+            .listen((applications) {
+              _volunteerFundraiserApplications = applications;
+              notifyListeners();
+            });
+  }
+
+  void _listenToProjectApplicationsForOrganization(String organizationUid) {
+    _projectApplicationsForVolunteerSubscription?.cancel();
+    _projectApplicationsForVolunteerSubscription = _projectApplicationService
+        .getProjectApplicationsForOrganizer(organizationUid)
+        .listen((applications) {
+          _organizerProjectApplications = applications;
+          notifyListeners();
+        });
+  }
+
+  void _listenToFundraiserApplicationsForOrganization(String organizationUid) {
+    _fundraiserApplicationsForVolunteerSubscription?.cancel();
+    _fundraiserApplicationsForVolunteerSubscription =
+        _fundraiserApplicationService
+            .getFundraiserApplicationsForOrganizer(organizationUid)
+            .listen((applications) {
+              _organizationFundraiserApplications = applications;
+              notifyListeners();
+            });
+  }
+
+  Future<void> toggleFollow(String organizationUid) async {
+    if (_auth.currentUser?.uid == null) {
+      return;
+    }
+    final volunteerUid = _auth.currentUser!.uid;
+    _setLoading(true);
+    try {
+      if (_isFollowing == true) {
+        await _followService.unfollowOrganization(
+          volunteerUid,
+          organizationUid,
+        );
+        _isFollowing = false;
+      } else if (_isFollowing == false) {
+        await _followService.followOrganization(volunteerUid, organizationUid);
+        _isFollowing = true;
+      }
+    } catch (e) {
+      print('Error toggling follow status: $e');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  void _listenToFollowersCount(String organizationUid) {
+    _followersCountSubscription?.cancel();
+    _followersCountSubscription = _followService
+        .getFollowersCount(organizationUid)
+        .listen((count) {
+          _followersCount = count;
+          notifyListeners();
+        });
+  }
+
+  void _listenToIsFollowing(String volunteerUid, String organizationUid) {
+    _isFollowingSubscription?.cancel();
+    _isFollowingSubscription = _followService
+        .isFollowing(volunteerUid, organizationUid)
+        .listen((status) {
+          _isFollowing = status;
+          notifyListeners();
+        });
+  }
+
+  void _listenToFollowingOrganizations(String volunteerUid) {
+    _followingOrganizationsSubscription?.cancel();
+    _followingOrganizationsSubscription = _followService
+        .getFollowingOrganizations(volunteerUid)
+        .listen((organizationUids) async {
+          if (organizationUids.isEmpty) {
+            _followedOrganizations = [];
+            _filteredFollowedOrganizations = [];
+            notifyListeners();
+            return;
+          }
+          List<OrganizationModel> organizations = [];
+          for (String orgUid in organizationUids) {
+            try {
+              DocumentSnapshot orgDoc = await _firestore
+                  .collection('users')
+                  .doc(orgUid)
+                  .get();
+              if (orgDoc.exists &&
+                  (orgDoc.data() as Map<String, dynamic>)['role'] ==
+                      UserRole.organization.name) {
+                organizations.add(
+                  OrganizationModel.fromMap(
+                    orgDoc.data() as Map<String, dynamic>,
+                  ),
+                );
+              }
+            } catch (e) {
+              print('Error fetching organization $orgUid: $e');
+            }
+          }
+          _followedOrganizations = organizations;
+          _filteredFollowedOrganizations = List.from(organizations);
+          notifyListeners();
+        });
+  }
+
+  void searchFriends(String query) {
+    _currentFriendSearchQuery = query.toLowerCase();
+    if (query.isEmpty) {
+      _filteredFriendProfiles = List.from(_friendProfiles);
+    } else {
+      _filteredFriendProfiles = _friendProfiles.where((friend) {
+        final fullName = friend.fullName?.toLowerCase() ?? '';
+        final displayName = friend.displayName?.toLowerCase() ?? '';
+        final city = friend.city?.toLowerCase() ?? '';
+        return fullName.contains(_currentFriendSearchQuery) ||
+            displayName.contains(_currentFriendSearchQuery) ||
+            city.contains(_currentFriendSearchQuery);
+      }).toList();
+    }
+    notifyListeners();
+  }
+
+  void searchFollowedOrganizations(String query) {
+    _currentFollowedOrgSearchQuery = query.toLowerCase();
+    if (query.isEmpty) {
+      _filteredFollowedOrganizations = List.from(_followedOrganizations);
+    } else {
+      _filteredFollowedOrganizations = _followedOrganizations.where((org) {
+        final orgName = org.organizationName?.toLowerCase() ?? '';
+        final city = org.city?.toLowerCase() ?? '';
+        return orgName.contains(_currentFollowedOrgSearchQuery) ||
+            city.contains(_currentFollowedOrgSearchQuery);
+      }).toList();
+    }
+    notifyListeners();
+  }
+
+  Future<void> fetchLatestActivities(String userId) async {
+    _isActivitiesLoading = true;
+    _activitiesError = null;
+    notifyListeners();
+
+    try {
+      final QuerySnapshot querySnapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('activities')
+          .orderBy('timestamp', descending: true)
+          .limit(10)
+          .get();
+
+      _latestActivities = querySnapshot.docs
+          .map(
+            (doc) => ActivityModel.fromMap(doc.data() as Map<String, dynamic>),
+          )
+          .toList();
+    } catch (e) {
+      _activitiesError = 'Помилка завантаження останньої активності: $e';
+      print('Error fetching latest activities: $e');
+    } finally {
+      _isActivitiesLoading = false;
+      notifyListeners();
+    }
   }
 }

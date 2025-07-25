@@ -31,7 +31,13 @@ class OrganizationProfileScreen extends StatelessWidget {
           ProfileViewModel(viewingUserId: userId)..fetchUserProfile(),
       child: Consumer<ProfileViewModel>(
         builder: (context, viewModel, child) {
-          final bool isOwner = userId == null || userId == viewModel.user?.uid;
+          final bool isOwner =
+              userId == null || userId == viewModel.currentAuthUserId;
+          final bool isVolunteerViewingOrganization =
+              viewModel.currentAuthUserId != null &&
+              viewModel.user?.role == UserRole.organization &&
+              viewModel.viewingUserId != null &&
+              viewModel.viewingUserId != viewModel.currentAuthUserId;
 
           if (viewModel.user != null &&
               viewModel.user!.role != UserRole.organization) {
@@ -116,7 +122,13 @@ class OrganizationProfileScreen extends StatelessWidget {
                           if (organization.isVerification != null &&
                               !organization.isVerification!)
                             _buildVerificationStatus(viewModel),
-                          _buildStatistics(organization),
+                          if (viewModel.isFollowing!= null && !isOwner)
+                            _buildFollowSection(
+                              context,
+                              viewModel,
+                              organization,
+                            ),
+                          _buildStatistics(organization, viewModel),
                           if (organization.aboutMe != null)
                             _buildBio(organization),
                           _buildContactInfo(context, organization),
@@ -130,10 +142,29 @@ class OrganizationProfileScreen extends StatelessWidget {
                           _buildActiveCollectionsSection(viewModel),
                           _buildRecentActivityScreen(viewModel),
                           if (isOwner) _buildApplicationsSection(viewModel),
+                          SizedBox(height: 70),
                         ],
                       ),
                     ),
             ),
+            floatingActionButton: isVolunteerViewingOrganization
+                ? FloatingActionButton.extended(
+                    onPressed: () {
+                      //TODO: Implement navigation to the fundraisers application
+                    },
+                    label: Text(
+                      'Подати заявку на збір',
+                      style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+                        color: appThemeColors.primaryWhite,
+                      ),
+                    ),
+                    icon: Icon(
+                      Icons.add_task,
+                      color: appThemeColors.primaryWhite,
+                    ),
+                    backgroundColor: appThemeColors.successGreen,
+                  )
+                : null,
           );
         },
       ),
@@ -245,7 +276,7 @@ class OrganizationProfileScreen extends StatelessWidget {
           ),
           SizedBox(height: 8),
           Text(
-            'Ваші документи розглядаються адміністратором. Очікування розгляду до 24 годин',
+            'Документи розглядаються адміністратором. Очікування розгляду до 24 годин',
             style: TextStyleHelper.instance.title13Regular.copyWith(
               color: appThemeColors.primaryWhite,
             ),
@@ -255,17 +286,19 @@ class OrganizationProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatistics(OrganizationModel user) {
+  Widget _buildStatistics(OrganizationModel user, ProfileViewModel viewModel) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 48, vertical: 7),
+      padding: EdgeInsets.symmetric(horizontal: 38, vertical: 7),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           StatisticItemWidget(value: user.feesCount, label: 'зборів'),
-          SizedBox(width: 48),
           StatisticItemWidget(value: user.projectsCount, label: 'проєктів'),
-          SizedBox(width: 48),
           StatisticItemWidget(value: user.eventsCount, label: 'подій'),
+          StatisticItemWidget(
+            value: viewModel.followersCount,
+            label: 'підписників',
+          ),
         ],
       ),
     );
@@ -557,35 +590,7 @@ class OrganizationProfileScreen extends StatelessWidget {
         ),
       );
     }
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 28, vertical: 7),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          CustomElevatedButton(
-            text: 'Підтримати',
-            onPressed: viewModel.toggleEditing,
-            width: double.infinity,
-            height: 44,
-            borderRadius: 24,
-            textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-              color: appThemeColors.backgroundLightGrey,
-            ),
-          ),
-          CustomElevatedButton(
-            text: 'Написати',
-            onPressed: viewModel.toggleEditing,
-            width: double.infinity,
-            height: 44,
-            borderRadius: 24,
-            backgroundColor: appThemeColors.blueTransparent,
-            textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-              color: appThemeColors.backgroundLightGrey,
-            ),
-          ),
-        ],
-      ),
-    );
+    return SizedBox.shrink();
   }
 
   Widget _buildBadge(OrganizationModel user) {
@@ -595,7 +600,7 @@ class OrganizationProfileScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Категорії',
+            'Сфери діяльності',
             style: TextStyleHelper.instance.title16ExtraBold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
@@ -687,25 +692,105 @@ class OrganizationProfileScreen extends StatelessWidget {
   }
 
   Widget _buildApplicationsSection(ProfileViewModel viewModel) {
+    final projectApplications = viewModel.organizerProjectApplications;
+    final fundraiserApplications = viewModel.organizationFundraiserApplications;
+    if (projectApplications.isEmpty && fundraiserApplications.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Заявки на збори',
+            'Заявки',
             style: TextStyleHelper.instance.title16ExtraBold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
-          GestureDetector(
-            onTap: () {},
+          SizedBox(height: 8),
+          if (projectApplications.isNotEmpty) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Заявки на проєкти',
+                  style: TextStyleHelper.instance.title14Regular.copyWith(
+                    color: appThemeColors.backgroundLightGrey,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {},
+                  child: Text(
+                    'Переглянути всі',
+                    style: TextStyleHelper.instance.title16Regular.copyWith(
+                      color: appThemeColors.lightGreenColor,
+                      decoration: TextDecoration.underline,
+                      decorationColor: appThemeColors.lightGreenColor,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+              ],
+            ),
+          ],
+          if (fundraiserApplications.isNotEmpty) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Заявки на збори',
+                  style: TextStyleHelper.instance.title14Regular.copyWith(
+                    color: appThemeColors.backgroundLightGrey,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () {},
+                  child: Text(
+                    'Переглянути всі',
+                    style: TextStyleHelper.instance.title16Regular.copyWith(
+                      color: appThemeColors.lightGreenColor,
+                      decoration: TextDecoration.underline,
+                      decorationColor: appThemeColors.lightGreenColor,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFollowSection(
+    BuildContext context,
+    ProfileViewModel viewModel,
+    OrganizationModel organization,
+  ) {
+    return Center(
+      child: Column(
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              viewModel.toggleFollow(organization.uid!);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: viewModel.isFollowing!
+                  ? appThemeColors.textMediumGrey
+                  : appThemeColors.successGreen,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
             child: Text(
-              'Переглянути всі',
-              style: TextStyleHelper.instance.title16Regular.copyWith(
-                color: appThemeColors.lightGreenColor,
-                decoration: TextDecoration.underline,
-                decorationColor: appThemeColors.lightGreenColor,
+              viewModel.isFollowing! ? 'Відписатись' : 'Підписатись',
+              style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+                color: appThemeColors.primaryWhite,
               ),
             ),
           ),
