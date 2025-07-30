@@ -18,6 +18,7 @@ import '../../core/utils/constants.dart';
 import '../../models/volunteer_model.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/custom_dropdown.dart';
+import '../../widgets/user_avatar_with_frame.dart';
 
 class EditUserProfileScreen extends StatefulWidget {
   const EditUserProfileScreen({super.key});
@@ -347,40 +348,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: appThemeColors.lightGreenColor,
-              backgroundImage: user.photoUrl != null
-                  ? NetworkImage(user.photoUrl!)
-                  : null,
-              child: user.photoUrl == null && user.role == UserRole.volunteer
-                  ? Icon(
-                      Icons.person,
-                      size: 60,
-                      color: appThemeColors.primaryWhite,
-                    )
-                  : user.photoUrl == null && user.role == UserRole.organization
-                  ? Icon(
-                      Icons.business,
-                      size: 60,
-                      color: appThemeColors.primaryWhite,
-                    )
-                  : null,
-            ),
-            if (user.role == UserRole.volunteer &&
-                volunteer?.frame != null &&
-                volunteer!.frame!.isNotEmpty)
-              CustomImageView(
-                imagePath: volunteer.frame!,
-                height: 130,
-                width: 130,
-                fit: BoxFit.contain,
-              ),
-          ],
-        ),
+        UserAvatarWithFrame(size: 50, role: user.role, photoUrl: user.photoUrl, frame: volunteer?.frame,),
         const SizedBox(width: 16),
         Column(
           children: [

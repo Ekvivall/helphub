@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:helphub/routes/app_router.dart';
 
-import '../../models/base_profile_model.dart';
 
 class SplashViewModel extends ChangeNotifier {
   BuildContext? _context;
@@ -30,26 +29,9 @@ class SplashViewModel extends ChangeNotifier {
               .get();
 
           if (userDoc.exists && userDoc.data() != null) {
-            final data = userDoc.data()!;
-            final UserRole role = UserRole.values.firstWhere(
-              (e) => e.toString().split('.').last == data['role'],
-              orElse: () => UserRole
-                  .volunteer,
-            );
-
-            if (role == UserRole.volunteer) {
-              Navigator.of(
-                _context!,
-              ).pushReplacementNamed(AppRoutes.volunteerProfileScreen);
-            } else if (role == UserRole.organization) {
-              Navigator.of(
-                _context!,
-              ).pushReplacementNamed(AppRoutes.organizationProfileScreen);
-            } else {
-              Navigator.of(
-                _context!,
-              ).pushReplacementNamed(AppRoutes.loginScreen);
-            }
+            Navigator.of(
+              _context!,
+            ).pushReplacementNamed(AppRoutes.eventListScreen);
           } else {
             Navigator.of(_context!).pushReplacementNamed(AppRoutes.loginScreen);
           }

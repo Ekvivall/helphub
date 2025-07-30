@@ -7,7 +7,9 @@ class EventService {
 
   Future<String?> createEvent(EventModel event) async {
     try {
-      final docRef = await _firestore.collection(_collectionName).add(event.toMap());
+      final docRef = await _firestore
+          .collection(_collectionName)
+          .add(event.toMap());
       return docRef.id; // Повертаємо ID новоствореного документу
     } catch (e) {
       print('Error creating event: $e');
@@ -17,7 +19,10 @@ class EventService {
 
   Future<EventModel?> getEventById(String eventId) async {
     try {
-      final docSnapshot = await _firestore.collection(_collectionName).doc(eventId).get();
+      final docSnapshot = await _firestore
+          .collection(_collectionName)
+          .doc(eventId)
+          .get();
       if (docSnapshot.exists) {
         return EventModel.fromMap(docSnapshot.data()!, docSnapshot.id);
       }
@@ -28,16 +33,12 @@ class EventService {
     }
   }
 
-  Future<List<EventModel>> getAllEvents() async {
-    try {
-      final querySnapshot = await _firestore.collection(_collectionName).get();
-      return querySnapshot.docs
+  Stream<List<EventModel>> getEventsStream() {
+    return _firestore.collection(_collectionName).snapshots().map((snapshot) {
+      return snapshot.docs
           .map((doc) => EventModel.fromMap(doc.data(), doc.id))
           .toList();
-    } catch (e) {
-      print('Error getting all events: $e');
-      return [];
-    }
+    });
   }
 
   Future<bool> updateEvent(EventModel event) async {
@@ -46,7 +47,10 @@ class EventService {
       return false;
     }
     try {
-      await _firestore.collection(_collectionName).doc(event.id).update(event.toMap());
+      await _firestore
+          .collection(_collectionName)
+          .doc(event.id)
+          .update(event.toMap());
       return true;
     } catch (e) {
       print('Error updating event: $e');

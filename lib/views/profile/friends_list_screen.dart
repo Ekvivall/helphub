@@ -3,10 +3,11 @@ import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:provider/provider.dart';
 
+import '../../models/base_profile_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
-import '../../widgets/custom_image_view.dart';
 import '../../widgets/custom_input_field.dart';
+import '../../widgets/user_avatar_with_frame.dart';
 
 class FriendsListScreen extends StatefulWidget {
   const FriendsListScreen({super.key});
@@ -138,35 +139,13 @@ class _FriendsListScreenState extends State<FriendsListScreen> {
                             padding: const EdgeInsets.all(16),
                             child: Row(
                               children: [
-                                Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 25,
-                                      backgroundColor:
-                                          appThemeColors.lightGreenColor,
-                                      backgroundImage: friend.photoUrl != null
-                                          ? NetworkImage(friend.photoUrl!)
-                                          : null,
-                                      child: friend.photoUrl == null
-                                          ? Icon(
-                                              Icons.person,
-                                              size: 50,
-                                              color:
-                                                  appThemeColors.primaryWhite,
-                                            )
-                                          : null,
-                                    ),
-                                    if (friend.frame != null &&
-                                        friend.frame!.isNotEmpty)
-                                      CustomImageView(
-                                        imagePath: friend.frame!,
-                                        height: 50,
-                                        width: 50,
-                                        fit: BoxFit.contain,
-                                      ),
-                                  ],
+                                UserAvatarWithFrame(
+                                  size: 25,
+                                  role: UserRole.volunteer,
+                                  photoUrl: friend.photoUrl,
+                                  frame: friend.frame,
                                 ),
+
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(

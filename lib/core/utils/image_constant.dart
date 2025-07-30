@@ -16,4 +16,6 @@ class ImageConstant{
   static String placeholderIcon = '${_basePath}placeholder_icon.png';
 
   static String instagramIcon = '${_basePath}instagram_icon.png';
+
+  static String tournamentIcon = '${_basePath}tournament_icon.png';
 }
