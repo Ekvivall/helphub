@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';
+import 'package:helphub/views/event/event_filters_screen.dart';
 import 'package:helphub/views/event/event_map_screen.dart';
 import 'package:helphub/widgets/custom_image_view.dart';
 import 'package:provider/provider.dart';
@@ -37,54 +38,51 @@ class _EventListScreenState extends State<EventListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => EventViewModel(),
-      child: Scaffold(
-        backgroundColor: appThemeColors.blueAccent,
-        body: Container(
-          width: double.infinity,
-          height: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment(0.9, -0.4),
-              end: Alignment(-0.9, 0.4),
-              colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
-            ),
-          ),
-          child: Consumer<EventViewModel>(
-            builder: (context, viewModel, child) {
-              if (viewModel.user == null) return SizedBox.shrink();
-              final BaseProfileModel user = viewModel.user!;
-              return Column(
-                children: [
-                  // Кастомний хедер
-                  _buildHeader(context, viewModel, user),
-                  const SizedBox(height: 16),
-                  // Перемикач режимів "Список" / "Мапа"
-                  _buildDisplayModeToggle(context),
-                  const SizedBox(height: 16),
-                  //Основний контент (список подій або карта)
-                  Expanded(
-                    child: _displayMode == DisplayMode.list
-                        ? _buildEventList(viewModel)
-                        : const EventMapScreen(),
-                  ),
-                ],
-              );
-            },
+    return Scaffold(
+      backgroundColor: appThemeColors.blueAccent,
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment(0.9, -0.4),
+            end: Alignment(-0.9, 0.4),
+            colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
           ),
         ),
-        // Плаваюча кнопка дії
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            // TODO: Перехід на екран створення нової події
+        child: Consumer<EventViewModel>(
+          builder: (context, viewModel, child) {
+            if (viewModel.user == null) return SizedBox.shrink();
+            final BaseProfileModel user = viewModel.user!;
+            return Column(
+              children: [
+                // Кастомний хедер
+                _buildHeader(context, viewModel, user),
+                const SizedBox(height: 16),
+                // Перемикач режимів "Список" / "Мапа"
+                _buildDisplayModeToggle(context),
+                const SizedBox(height: 16),
+                //Основний контент (список подій або карта)
+                Expanded(
+                  child: _displayMode == DisplayMode.list
+                      ? _buildEventList(viewModel)
+                      : const EventMapScreen(),
+                ),
+              ],
+            );
           },
-          backgroundColor: appThemeColors.blueAccent,
-          shape: const CircleBorder(),
-          child: Icon(Icons.add, color: appThemeColors.primaryWhite, size: 37),
         ),
-        bottomNavigationBar: buildBottomNavigationBar(context, 0),
       ),
+      // Плаваюча кнопка дії
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // TODO: Перехід на екран створення нової події
+        },
+        backgroundColor: appThemeColors.blueAccent,
+        shape: const CircleBorder(),
+        child: Icon(Icons.add, color: appThemeColors.primaryWhite, size: 37),
+      ),
+      bottomNavigationBar: buildBottomNavigationBar(context, 0),
     );
   }
 
@@ -136,7 +134,13 @@ class _EventListScreenState extends State<EventListScreen> {
               focusedBorderColor: appThemeColors.blueAccent,
               suffixIcon: IconButton(
                 onPressed: () {
-                  //TODO
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (BuildContext context) {
+                      return const EventFiltersBottomSheet();
+                    },
+                  );
                 },
                 icon: Icon(
                   Icons.filter_list_alt,
@@ -314,5 +318,4 @@ class _EventListScreenState extends State<EventListScreen> {
       },
     );
   }
-
 }

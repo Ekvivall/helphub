@@ -143,6 +143,10 @@ class _CustomInputFieldState extends State<CustomInputField> {
           color: widget.hintTextColor ?? appThemeColors.textMediumGrey,
           fontSize: widget.fontSize,
         ),
+        labelStyle: TextStyleHelper.instance.bodyTextRegular.copyWith(
+          color: widget.textColor ?? appThemeColors.primaryBlack,
+          fontSize: widget.fontSize,
+        ),
         prefixIcon: widget.prefixIcon,
         suffixIcon: widget.isPassword
             ? IconButton(

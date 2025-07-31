@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/auth/auth_view_model.dart';
@@ -49,6 +50,16 @@ class HelpHubApp extends StatelessWidget {
             child: child!,
           );
         },
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('uk', 'UA'),
+          Locale('en', 'US'),
+        ],
+        locale: const Locale('uk', 'UA'),
       ),
     );
   }

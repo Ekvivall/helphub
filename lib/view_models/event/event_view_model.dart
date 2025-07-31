@@ -10,6 +10,7 @@ import 'package:helphub/models/base_profile_model.dart';
 import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/models/event_model.dart';
 
+import '../../core/utils/constants.dart';
 import '../../models/organization_model.dart';
 import '../../models/volunteer_model.dart';
 
@@ -33,6 +34,8 @@ class EventViewModel extends ChangeNotifier {
   String _searchQuery = '';
   double? _searchRadius;
   GeoPoint? _userLocation;
+  int? _minDurationMinutes;
+  int? _maxDurationMinutes;
 
   List<EventModel> get filteredEvents => _filteredEvents;
 
@@ -49,7 +52,14 @@ class EventViewModel extends ChangeNotifier {
   DateTime? get selectedEndDate => _selectedEndDate;
 
   GeoPoint? _currentUserLocation;
+
   GeoPoint? get currentUserLocation => _currentUserLocation;
+
+  double? get searchRadius => _searchRadius;
+
+  int? get minDurationMinutes => _minDurationMinutes;
+
+  int? get maxDurationMinutes => _maxDurationMinutes;
   String? _currentAuthUserId; // UID поточного авторизованого користувача
   String? get currentAuthUserId => _currentAuthUserId;
   BaseProfileModel? _user;
@@ -123,24 +133,25 @@ class EventViewModel extends ChangeNotifier {
     );
   }
 
-  void toggleCategorySelection(CategoryChipModel category) {
-    if (_selectedCategories.any((element) => element.title == category.title)) {
-      _selectedCategories.removeWhere(
-        (element) => element.title == category.title,
-      );
-    } else {
-      _selectedCategories.add(category);
-    }
-  }
-
-  void setSelectedDateRange(DateTime? startDate, DateTime? endDate) {
-    _selectedStartDate = startDate;
-    _selectedEndDate = endDate;
+  void setSearchQuery(String query) {
+    _searchQuery = query;
     _applyFilters();
   }
 
-  void setSearchQuery(String query) {
-    _searchQuery = query;
+  void setFilters(
+    List<CategoryChipModel> categories,
+    int? minMinutes,
+    int? maxMinutes,
+    double? radius,
+    DateTime? startDate,
+    DateTime? endDate,
+  ) {
+    _selectedCategories = categories;
+    _minDurationMinutes = minMinutes;
+    _maxDurationMinutes = maxMinutes;
+    _searchRadius = radius;
+    _selectedStartDate = startDate;
+    _selectedEndDate = endDate;
     _applyFilters();
   }
 
@@ -149,6 +160,9 @@ class EventViewModel extends ChangeNotifier {
     _selectedStartDate = null;
     _selectedEndDate = null;
     _searchQuery = '';
+    _searchRadius = null;
+    _minDurationMinutes = null;
+    _maxDurationMinutes = null;
     _applyFilters();
   }
 
@@ -201,11 +215,34 @@ class EventViewModel extends ChangeNotifier {
                 eventDate.isBefore(endDate.add(const Duration(days: 1)));
       }).toList();
     }
-    if (_userLocation != null && _searchRadius != null) {
+    // Фільтрація за локацією (радіус)
+    if (_userLocation != null && _searchRadius != null && _searchRadius! > 0) {
       tempEvents = tempEvents.where((event) {
         if (event.locationGeoPoint == null) return false;
-        //TODO: Розрахунок відстані між _userLocation та event.locationGeoPoint. True, якщо відстань менша за _searchRadius
-        return true;
+        final double distanceInMeters = Geolocator.distanceBetween(
+          _currentUserLocation!.latitude,
+          _currentUserLocation!.longitude,
+          event.locationGeoPoint!.latitude,
+          event.locationGeoPoint!.longitude,
+        );
+        final double searchRadiusMeters = _searchRadius! * 1000;
+        return distanceInMeters <= searchRadiusMeters;
+      }).toList();
+    }
+    // Фільтрація за тривалістю
+    if (_minDurationMinutes != null || _maxDurationMinutes != null) {
+      tempEvents = tempEvents.where((event) {
+        final int? eventDurationInMinutes = Constants.parseDurationStringToMinutes(
+          event.duration,
+        );
+        if (eventDurationInMinutes == null) return false;
+        bool matchesMin =
+            _minDurationMinutes == null ||
+            eventDurationInMinutes >= _minDurationMinutes!;
+        bool matchesMax =
+            _maxDurationMinutes == null ||
+            eventDurationInMinutes <= _maxDurationMinutes!;
+        return matchesMin && matchesMax;
       }).toList();
     }
     _filteredEvents = tempEvents;
@@ -218,22 +255,24 @@ class EventViewModel extends ChangeNotifier {
     super.dispose();
   }
 
-  Future<void> _getCurrentUserLocation() async{
+  Future<void> _getCurrentUserLocation() async {
     bool serviceEnabled;
     LocationPermission permission;
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if(!serviceEnabled){
+    if (!serviceEnabled) {
       return Future.error('Location services are disabled.');
     }
     permission = await Geolocator.checkPermission();
-    if(permission == LocationPermission.denied){
+    if (permission == LocationPermission.denied) {
       permission == await Geolocator.requestPermission();
-      if(permission == LocationPermission.denied){
+      if (permission == LocationPermission.denied) {
         return Future.error('Location permissions are denied');
       }
     }
-    if(permission == LocationPermission.deniedForever){
-      return Future.error('Location permissions are permanently denied, we cannot request permissions.');
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+        'Location permissions are permanently denied, we cannot request permissions.',
+      );
     }
     Position position = await Geolocator.getCurrentPosition();
     _currentUserLocation = GeoPoint(position.latitude, position.longitude);

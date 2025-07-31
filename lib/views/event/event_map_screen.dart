@@ -8,6 +8,7 @@ import 'package:helphub/models/event_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';
+import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:provider/provider.dart';
 
 class EventMapScreen extends StatefulWidget {
@@ -28,12 +29,12 @@ class _EventMapScreenState extends State<EventMapScreen> {
     target: LatLng(48.464717, 35.046183),
     zoom: 12,
   );
+
   @override
   void initState() {
     super.initState();
     _getUserLocation();
   }
-
 
   @override
   void dispose() {
@@ -94,8 +95,9 @@ class _EventMapScreenState extends State<EventMapScreen> {
       });
     }
   }
+
   void _updateMarkers(List<EventModel> events) {
-    if(!mounted || _isMapReady == false || events.isEmpty) return;
+    if (!mounted || _isMapReady == false || events.isEmpty) return;
     _debounceTimer?.cancel();
     _debounceTimer = Timer(Duration(milliseconds: 300), () {
       _performMarkerUpdate(events);
@@ -105,10 +107,9 @@ class _EventMapScreenState extends State<EventMapScreen> {
   void _performMarkerUpdate(List<EventModel> events) {
     if (!mounted) return;
     final Set<Marker> newMarkers = {};
-    final validEvents = events.where((event) =>
-    event.locationGeoPoint != null &&
-        event.id != null
-    ).toList();
+    final validEvents = events
+        .where((event) => event.locationGeoPoint != null && event.id != null)
+        .toList();
     for (var event in validEvents) {
       final LatLng position = LatLng(
         event.locationGeoPoint!.latitude,
@@ -119,8 +120,8 @@ class _EventMapScreenState extends State<EventMapScreen> {
           markerId: MarkerId(event.id!),
           position: position,
           infoWindow: InfoWindow(
-            title: event.name ?? '',
-            snippet: event.locationText ?? '',
+            title: event.name,
+            snippet: event.locationText,
             onTap: () {
               _navigateToEventDetails(event);
             },
@@ -128,6 +129,9 @@ class _EventMapScreenState extends State<EventMapScreen> {
           icon: BitmapDescriptor.defaultMarkerWithHue(
             BitmapDescriptor.hueAzure,
           ),
+          onTap: () {
+            _onMarkerTap(event);
+          },
         ),
       );
     }
@@ -141,6 +145,48 @@ class _EventMapScreenState extends State<EventMapScreen> {
   void _navigateToEventDetails(EventModel event) {
     // TODO: Implement navigation to event details
     print('Navigate to event: ${event.name}');
+  }
+
+  void _onMarkerTap(EventModel event) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                event.name,
+                style: TextStyleHelper.instance.headline24SemiBold.copyWith(
+                  color: appThemeColors.primaryBlack,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${event.locationText} - ${event.date.day}.${event.date.month}.${event.date.year} ${event.startTime}',
+                style: TextStyleHelper.instance.title16Regular.copyWith(
+                  color: appThemeColors.primaryBlack,
+                ),
+              ),
+              const SizedBox(height: 16),
+              CustomElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  //TODO
+                  /*Navigator.of(context).pushNamed(
+                    AppRoutes.eventDetailsRoute,
+                    arguments: event,
+                  );*/
+                },
+                text: 'Детальніше про подію',
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _onMapCreated(GoogleMapController controller) async {
@@ -180,9 +226,7 @@ class _EventMapScreenState extends State<EventMapScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            color: appThemeColors.successGreen,
-          ),
+          CircularProgressIndicator(color: appThemeColors.successGreen),
           SizedBox(height: 16),
           Text(
             'Завантаження карти...',
@@ -253,10 +297,9 @@ class _EventMapScreenState extends State<EventMapScreen> {
           rotateGesturesEnabled: true,
         ),
 
-        // Show loading indicator while map is initializing
         if (!_isMapReady)
           Container(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withAlpha(174),
             child: Center(
               child: CircularProgressIndicator(
                 color: appThemeColors.successGreen,

@@ -212,4 +212,44 @@ class Constants {
       print('Error logging activity: $e');
     }
   }
+
+  static String formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
+  }
+
+  static int? parseDurationStringToMinutes(String durationString) {
+    durationString = durationString.toLowerCase();
+    int totalMinutes = 0;
+    bool parsed = false;
+    // Регулярний вираз для пошуку чисел і одиниць вимірювання (години, хвилини)
+    final RegExp regExp = RegExp(
+      r'(\d+)\s*(годин|година|години|год|хвилин|хвилина|хвилини|хв)',
+    );
+    final matches = regExp.allMatches(durationString);
+
+    for (var match in matches) {
+      final int value = int.tryParse(match.group(1)!) ?? 0;
+      final String unit = match.group(2)!;
+
+      if (unit.startsWith('годин') ||
+          unit.startsWith('година') ||
+          unit.startsWith('години') ||
+          unit.startsWith('год')) {
+        totalMinutes += value * 60;
+        parsed = true;
+      } else if (unit.startsWith('хвилин') ||
+          unit.startsWith('хвилина') ||
+          unit.startsWith('хвилини') ||
+          unit.startsWith('хв')) {
+        totalMinutes += value;
+        parsed = true;
+      }
+    }
+
+    if (parsed) {
+      return totalMinutes;
+    }
+    return null;
+  }
+
 }

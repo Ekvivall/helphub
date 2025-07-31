@@ -5,8 +5,13 @@ import 'package:helphub/theme/theme_helper.dart';
 
 class CategoryChipWidget extends StatelessWidget {
   final CategoryChipModel chip;
+  final bool isSelected;
 
-  const CategoryChipWidget({super.key, required this.chip});
+  const CategoryChipWidget({
+    super.key,
+    required this.chip,
+    this.isSelected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,20 +20,28 @@ class CategoryChipWidget extends StatelessWidget {
       height: 28,
       width: 100,
       decoration: BoxDecoration(
-        color:
-            chip.backgroundColor ??
-            appThemeColors.blueTransparent,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Center(
-        child: Text(
-          chip.title ?? '',
-          style: TextStyleHelper.instance.title14Regular.copyWith(
-            color:
-                chip.textColor ??
-                appThemeColors.primaryWhite,
-          ),
+        color: isSelected
+            ? appThemeColors.primaryWhite
+            : chip.backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+        border: BoxBorder.all(
+          color: isSelected ? appThemeColors.lightGreenColor : appThemeColors.appBarBg,
         ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (isSelected) Icon(Icons.check, color: appThemeColors.successGreen, size: 24,),
+          Text(
+            chip.title ?? '',
+            style: TextStyleHelper.instance.title14Regular.copyWith(
+              color: isSelected
+                  ? appThemeColors.successGreen
+                  : chip.textColor,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+            ),
+          ),
+        ],
       ),
     );
   }
