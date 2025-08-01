@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:helphub/core/services/activity_service.dart';
 import 'package:helphub/core/services/category_service.dart';
 import 'package:helphub/core/services/follow_service.dart';
 import 'package:helphub/core/services/friend_service.dart';
@@ -35,7 +34,6 @@ class ProfileViewModel extends ChangeNotifier {
   final FundraiserApplicationService _fundraiserApplicationService =
       FundraiserApplicationService();
   final FollowService _followService = FollowService();
-  final ActivityService _activityService = ActivityService();
 
   BaseProfileModel? _user; // Поточні дані користувача
   bool _isLoading = false;
@@ -925,7 +923,7 @@ class ProfileViewModel extends ChangeNotifier {
           .doc(userId)
           .collection('activities')
           .orderBy('timestamp', descending: true)
-          .limit(10)
+          .limit(20)
           .get();
 
       _latestActivities = querySnapshot.docs

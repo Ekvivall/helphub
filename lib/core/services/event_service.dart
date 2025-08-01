@@ -5,15 +5,13 @@ class EventService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collectionName = 'events';
 
-  Future<String?> createEvent(EventModel event) async {
+  Future<void> createEvent(EventModel event) async {
     try {
-      final docRef = await _firestore
-          .collection(_collectionName)
-          .add(event.toMap());
-      return docRef.id; // Повертаємо ID новоствореного документу
+      final docRef = _firestore.collection(_collectionName).doc();
+      final eventWithId = event.copyWith(id: docRef.id);
+      await docRef.set(eventWithId.toMap());
     } catch (e) {
       print('Error creating event: $e');
-      return null;
     }
   }
 

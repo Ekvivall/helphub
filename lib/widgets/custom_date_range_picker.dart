@@ -76,29 +76,6 @@ class _SimpleDateRangePickerState extends State<SimpleDateRangePicker> {
     super.dispose();
   }
 
-  DateTime? _parseDate(String dateString) {
-    if (dateString.length != 10) return null;
-
-    try {
-      final parts = dateString.split('.');
-      if (parts.length != 3) return null;
-
-      final day = int.parse(parts[0]);
-      final month = int.parse(parts[1]);
-      final year = int.parse(parts[2]);
-
-      final date = DateTime(year, month, day);
-
-      if (date.day != day || date.month != month || date.year != year) {
-        return null;
-      }
-
-      return date;
-    } catch (e) {
-      return null;
-    }
-  }
-
   String? _validateStartDate(String? value) {
     if (value == null || value.isEmpty) {
       return null;
@@ -108,7 +85,7 @@ class _SimpleDateRangePickerState extends State<SimpleDateRangePicker> {
       return 'Формат: дд.мм.рррр';
     }
 
-    final date = _parseDate(value);
+    final date = Constants.parseDate(value);
     if (date == null) {
       return 'Невірна дата';
     }
@@ -132,7 +109,7 @@ class _SimpleDateRangePickerState extends State<SimpleDateRangePicker> {
       return 'Формат: дд.мм.рррр';
     }
 
-    final date = _parseDate(value);
+    final date = Constants.parseDate(value);
     if (date == null) {
       return 'Невірна дата';
     }
@@ -151,7 +128,7 @@ class _SimpleDateRangePickerState extends State<SimpleDateRangePicker> {
     setState(() {
       _startDateError = _validateStartDate(value);
       _selectedStartDate = _startDateError == null && value.isNotEmpty
-          ? _parseDate(value)
+          ? Constants.parseDate(value)
           : null;
     });
 
@@ -162,7 +139,7 @@ class _SimpleDateRangePickerState extends State<SimpleDateRangePicker> {
     setState(() {
       _endDateError = _validateEndDate(value);
       _selectedEndDate = _endDateError == null && value.isNotEmpty
-          ? _parseDate(value)
+          ? Constants.parseDate(value)
           : null;
     });
 

@@ -22,6 +22,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
   DateTime? _tempSelectedStartDate;
   DateTime? _tempSelectedEndDate;
   double? _tempSearchRadius;
+  Key _datePickerKey = UniqueKey();
 
   @override
   void initState() {
@@ -102,6 +103,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
             ),
             const SizedBox(height: 12),
             SimpleDateRangePicker(
+              key: _datePickerKey,
               firstDate: DateTime(2020),
               lastDate: DateTime(2030),
               initialStartDate: _tempSelectedStartDate,
@@ -173,8 +175,9 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
                     text: 'Очистити',
                     backgroundColor: appThemeColors.textMediumGrey,
                     borderRadius: 10,
-                    textStyle: TextStyleHelper.instance.title16Bold
-                        .copyWith(color: appThemeColors.primaryWhite),
+                    textStyle: TextStyleHelper.instance.title16Bold.copyWith(
+                      color: appThemeColors.primaryWhite,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -187,8 +190,9 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
                     text: 'Застосувати',
                     backgroundColor: appThemeColors.blueAccent,
                     borderRadius: 10,
-                    textStyle: TextStyleHelper.instance.title16Bold
-                        .copyWith(color: appThemeColors.primaryWhite),
+                    textStyle: TextStyleHelper.instance.title16Bold.copyWith(
+                      color: appThemeColors.primaryWhite,
+                    ),
                   ),
                 ),
               ],
@@ -205,6 +209,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
       _tempSelectedStartDate = null;
       _tempSelectedEndDate = null;
       _tempSearchRadius = null;
+      _datePickerKey = UniqueKey();
     });
   }
 

@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/core/services/event_service.dart';
-import 'package:helphub/core/utils/constants.dart';
 import 'package:helphub/models/activity_model.dart';
 import 'package:helphub/models/event_model.dart';
-import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
 import 'package:intl/intl.dart';
 
-class EventParticipationActivityItem extends StatelessWidget {
+import '../../core/utils/constants.dart';
+import '../../routes/app_router.dart';
+
+class EventOrganizationActivityItem extends StatelessWidget {
   final ActivityModel activity;
 
-  const EventParticipationActivityItem({super.key, required this.activity});
+  const EventOrganizationActivityItem({super.key, required this.activity});
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +47,7 @@ class EventParticipationActivityItem extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: Text(
-                'Не вдалося завантажити деталі події: ${snapshot.error ?? "Подія не знайдена"}',
+                'Не вдалося завантажити деталі організованої події: ${snapshot.error ?? "Подія не знайдена"}',
                 style: TextStyleHelper.instance.title14Regular.copyWith(
                   color: appThemeColors.errorRed,
                 ),
@@ -56,6 +57,7 @@ class EventParticipationActivityItem extends StatelessWidget {
         }
 
         final EventModel event = snapshot.data!;
+        // Перевіряємо, чи подія вже завершилася
         final bool isEventFinished = event.date.isBefore(DateTime.now());
 
         // Розрахунок кінцевого часу
@@ -82,7 +84,7 @@ class EventParticipationActivityItem extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        event.name,
+                        event.name, // Назва події
                         style: TextStyleHelper.instance.title18Bold.copyWith(
                           color: appThemeColors.primaryBlack,
                         ),
@@ -118,13 +120,15 @@ class EventParticipationActivityItem extends StatelessWidget {
                       .map((category) => CategoryChipWidget(chip: category))
                       .toList(),
                 ),
-                SizedBox(height: 4),
-                // Статус "Учасник"
+                const SizedBox(height: 4),
+                // Статус "Організатор"
                 _buildInfoRow(
-                  icon: Icons.person_outline,
-                  text: 'Учасник',
+                  icon: Icons.business_center_outlined,
+                  // Або інша відповідна іконка
+                  text: 'Організатор',
                   color: appThemeColors.textMediumGrey,
                 ),
+                const SizedBox(height: 4),
                 // Дата, місце, час
                 _buildInfoRow(
                   icon: Icons.calendar_today,
@@ -132,69 +136,81 @@ class EventParticipationActivityItem extends StatelessWidget {
                       '${DateFormat('dd.MM.yyyy').format(event.date)}, ${DateFormat('HH:mm').format(event.date)} - ${DateFormat('HH:mm').format(endTime)}',
                   color: appThemeColors.textMediumGrey,
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(width: 14),
                 _buildInfoRow(
                   icon: Icons.location_on,
                   text: event.locationText,
                   color: appThemeColors.textMediumGrey,
                 ),
                 const SizedBox(height: 8),
-                // Кнопка "Деталі" або "Посилання на звіт"
+                // Кнопки "Відредагувати" або "Додати звіт"
                 if (!isEventFinished)
                   CustomElevatedButton(
                     onPressed: () {
+                      // TODO: Визначити правильний маршрут для редагування події
+                      // Можливо, це буде EventCreationScreen або EventEditScreen
                       Navigator.of(context).pushNamed(
-                        AppRoutes.eventDetailScreen,
+                        AppRoutes.createEventScreen,
                         arguments: event.id,
                       );
                     },
                     backgroundColor: appThemeColors.blueAccent,
                     borderRadius: 8,
                     height: 34,
-                    text: 'Деталі',
+                    text: 'Відредагувати',
                     textStyle: TextStyleHelper.instance.title14Regular.copyWith(
                       fontWeight: FontWeight.w700,
                       color: appThemeColors.primaryWhite,
                     ),
                   )
                 else // Подія завершена
-                  // TODO: Додати логіку для посилання на звіт, коли вона буде реалізована
-                  Text(
-                    'Подія завершена${event.reportId != null ? ' (Є звіт)' : ''}', // Заглушка для звіту
-                    style: TextStyleHelper.instance.title14Regular.copyWith(
-                      color: appThemeColors.textMediumGrey,
-                    ),
-                  ),
-                // Сіра рамка для коментаря організатора (placeholder)
-                // TODO: Реалізувати отримання коментаря організатора для конкретного учасника
-                if (false /* event.organizerCommentForParticipant != null */ ) // Заглушка, поки немає поля в моделі
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: appThemeColors.grey100, // Світло-сірий фон
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: appThemeColors.grey400),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Коментар організатора:',
-                            style: TextStyleHelper.instance.title14Regular
-                                .copyWith(color: appThemeColors.primaryBlack),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Тут буде коментар організатора до цього учасника про його участь.',
-                            style: TextStyleHelper.instance.title14Regular
-                                .copyWith(color: appThemeColors.textMediumGrey),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  event.reportId == null
+                      ? CustomElevatedButton(
+                          onPressed: () {
+                            // TODO: Реалізувати логіку переходу на екран додавання звіту
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Перехід до додавання звіту для "${event.name}" (не реалізовано)',
+                                ),
+                              ),
+                            );
+                            // Navigator.of(context).pushNamed(AppRoutes.createReportScreen, arguments: event.id);
+                          },
+                          backgroundColor: appThemeColors.successGreen,
+                          // Зелена кнопка для додавання звіту
+                          borderRadius: 8,
+                          height: 34,
+                          text: 'Додати звіт',
+                          textStyle: TextStyleHelper.instance.title14Regular
+                              .copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: appThemeColors.primaryWhite,
+                              ),
+                        )
+                      : CustomElevatedButton(
+                          onPressed: () {
+                            // TODO: Реалізувати логіку переходу на екран перегляду звіту
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Перехід до перегляду звіту для "${event.name}" (не реалізовано)',
+                                ),
+                              ),
+                            );
+                            // Navigator.of(context).pushNamed(AppRoutes.viewReportScreen, arguments: event.reportId);
+                          },
+                          backgroundColor: appThemeColors.textMediumGrey,
+                          // Сіра кнопка, якщо звіт є
+                          borderRadius: 8,
+                          height: 34,
+                          text: 'Переглянути звіт',
+                          textStyle: TextStyleHelper.instance.title14Regular
+                              .copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: appThemeColors.primaryWhite,
+                              ),
+                        ),
               ],
             ),
           ),

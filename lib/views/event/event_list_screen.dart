@@ -76,7 +76,7 @@ class _EventListScreenState extends State<EventListScreen> {
       // Плаваюча кнопка дії
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: Перехід на екран створення нової події
+          Navigator.of(context).pushNamed(AppRoutes.createEventScreen, arguments: '');
         },
         backgroundColor: appThemeColors.blueAccent,
         shape: const CircleBorder(),

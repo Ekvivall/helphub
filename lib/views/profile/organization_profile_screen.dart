@@ -215,18 +215,7 @@ class OrganizationProfileScreen extends StatelessWidget {
                                             .backgroundLightGrey,
                                       ),
                                     );
-                                  default:
-                                    return Text(
-                                      'Невідомий тип активності: ${activity.title}',
-                                      style: TextStyleHelper
-                                          .instance
-                                          .title16Regular
-                                          .copyWith(
-                                        color: appThemeColors
-                                            .backgroundLightGrey,
-                                      ),
-                                    );
-                                }
+                                  }
                               },
                             ),
                           if (isOwner) _buildApplicationsSection(viewModel),

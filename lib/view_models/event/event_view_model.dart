@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:helphub/core/services/activity_service.dart';
 import 'package:helphub/core/services/category_service.dart';
@@ -11,6 +14,7 @@ import 'package:helphub/core/services/friend_service.dart';
 import 'package:helphub/models/base_profile_model.dart';
 import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/models/event_model.dart';
+import 'package:path/path.dart' as p;
 
 import '../../core/utils/constants.dart';
 import '../../models/activity_model.dart';
@@ -48,6 +52,9 @@ class EventViewModel extends ChangeNotifier {
       false; // Для індикатора завантаження кнопки Долучитися/Залишити
   List<BaseProfileModel?> _participatingFriends = [];
 
+  File? _pickedImageFile;
+  bool _isUploadingImage = false;
+
   List<EventModel> get filteredEvents => _filteredEvents;
 
   bool get isLoading => _isLoading;
@@ -77,6 +84,18 @@ class EventViewModel extends ChangeNotifier {
   bool get isJoiningLeaving => _isJoiningLeaving;
 
   List<BaseProfileModel?> get participatingFriends => _participatingFriends;
+
+  File? get pickedImageFile => _pickedImageFile;
+
+  bool get isUploadingImage => _isUploadingImage;
+
+  GeoPoint? _eventCoordinates;
+  bool _isGeocodingLoading = false;
+  String? _geocodingError;
+
+  GeoPoint? get eventCoordinates => _eventCoordinates;
+  bool get isGeocodingLoading => _isGeocodingLoading;
+  String? get geocodingError => _geocodingError;
 
   String? _currentAuthUserId; // UID поточного авторизованого користувача
   String? get currentAuthUserId => _currentAuthUserId;
@@ -140,7 +159,7 @@ class EventViewModel extends ChangeNotifier {
           return hasNotStarted &&
               hasAvailableSpots &&
               (_user!.city == null || event.city == _user!.city);
-        }).toList();
+        }).toList()..sort((a, b) => a.date.compareTo(b.date));
         _isLoading = false;
         _applyFilters();
       },
@@ -212,28 +231,31 @@ class EventViewModel extends ChangeNotifier {
     }
 
     // Фільтрація за датою
-    if (_selectedStartDate != null) {
+    if (_selectedStartDate != null || _selectedEndDate != null) {
       tempEvents = tempEvents.where((event) {
         final eventDate = DateTime(
           event.date.year,
           event.date.month,
           event.date.day,
         );
-        final startDate = DateTime(
-          _selectedStartDate!.year,
-          _selectedStartDate!.month,
-          _selectedStartDate!.day,
-        );
+        final startDate = _selectedStartDate != null
+            ? DateTime(
+                _selectedStartDate!.year,
+                _selectedStartDate!.month,
+                _selectedStartDate!.day,
+              )
+            : DateTime.now();
         final endDate = _selectedEndDate != null
             ? DateTime(
                 _selectedEndDate!.year,
                 _selectedEndDate!.month,
                 _selectedEndDate!.day,
               )
-            : startDate;
+            : null;
         return eventDate.isAtSameMomentAs(startDate) ||
             eventDate.isAfter(startDate) &&
-                eventDate.isBefore(endDate.add(const Duration(days: 1)));
+                (endDate == null ||
+                    eventDate.isBefore(endDate.add(const Duration(days: 1))));
       }).toList();
     }
     // Фільтрація за локацією (радіус)
@@ -398,5 +420,230 @@ class EventViewModel extends ChangeNotifier {
       temp.add(await fetchUserProfile(uid));
     }
     return temp;
+  }
+
+  void setPickedImageFile(File? file) {
+    _pickedImageFile = file;
+    notifyListeners();
+  }
+
+  Future<String?> uploadEventImage() async {
+    if (_pickedImageFile == null) return null;
+    _isUploadingImage = true;
+    notifyListeners();
+    try {
+      final String fileName =
+          'events/${DateTime.now().millisecondsSinceEpoch}_${p.basename(_pickedImageFile!.path)}';
+      final Reference storageRef = FirebaseStorage.instance.ref().child(
+        fileName,
+      );
+      final UploadTask uploadTask = storageRef.putFile(_pickedImageFile!);
+      final TaskSnapshot snapshot = await uploadTask;
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      _errorMessage = 'Помилка завантаження фото події: $e';
+      return null;
+    } finally {
+      _isUploadingImage = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> geocodeAddress(String address, String city) async {
+    if (address.isEmpty) {
+      _eventCoordinates = null;
+      _geocodingError = null;
+      notifyListeners();
+      return;
+    }
+    _isGeocodingLoading = true;
+    _geocodingError = null;
+    notifyListeners();
+    try {
+      // Спочатку з повною адресою
+      String fullAddress = '$address, $city, Ukraine';
+      List<Location> locations = await locationFromAddress(fullAddress);
+      if (locations.isNotEmpty) {
+        final location = locations.first;
+        _eventCoordinates = GeoPoint(location.latitude, location.longitude);
+      } else {
+        throw Exception('No locations found');
+      }
+    } catch (e) {
+      // Fallback: без "Ukraine"
+      try {
+        String fallbackAddress = '$address, $city';
+        List<Location> locations = await locationFromAddress(fallbackAddress);
+        if (locations.isNotEmpty) {
+          final location = locations.first;
+          _eventCoordinates = GeoPoint(location.latitude, location.longitude);
+        } else {
+          throw Exception('No locations found in fallback');
+        }
+      } catch (e2) {
+        _geocodingError = 'Не вдалося знайти координати для цієї адреси';
+        _eventCoordinates = null;
+      }
+    }
+    _isGeocodingLoading = false;
+    notifyListeners();
+  }
+
+  void setEventCoordinates(double? latitude, double? longitude) {
+    if (latitude != null && longitude != null &&
+        latitude >= -90 && latitude <= 90 &&
+        longitude >= -180 && longitude <= 180) {
+      _eventCoordinates = GeoPoint(latitude, longitude);
+      _geocodingError = null;
+    } else {
+      _eventCoordinates = null;
+      if (latitude != null || longitude != null) {
+        _geocodingError = 'Некоректні координати';
+      }
+    }
+    notifyListeners();
+  }
+
+  void clearEventCoordinates() {
+    _eventCoordinates = null;
+    _geocodingError = null;
+    notifyListeners();
+  }
+
+  Future<String?> createEvent({
+    required String title,
+    required String description,
+    required String location,
+    required DateTime date,
+    required List<CategoryChipModel> categories,
+    required int maxParticipants,
+    required String duration,
+    required String city
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    String? imageUrl;
+    if (_pickedImageFile != null) {
+      imageUrl = await uploadEventImage();
+      if (imageUrl == null) {
+        _isLoading = false;
+        notifyListeners();
+        return 'Не вдалося завантажити фото події.';
+      }
+    }
+    try {
+      if (_user == null) {
+        return 'Користувач не авторизований. Будь ласка, увійдіть.';
+      }
+      final newEventRef = FirebaseFirestore.instance.collection('events').doc();
+
+      final newEvent = EventModel(
+        id: newEventRef.id,
+        name: title,
+        locationText: location,
+        locationGeoPoint: _eventCoordinates,
+        categories: categories,
+        date: date,
+        duration: duration,
+        description: description,
+        photoUrl: imageUrl,
+        maxParticipants: maxParticipants,
+        organizerId: _currentAuthUserId!,
+        organizerName: _user is VolunteerModel
+            ? (_user as VolunteerModel).fullName ??
+                  (_user as VolunteerModel).displayName ??
+                  'Волонтер'
+            : _user is OrganizationModel
+            ? (_user as OrganizationModel).organizationName ?? 'Фонд'
+            : 'Невідомий користувач',
+        city: _user!.city ?? city,
+        reportId: null,
+      );
+      await newEventRef.set(newEvent.toMap());
+      final userRef = _firestore.collection('users').doc(_currentAuthUserId!);
+      await userRef.update({
+        'eventsCount': FieldValue.increment(1),
+      });
+      final activity = ActivityModel(
+        type: ActivityType.eventOrganization,
+        entityId: newEvent.id!,
+        title: newEvent.name,
+        description: newEvent.description,
+        timestamp: DateTime.now(),
+      );
+      await _activityService.logActivity(currentAuthUserId!, activity);
+      clearEventCoordinates();
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    } catch (e) {
+      _errorMessage = 'Помилка при створенні події: $e';
+      _isLoading = false;
+      notifyListeners();
+      return _errorMessage;
+    }
+  }
+
+  Future<String?> updateEvent({
+    required String eventId,
+    required String title,
+    required String description,
+    required String location,
+    required DateTime date,
+    required List<CategoryChipModel> categories,
+    required int maxParticipants,
+    required String duration,
+    required String city
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      String? imageUrl;
+      if (_pickedImageFile != null) {
+        imageUrl = await uploadEventImage();
+        if (imageUrl == null) {
+          _isLoading = false;
+          notifyListeners();
+          return 'Не вдалося завантажити нове фото події.';
+        }
+      } else {
+        imageUrl = _currentEvent?.photoUrl;
+      }
+
+      final updatedEvent = EventModel(
+        id: eventId,
+        name: title,
+        locationText: location,
+        locationGeoPoint: _eventCoordinates,
+        categories: categories,
+        date: date,
+        duration: duration,
+        description: description,
+        photoUrl: imageUrl,
+        maxParticipants: maxParticipants,
+        organizerId: _currentAuthUserId!,
+        organizerName: _currentEvent!.organizerName,
+        city: city,
+        participantIds: _currentEvent!.participantIds,
+        reportId: _currentEvent!.reportId,
+      );
+
+      await _firestore.collection('events').doc(eventId).update(updatedEvent.toMap());
+
+      clearEventCoordinates();
+      _isLoading = false;
+      notifyListeners();
+      return null;
+
+    } catch (e) {
+      _errorMessage = 'Помилка при оновленні події: $e';
+      _isLoading = false;
+      notifyListeners();
+      return _errorMessage;
+    }
   }
 }

@@ -22,6 +22,7 @@ import '../../models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/profile/category_chip_widget.dart';
+import '../../widgets/profile/event_organization_activity_item.dart';
 import '../../widgets/profile/event_participation_activity_item.dart';
 import '../../widgets/profile/medal_item.dart';
 import '../../widgets/user_avatar_with_frame.dart';
@@ -168,15 +169,8 @@ class VolunteerProfileScreen extends StatelessWidget {
                                     );
                                   // TODO: Додати інші типи активностей тут
                                   case ActivityType.eventOrganization:
-                                    return Text(
-                                      'Організація події: ${activity.title}',
-                                      style: TextStyleHelper
-                                          .instance
-                                          .title16Regular
-                                          .copyWith(
-                                            color: appThemeColors
-                                                .backgroundLightGrey,
-                                          ),
+                                    return EventOrganizationActivityItem(
+                                      activity: activity,
                                     );
                                   case ActivityType.projectTaskCompletion:
                                     return Text(
@@ -211,18 +205,7 @@ class VolunteerProfileScreen extends StatelessWidget {
                                                 .backgroundLightGrey,
                                           ),
                                     );
-                                  default:
-                                    return Text(
-                                      'Невідомий тип активності: ${activity.title}',
-                                      style: TextStyleHelper
-                                          .instance
-                                          .title16Regular
-                                          .copyWith(
-                                            color: appThemeColors
-                                                .backgroundLightGrey,
-                                          ),
-                                    );
-                                }
+                                  }
                               },
                             ),
                           if (isOwner) ...[

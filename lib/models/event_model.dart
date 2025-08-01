@@ -76,4 +76,40 @@ class EventModel {
       reportId: map['reportId'] as String?,
     );
   }
+
+  EventModel copyWith({
+    String? id,
+    String? name,
+    String? locationText,
+    GeoPoint? locationGeoPoint,
+    List<CategoryChipModel>? categories,
+    DateTime? date,
+    String? duration,
+    String? description,
+    String? photoUrl,
+    int? maxParticipants,
+    String? organizerId,
+    String? organizerName,
+    String? city,
+    List<String>? participantIds,
+    String? reportId,
+  }) {
+    return EventModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      locationText: locationText ?? this.locationText,
+      locationGeoPoint: locationGeoPoint ?? this.locationGeoPoint,
+      categories: categories ?? this.categories,
+      date: date ?? this.date,
+      duration: duration ?? this.duration,
+      description: description ?? this.description,
+      photoUrl: photoUrl ?? this.photoUrl,
+      maxParticipants: maxParticipants ?? this.maxParticipants,
+      organizerId: organizerId ?? this.organizerId,
+      organizerName: organizerName ?? this.organizerName,
+      city: city ?? this.city,
+      participantIds: participantIds ?? this.participantIds,
+      reportId: reportId ?? this.reportId,
+    );
+  }
 }

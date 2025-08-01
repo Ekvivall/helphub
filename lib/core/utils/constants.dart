@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:helphub/models/volunteer_model.dart';
@@ -203,6 +204,9 @@ class Constants {
   static String formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
   }
+  static String formatTime(TimeOfDay time) {
+    return '${time.hour}:${time.minute}';
+  }
 
   static int? parseDurationStringToMinutes(String durationString) {
     durationString = durationString.toLowerCase();
@@ -254,6 +258,51 @@ class Constants {
       return '${distanceInMeters.round()} м';
     } else {
       return '${(distanceInMeters / 1000).toStringAsFixed(1)} км';
+    }
+  }
+
+
+  static DateTime? parseDate(String dateString) {
+    if (dateString.length != 10) return null;
+
+    try {
+      final parts = dateString.split('.');
+      if (parts.length != 3) return null;
+
+      final day = int.parse(parts[0]);
+      final month = int.parse(parts[1]);
+      final year = int.parse(parts[2]);
+
+      final date = DateTime(year, month, day);
+
+      if (date.day != day || date.month != month || date.year != year) {
+        return null;
+      }
+
+      return date;
+    } catch (e) {
+      return null;
+    }
+  }
+  static TimeOfDay? parseTime(String timeString) {
+    if (timeString.length != 5) return null;
+
+    try {
+      final parts = timeString.split(':');
+      if (parts.length != 2) return null;
+
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+
+      final time = TimeOfDay(hour: hour, minute:minute);
+
+      if (time.hour != hour || time.minute != minute) {
+        return null;
+      }
+
+      return time;
+    } catch (e) {
+      return null;
     }
   }
 }
