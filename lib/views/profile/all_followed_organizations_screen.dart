@@ -158,7 +158,7 @@ class _AllFollowedOrganizationsScreenState extends State<AllFollowedOrganization
                                       'Невідомий фонд',
                                   style: TextStyleHelper
                                       .instance
-                                      .title16ExtraBold
+                                      .title16Bold
                                       .copyWith(
                                         color: appThemeColors.primaryBlack,
                                       ),

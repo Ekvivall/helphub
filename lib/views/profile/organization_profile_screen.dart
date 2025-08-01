@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/utils/image_constant.dart';
+import '../../models/activity_model.dart';
 import '../../models/base_profile_model.dart';
 import '../../models/organization_model.dart';
 import '../../routes/app_router.dart';
@@ -16,6 +17,7 @@ import '../../theme/theme_helper.dart';
 import '../../view_models/profile/profile_view_model.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_image_view.dart';
+import '../../widgets/profile/event_participation_activity_item.dart';
 import '../../widgets/profile/statistic_item_widget.dart';
 
 class OrganizationProfileScreen extends StatelessWidget {
@@ -141,6 +143,92 @@ class OrganizationProfileScreen extends StatelessWidget {
                             _buildCreateNewCollectionButton(viewModel),
                           _buildActiveCollectionsSection(viewModel),
                           _buildRecentActivityScreen(viewModel),
+                          if (viewModel.latestActivities.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Text(
+                                'Немає останніх активностей.',
+                                style: TextStyleHelper.instance.title16Regular
+                                    .copyWith(
+                                  color: appThemeColors.backgroundLightGrey,
+                                ),
+                              ),
+                            )
+                          else
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: viewModel.latestActivities.length,
+                              padding: const EdgeInsets.all(12),
+                              itemBuilder: (context, index) {
+                                final activity =
+                                viewModel.latestActivities[index];
+                                switch (activity.type) {
+                                  case ActivityType.eventParticipation:
+                                    return EventParticipationActivityItem(
+                                      activity: activity,
+                                    );
+                                // TODO: Додати інші типи активностей тут
+                                  case ActivityType.eventOrganization:
+                                    return Text(
+                                      'Організація події: ${activity.title}',
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title16Regular
+                                          .copyWith(
+                                        color: appThemeColors
+                                            .backgroundLightGrey,
+                                      ),
+                                    );
+                                  case ActivityType.projectTaskCompletion:
+                                    return Text(
+                                      'Виконано завдання в проекті: ${activity.title}',
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title16Regular
+                                          .copyWith(
+                                        color: appThemeColors
+                                            .backgroundLightGrey,
+                                      ),
+                                    );
+                                  case ActivityType.projectNewApplication:
+                                    return Text(
+                                      'Нова заявка на проект: ${activity.title}',
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title16Regular
+                                          .copyWith(
+                                        color: appThemeColors
+                                            .backgroundLightGrey,
+                                      ),
+                                    );
+                                  case ActivityType.fundraiserCreation:
+                                    return Text(
+                                      'Створено збір коштів: ${activity.title}',
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title16Regular
+                                          .copyWith(
+                                        color: appThemeColors
+                                            .backgroundLightGrey,
+                                      ),
+                                    );
+                                  default:
+                                    return Text(
+                                      'Невідомий тип активності: ${activity.title}',
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title16Regular
+                                          .copyWith(
+                                        color: appThemeColors
+                                            .backgroundLightGrey,
+                                      ),
+                                    );
+                                }
+                              },
+                            ),
                           if (isOwner) _buildApplicationsSection(viewModel),
                           SizedBox(height: 70),
                         ],
@@ -154,7 +242,7 @@ class OrganizationProfileScreen extends StatelessWidget {
                     },
                     label: Text(
                       'Подати заявку на збір',
-                      style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+                      style: TextStyleHelper.instance.title16Bold.copyWith(
                         color: appThemeColors.primaryWhite,
                       ),
                     ),
@@ -270,7 +358,7 @@ class OrganizationProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Верифікація в процесі',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.primaryWhite,
             ),
           ),
@@ -312,7 +400,7 @@ class OrganizationProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Про фонд',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -345,7 +433,7 @@ class OrganizationProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Контактна інформація',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -547,7 +635,7 @@ class OrganizationProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Знаки довіри',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -601,7 +689,7 @@ class OrganizationProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Сфери діяльності',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -643,7 +731,7 @@ class OrganizationProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Активні збори',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -671,7 +759,7 @@ class OrganizationProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Остання активність',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -704,7 +792,7 @@ class OrganizationProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Заявки',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -789,7 +877,7 @@ class OrganizationProfileScreen extends StatelessWidget {
             ),
             child: Text(
               viewModel.isFollowing! ? 'Відписатись' : 'Підписатись',
-              style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+              style: TextStyleHelper.instance.title16Bold.copyWith(
                 color: appThemeColors.primaryWhite,
               ),
             ),

@@ -173,7 +173,7 @@ class OrganizationRegisterViewModel extends ChangeNotifier {
           context,
           'Благодійний фонд успішно зареєстрований!',
         );
-        Navigator.of(context).pushNamed(AppRoutes.eventMapScreen);
+        Navigator.of(context).pushReplacementNamed(AppRoutes.eventListScreen);
       } else {
         Constants.showErrorMessage(
           context,

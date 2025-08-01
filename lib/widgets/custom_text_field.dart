@@ -53,7 +53,7 @@ class CustomTextField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+          style: TextStyleHelper.instance.title16Bold.copyWith(
             color: labelColor ?? appThemeColors.blueAccent,
             height: 1.2,
           ),

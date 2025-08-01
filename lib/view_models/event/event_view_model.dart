@@ -3,14 +3,17 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:geolocator/geolocator.dart' hide ActivityType;
+import 'package:helphub/core/services/activity_service.dart';
 import 'package:helphub/core/services/category_service.dart';
 import 'package:helphub/core/services/event_service.dart';
+import 'package:helphub/core/services/friend_service.dart';
 import 'package:helphub/models/base_profile_model.dart';
 import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/models/event_model.dart';
 
 import '../../core/utils/constants.dart';
+import '../../models/activity_model.dart';
 import '../../models/organization_model.dart';
 import '../../models/volunteer_model.dart';
 
@@ -18,7 +21,9 @@ class EventViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final EventService _eventService = EventService();
   final CategoryService _categoryService = CategoryService();
+  final FriendService _friendService = FriendService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final ActivityService _activityService = ActivityService();
 
   StreamSubscription<List<EventModel>>? _eventsSubscription;
   List<EventModel> _allEvents = [];
@@ -36,6 +41,12 @@ class EventViewModel extends ChangeNotifier {
   GeoPoint? _userLocation;
   int? _minDurationMinutes;
   int? _maxDurationMinutes;
+
+  EventModel? _currentEvent;
+  StreamSubscription<EventModel>? _currentEventSubscription;
+  bool _isJoiningLeaving =
+      false; // Для індикатора завантаження кнопки Долучитися/Залишити
+  List<BaseProfileModel?> _participatingFriends = [];
 
   List<EventModel> get filteredEvents => _filteredEvents;
 
@@ -60,46 +71,49 @@ class EventViewModel extends ChangeNotifier {
   int? get minDurationMinutes => _minDurationMinutes;
 
   int? get maxDurationMinutes => _maxDurationMinutes;
+
+  EventModel? get currentEvent => _currentEvent;
+
+  bool get isJoiningLeaving => _isJoiningLeaving;
+
+  List<BaseProfileModel?> get participatingFriends => _participatingFriends;
+
   String? _currentAuthUserId; // UID поточного авторизованого користувача
   String? get currentAuthUserId => _currentAuthUserId;
   BaseProfileModel? _user;
+  BaseProfileModel? _organizer;
 
   BaseProfileModel? get user => _user;
 
+  BaseProfileModel? get organizer => _organizer;
+
   EventViewModel() {
-    _auth.authStateChanges().listen((user) {
+    _auth.authStateChanges().listen((user) async {
       _currentAuthUserId = user?.uid;
-      fetchUserProfile();
+      _user = await fetchUserProfile(currentAuthUserId);
+      _listenToEvents();
     });
     _loadAvailableCategories();
-    _listenToEvents();
     _getCurrentUserLocation();
   }
 
-  Future<void> fetchUserProfile() async {
-    _isLoading = true;
-    notifyListeners();
+  Future<BaseProfileModel?> fetchUserProfile(String? userId) async {
     try {
-      final doc = await _firestore
-          .collection('users')
-          .doc(currentAuthUserId)
-          .get();
+      final doc = await _firestore.collection('users').doc(userId).get();
       if (doc.exists && doc.data() != null) {
         final data = doc.data();
         final roleString = data?['role'] as String?;
         if (roleString == UserRole.volunteer.name) {
-          _user = VolunteerModel.fromMap(doc.data()!);
+          return VolunteerModel.fromMap(doc.data()!);
         } else {
-          _user = OrganizationModel.fromMap(doc.data()!);
+          return OrganizationModel.fromMap(doc.data()!);
         }
       } else {
-        _user = null;
+        return null;
       }
     } catch (e) {
       print('Error fetching user profile: $e');
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+      return null;
     }
   }
 
@@ -119,7 +133,14 @@ class EventViewModel extends ChangeNotifier {
     _eventsSubscription?.cancel();
     _eventsSubscription = _eventService.getEventsStream().listen(
       (events) {
-        _allEvents = events;
+        _allEvents = events.where((event) {
+          final bool hasNotStarted = event.date.isAfter(DateTime.now());
+          final bool hasAvailableSpots =
+              event.participantIds.length < event.maxParticipants;
+          return hasNotStarted &&
+              hasAvailableSpots &&
+              (_user!.city == null || event.city == _user!.city);
+        }).toList();
         _isLoading = false;
         _applyFilters();
       },
@@ -232,9 +253,8 @@ class EventViewModel extends ChangeNotifier {
     // Фільтрація за тривалістю
     if (_minDurationMinutes != null || _maxDurationMinutes != null) {
       tempEvents = tempEvents.where((event) {
-        final int? eventDurationInMinutes = Constants.parseDurationStringToMinutes(
-          event.duration,
-        );
+        final int? eventDurationInMinutes =
+            Constants.parseDurationStringToMinutes(event.duration);
         if (eventDurationInMinutes == null) return false;
         bool matchesMin =
             _minDurationMinutes == null ||
@@ -247,6 +267,92 @@ class EventViewModel extends ChangeNotifier {
     }
     _filteredEvents = tempEvents;
     notifyListeners();
+  }
+
+  Future<void> loadEventDetails(String eventId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    _organizer = null;
+    _participatingFriends = [];
+    notifyListeners();
+    await _currentEventSubscription?.cancel();
+    try {
+      _currentEventSubscription = _eventService
+          .getEventStream(eventId)
+          .listen(
+            (event) async {
+              _currentEvent = event;
+              _organizer = await fetchUserProfile(event.organizerId);
+              if (currentAuthUserId != null) {
+                _participatingFriends = await _fetchParticipatingFriends(
+                  event.participantIds,
+                  currentAuthUserId,
+                );
+              }
+              _isLoading = false;
+              notifyListeners();
+            },
+            onError: (error) {
+              _errorMessage = 'Помилка завантаження події: $error';
+              _isLoading = false;
+              notifyListeners();
+            },
+          );
+    } catch (e) {
+      _errorMessage = 'Не вдалося завантажити деталі події.';
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void clearEventDetails() {
+    _currentEventSubscription?.cancel();
+    _currentEventSubscription = null;
+    _currentEvent = null;
+    _isJoiningLeaving = false;
+  }
+
+  Future<String?> joinEvent(EventModel event, String userId) async {
+    _isJoiningLeaving = true;
+    notifyListeners();
+    try {
+      await _eventService.addParticipant(event.id!, userId);
+      final activity = ActivityModel(
+        type: ActivityType.eventParticipation,
+        entityId: event.id!,
+        title: event.name,
+        description: event.description,
+        timestamp: DateTime.now(),
+      );
+      await _activityService.logActivity(userId, activity);
+      return null;
+    } catch (e) {
+      _errorMessage = 'Не вдалося долучитися до події.';
+      return _errorMessage;
+    } finally {
+      _isJoiningLeaving = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> leaveEvent(String eventId, String userId) async {
+    _isJoiningLeaving = true;
+    notifyListeners();
+    try {
+      await _eventService.removeParticipant(eventId, userId);
+      await _activityService.deleteActivity(
+        userId,
+        ActivityType.eventParticipation,
+        eventId,
+      );
+      return null;
+    } catch (e) {
+      _errorMessage = 'Не вдалося залишити подію.';
+      return _errorMessage;
+    } finally {
+      _isJoiningLeaving = false;
+      notifyListeners();
+    }
   }
 
   @override
@@ -277,5 +383,20 @@ class EventViewModel extends ChangeNotifier {
     Position position = await Geolocator.getCurrentPosition();
     _currentUserLocation = GeoPoint(position.latitude, position.longitude);
     notifyListeners();
+  }
+
+  Future<List<BaseProfileModel?>> _fetchParticipatingFriends(
+    List<String> participantIds,
+    String? currentAuthUserId,
+  ) async {
+    final List<String> userFriendUids = await _friendService.getFriendsUids();
+    final List<String> friendsInEventUids = participantIds.where((participant) {
+      return userFriendUids.contains(participant);
+    }).toList();
+    List<BaseProfileModel?> temp = [];
+    for (var uid in friendsInEventUids) {
+      temp.add(await fetchUserProfile(uid));
+    }
+    return temp;
   }
 }

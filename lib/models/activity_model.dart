@@ -9,7 +9,6 @@ enum ActivityType {
 }
 
 class ActivityModel {
-  final String id;
   final ActivityType type;
   final String entityId;
   final String title;
@@ -17,7 +16,6 @@ class ActivityModel {
   final DateTime timestamp;
 
   ActivityModel({
-    required this.id,
     required this.type,
     required this.entityId,
     required this.title,
@@ -27,7 +25,6 @@ class ActivityModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id,
       'type': type.name,
       'entityId': entityId,
       'title': title,
@@ -38,7 +35,6 @@ class ActivityModel {
 
   factory ActivityModel.fromMap(Map<String, dynamic> map) {
     return ActivityModel(
-      id: map['id'] as String,
       type: ActivityType.values.firstWhere(
             (e) => e.name == map['type'],
         orElse: () => ActivityType.eventParticipation,

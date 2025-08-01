@@ -17,20 +17,12 @@ class EventService {
     }
   }
 
-  Future<EventModel?> getEventById(String eventId) async {
-    try {
-      final docSnapshot = await _firestore
-          .collection(_collectionName)
-          .doc(eventId)
-          .get();
-      if (docSnapshot.exists) {
-        return EventModel.fromMap(docSnapshot.data()!, docSnapshot.id);
-      }
-      return null;
-    } catch (e) {
-      print('Error getting event by ID: $e');
-      return null;
-    }
+  Stream<EventModel> getEventStream(String eventId) {
+    return _firestore.collection(_collectionName).doc(eventId).snapshots().map((snapshot){
+      if(snapshot.exists && snapshot.data() != null){
+        return EventModel.fromMap(snapshot.data()!, snapshot.id);
+      } else throw Exception('Event not found or data is empty.');
+    });
   }
 
   Stream<List<EventModel>> getEventsStream() {
@@ -89,6 +81,19 @@ class EventService {
     } catch (e) {
       print('Error removing participant: $e');
       return false;
+    }
+  }
+
+  Future<EventModel?> getEventById(String eventId) async {
+    try {
+      final docSnapshot = await _firestore.collection(_collectionName).doc(eventId).get();
+      if (docSnapshot.exists) {
+        return EventModel.fromMap(docSnapshot.data()!, docSnapshot.id);
+      }
+      return null;
+    } catch (e) {
+      print('Error getting event by ID: $e');
+      return null;
     }
   }
 }

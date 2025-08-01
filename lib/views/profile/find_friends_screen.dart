@@ -171,7 +171,7 @@ class _FindFriendsScreenState extends State<FindFriendsScreen> {
                             user.fullName ??
                                 user.displayName ??
                                 'Невідомий користувач',
-                            style: TextStyleHelper.instance.title16ExtraBold
+                            style: TextStyleHelper.instance.title16Bold
                                 .copyWith(color: appThemeColors.primaryBlack),
                           ),
                           subtitle: Text(

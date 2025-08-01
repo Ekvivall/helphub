@@ -16,11 +16,13 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/utils/constants.dart';
+import '../../models/activity_model.dart';
 import '../../models/friend_request_model.dart';
 import '../../models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/profile/category_chip_widget.dart';
+import '../../widgets/profile/event_participation_activity_item.dart';
 import '../../widgets/profile/medal_item.dart';
 import '../../widgets/user_avatar_with_frame.dart';
 
@@ -137,6 +139,92 @@ class VolunteerProfileScreen extends StatelessWidget {
                           if (volunteer.medals != null)
                             _buildMedalsList(volunteer),
                           _buildRecentActivityScreen(viewModel),
+                          if (viewModel.latestActivities.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Text(
+                                'Немає останніх активностей.',
+                                style: TextStyleHelper.instance.title16Regular
+                                    .copyWith(
+                                      color: appThemeColors.backgroundLightGrey,
+                                    ),
+                              ),
+                            )
+                          else
+                            ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: viewModel.latestActivities.length,
+                              padding: const EdgeInsets.all(12),
+                              itemBuilder: (context, index) {
+                                final activity =
+                                    viewModel.latestActivities[index];
+                                switch (activity.type) {
+                                  case ActivityType.eventParticipation:
+                                    return EventParticipationActivityItem(
+                                      activity: activity,
+                                    );
+                                  // TODO: Додати інші типи активностей тут
+                                  case ActivityType.eventOrganization:
+                                    return Text(
+                                      'Організація події: ${activity.title}',
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title16Regular
+                                          .copyWith(
+                                            color: appThemeColors
+                                                .backgroundLightGrey,
+                                          ),
+                                    );
+                                  case ActivityType.projectTaskCompletion:
+                                    return Text(
+                                      'Виконано завдання в проекті: ${activity.title}',
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title16Regular
+                                          .copyWith(
+                                            color: appThemeColors
+                                                .backgroundLightGrey,
+                                          ),
+                                    );
+                                  case ActivityType.projectNewApplication:
+                                    return Text(
+                                      'Нова заявка на проект: ${activity.title}',
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title16Regular
+                                          .copyWith(
+                                            color: appThemeColors
+                                                .backgroundLightGrey,
+                                          ),
+                                    );
+                                  case ActivityType.fundraiserCreation:
+                                    return Text(
+                                      'Створено збір коштів: ${activity.title}',
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title16Regular
+                                          .copyWith(
+                                            color: appThemeColors
+                                                .backgroundLightGrey,
+                                          ),
+                                    );
+                                  default:
+                                    return Text(
+                                      'Невідомий тип активності: ${activity.title}',
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title16Regular
+                                          .copyWith(
+                                            color: appThemeColors
+                                                .backgroundLightGrey,
+                                          ),
+                                    );
+                                }
+                              },
+                            ),
                           if (isOwner) ...[
                             _buildSavedFees(viewModel),
                             _buildProjectApplications(viewModel),
@@ -263,7 +351,7 @@ class VolunteerProfileScreen extends StatelessWidget {
         children: [
           Text(
             user.levelTitle ?? '',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.primaryBlack,
             ),
           ),
@@ -351,7 +439,7 @@ class VolunteerProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Про мене',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -515,7 +603,7 @@ class VolunteerProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Сфери інтересів',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -540,7 +628,7 @@ class VolunteerProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Досягнення',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -592,7 +680,7 @@ class VolunteerProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Медалі',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -632,7 +720,7 @@ class VolunteerProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Остання активність',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -660,7 +748,7 @@ class VolunteerProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Збережені збори',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -688,7 +776,7 @@ class VolunteerProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Заявки на проєкти',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -716,7 +804,7 @@ class VolunteerProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Мої друзі',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -888,7 +976,7 @@ class VolunteerProfileScreen extends StatelessWidget {
         children: [
           Text(
             'Контактна інформація',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
           ),
@@ -1067,7 +1155,7 @@ class VolunteerProfileScreen extends StatelessWidget {
             children: [
               Text(
                 'Підписані фонди',
-                style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+                style: TextStyleHelper.instance.title16Bold.copyWith(
                   color: appThemeColors.backgroundLightGrey,
                 ),
               ),
@@ -1083,8 +1171,9 @@ class VolunteerProfileScreen extends StatelessWidget {
                     },
                     backgroundColor: appThemeColors.lightGreenColor,
                     borderRadius: 8,
-                    textStyle: TextStyleHelper.instance.title16ExtraBold
-                        .copyWith(color: appThemeColors.primaryWhite),
+                    textStyle: TextStyleHelper.instance.title16Bold.copyWith(
+                      color: appThemeColors.primaryWhite,
+                    ),
                   ),
                 ),
             ],
@@ -1141,8 +1230,9 @@ class VolunteerProfileScreen extends StatelessWidget {
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyleHelper.instance.title16ExtraBold
-                              .copyWith(color: appThemeColors.primaryWhite),
+                          style: TextStyleHelper.instance.title16Bold.copyWith(
+                            color: appThemeColors.primaryWhite,
+                          ),
                         ),
                       ),
                     ],

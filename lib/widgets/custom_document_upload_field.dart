@@ -37,7 +37,7 @@ class CustomDocumentUploadField extends FormField<List<PlatformFile>> {
       final defaultFileNameTextStyle = fileNameTextStyle ??
           TextStyleHelper.instance.title14Regular.copyWith(color: defaultHintTextColor);
       final defaultLabelTextStyle = labelTextStyle ??
-          TextStyleHelper.instance.title16ExtraBold.copyWith(
+          TextStyleHelper.instance.title16Bold.copyWith(
             height: 1.2,
             color: appThemeColors.blueAccent,
           );

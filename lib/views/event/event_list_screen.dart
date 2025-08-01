@@ -230,7 +230,7 @@ class _EventListScreenState extends State<EventListScreen> {
                 child: Center(
                   child: Text(
                     'Список',
-                    style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+                    style: TextStyleHelper.instance.title16Bold.copyWith(
                       fontWeight: FontWeight.w700,
                       color: _displayMode == DisplayMode.list
                           ? appThemeColors.primaryBlack
@@ -259,7 +259,7 @@ class _EventListScreenState extends State<EventListScreen> {
                 child: Center(
                   child: Text(
                     'Мапа',
-                    style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+                    style: TextStyleHelper.instance.title16Bold.copyWith(
                       fontWeight: FontWeight.w700,
                       color: _displayMode == DisplayMode.map
                           ? appThemeColors.primaryBlack
@@ -314,6 +314,7 @@ class _EventListScreenState extends State<EventListScreen> {
         return EventListItem(
           event: event,
           userCurrentLocation: viewModel.currentUserLocation,
+          viewModel: viewModel,
         );
       },
     );

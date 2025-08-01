@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:helphub/models/project_application_model.dart';
 
 class ProjectApplicationService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final CollectionReference _projectApplicationsCollection = FirebaseFirestore
       .instance
       .collection('projectApplications');

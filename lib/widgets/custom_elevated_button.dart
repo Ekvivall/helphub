@@ -51,7 +51,7 @@ class CustomElevatedButton extends StatelessWidget {
     final defaultBorderRadius = borderRadius ?? 8.0;
     final defaultTextStyle =
         textStyle ??
-        TextStyleHelper.instance.title16ExtraBold.copyWith(
+        TextStyleHelper.instance.title16Bold.copyWith(
           height: 1.2,
           color: appThemeColors.backgroundLightGrey,
         );

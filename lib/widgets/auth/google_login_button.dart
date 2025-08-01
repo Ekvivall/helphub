@@ -32,7 +32,7 @@ Widget buildGoogleSignInButton(
           SizedBox(width: 12),
           Text(
             'Увійти з Google',
-            style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+            style: TextStyleHelper.instance.title16Bold.copyWith(
               height: 1.2,
             ),
           ),

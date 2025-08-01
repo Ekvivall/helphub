@@ -98,7 +98,7 @@ class FriendRequestsScreen extends StatelessWidget {
                             children: [
                               Text(
                                 request.senderDisplayName,
-                                style: TextStyleHelper.instance.title16ExtraBold
+                                style: TextStyleHelper.instance.title16Bold
                                     .copyWith(
                                       color: appThemeColors.primaryBlack,
                                     ),

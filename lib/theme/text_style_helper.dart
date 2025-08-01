@@ -36,9 +36,9 @@ class TextStyleHelper {
     fontFamily: 'Roboto',
   );
 
-  TextStyle get title16ExtraBold => TextStyle(
+  TextStyle get title16Bold => TextStyle(
     fontSize: 16,
-    fontWeight: FontWeight.w800,
+    fontWeight: FontWeight.w700,
     color: appThemeColors.blueAccent,
     fontFamily: 'Roboto',
   );

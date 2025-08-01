@@ -212,7 +212,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                 validator: AuthValidator.validateSelectedCity,
                                 labelTextStyle: TextStyleHelper
                                     .instance
-                                    .title16ExtraBold
+                                    .title16Bold
                                     .copyWith(
                                       height: 1.2,
                                       color: appThemeColors.backgroundLightGrey,
@@ -238,7 +238,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                 user.role == UserRole.volunteer
                                     ? 'Сфери інтересів'
                                     : 'Категорії фонду',
-                                style: TextStyleHelper.instance.title16ExtraBold
+                                style: TextStyleHelper.instance.title16Bold
                                     .copyWith(
                                       color: appThemeColors.backgroundLightGrey,
                                     ),
@@ -295,7 +295,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                               Navigator.of(context).pop();
                             },
                             backgroundColor: appThemeColors.backgroundLightGrey,
-                            textStyle: TextStyleHelper.instance.title16ExtraBold
+                            textStyle: TextStyleHelper.instance.title16Bold
                                 .copyWith(color: appThemeColors.errorRed),
                             borderColor: appThemeColors.errorRed,
                             borderRadius: 12,
@@ -323,7 +323,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                               }
                             },
                             backgroundColor: appThemeColors.successGreen,
-                            textStyle: TextStyleHelper.instance.title16ExtraBold
+                            textStyle: TextStyleHelper.instance.title16Bold
                                 .copyWith(color: appThemeColors.primaryWhite),
                             borderRadius: 12,
                           ),

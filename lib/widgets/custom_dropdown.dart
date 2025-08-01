@@ -65,7 +65,7 @@ class CustomDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     final defaultLabelTextStyle =
         labelTextStyle ??
-        TextStyleHelper.instance.title16ExtraBold.copyWith(
+        TextStyleHelper.instance.title16Bold.copyWith(
           height: 1.2,
           color: appThemeColors.blueAccent,
         );

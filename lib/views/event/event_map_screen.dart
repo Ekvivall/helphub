@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -9,7 +10,10 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
+import '../../routes/app_router.dart';
 
 class EventMapScreen extends StatefulWidget {
   const EventMapScreen({super.key});
@@ -143,8 +147,10 @@ class _EventMapScreenState extends State<EventMapScreen> {
   }
 
   void _navigateToEventDetails(EventModel event) {
-    // TODO: Implement navigation to event details
-    print('Navigate to event: ${event.name}');
+    Navigator.of(context).pushNamed(
+      AppRoutes.eventDetailScreen,
+      arguments: event.id,
+    );
   }
 
   void _onMarkerTap(EventModel event) {
@@ -165,7 +171,7 @@ class _EventMapScreenState extends State<EventMapScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '${event.locationText} - ${event.date.day}.${event.date.month}.${event.date.year} ${event.startTime}',
+                '${event.locationText} - ${event.date.day}.${event.date.month}.${event.date.year} ${DateFormat('HH:mm').format(event.date)}',
                 style: TextStyleHelper.instance.title16Regular.copyWith(
                   color: appThemeColors.primaryBlack,
                 ),
@@ -174,11 +180,7 @@ class _EventMapScreenState extends State<EventMapScreen> {
               CustomElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  //TODO
-                  /*Navigator.of(context).pushNamed(
-                    AppRoutes.eventDetailsRoute,
-                    arguments: event,
-                  );*/
+                  _navigateToEventDetails(event);
                 },
                 text: 'Детальніше про подію',
               ),
@@ -295,6 +297,11 @@ class _EventMapScreenState extends State<EventMapScreen> {
           scrollGesturesEnabled: true,
           tiltGesturesEnabled: true,
           rotateGesturesEnabled: true,
+          gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+            Factory<PanGestureRecognizer>(() => PanGestureRecognizer()),
+            Factory<ScaleGestureRecognizer>(() => ScaleGestureRecognizer()),
+            Factory<TapGestureRecognizer>(() => TapGestureRecognizer()),
+          },
         ),
 
         if (!_isMapReady)

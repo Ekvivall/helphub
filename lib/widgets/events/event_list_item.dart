@@ -1,46 +1,79 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/models/event_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
+import 'package:helphub/view_models/event/event_view_model.dart';
 import 'package:helphub/widgets/custom_image_view.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
+import 'package:intl/intl.dart';
+
+import '../../core/utils/constants.dart';
+import '../../routes/app_router.dart';
 
 class EventListItem extends StatelessWidget {
   final EventModel event;
+  final EventViewModel viewModel;
   final GeoPoint? userCurrentLocation;
 
   const EventListItem({
     super.key,
     required this.event,
     this.userCurrentLocation,
+    required this.viewModel,
   });
-
-  String _calculateDistance(GeoPoint? eventLocation, GeoPoint? userLocation) {
-    if (eventLocation == null || userLocation == null) {
-      return '';
-    }
-    double distanceInMeters = Geolocator.distanceBetween(
-      userLocation.latitude,
-      userLocation.longitude,
-      eventLocation.latitude,
-      eventLocation.longitude,
-    );
-    if (distanceInMeters < 1000) {
-      return '${distanceInMeters.round()} м';
-    } else {
-      return '${(distanceInMeters / 1000).toStringAsFixed(1)} км';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    final String distanceText = _calculateDistance(
+    final String distanceText = Constants.calculateDistance(
       event.locationGeoPoint,
       userCurrentLocation,
     );
+    final currentUserId = viewModel.currentAuthUserId;
+    final isOrganizer = currentUserId == event.organizerId;
+    final isParticipant = event.participantIds.contains(currentUserId);
+    final bool isEventFinished = event.date.isBefore(DateTime.now());
+    final bool isFull = event.participantIds.length >= event.maxParticipants;
+    String buttonText;
+    Color buttonColor;
+    VoidCallback? onPressedAction;
+    bool isButtonEnabled = true;
+
+    if (isEventFinished) {
+      buttonText = 'Завершена';
+      buttonColor = appThemeColors.textLightColor;
+      onPressedAction = null;
+      isButtonEnabled = false;
+    } else if (isOrganizer) {
+      buttonText = 'Ви організатор';
+      buttonColor = appThemeColors.blueAccent;
+      onPressedAction = null;
+      isButtonEnabled = false;
+    } else if (isParticipant) {
+      buttonText = 'Ви долучились';
+      buttonColor = appThemeColors.successGreen.withAlpha(174);
+      onPressedAction = null;
+      isButtonEnabled = false;
+    } else if (isFull) {
+      buttonText = 'Місць немає';
+      buttonColor = appThemeColors.textLightColor;
+      onPressedAction = null;
+      isButtonEnabled = false;
+    } else {
+      buttonText = viewModel.isJoiningLeaving ? 'Долучаюсь...' : 'Долучитися';
+      buttonColor = appThemeColors.blueAccent;
+      onPressedAction = viewModel.isJoiningLeaving
+          ? null
+          : () async {
+              if (currentUserId != null) {
+                final result = await viewModel.joinEvent(event, currentUserId);
+                if (result != null) {
+                  Constants.showErrorMessage(context, 'Помилка: $result');
+                }
+              }
+            };
+    }
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       //color: appThemeColors.blueMixedColor,
@@ -48,7 +81,9 @@ class EventListItem extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: () {
-          //TODO: Перехід на екран деталізації події
+          Navigator.of(
+            context,
+          ).pushNamed(AppRoutes.eventDetailScreen, arguments: event.id);
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
@@ -88,7 +123,7 @@ class EventListItem extends StatelessWidget {
                   _buildInfoRow(
                     icon: Icons.calendar_today,
                     text:
-                        '${event.date.day}.${event.date.month}.${event.date.year}, ${event.startTime}',
+                        '${event.date.day}.${event.date.month}.${event.date.year}, ${DateFormat('HH:mm').format(event.date)}',
                   ),
                   const SizedBox(width: 8),
                   _buildInfoRow(icon: Icons.timer, text: event.duration),
@@ -136,17 +171,16 @@ class EventListItem extends StatelessWidget {
                     ],
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      //TODO: логіка для долучення до події
-                    },
+                    onPressed: onPressedAction,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: appThemeColors.blueAccent,
+                      backgroundColor: buttonColor,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
+                      elevation: isButtonEnabled ? 2 : 0,
                     ),
                     child: Text(
-                      'Долучитися',
+                      buttonText,
                       style: TextStyleHelper.instance.title14Regular.copyWith(
                         fontWeight: FontWeight.w700,
                         color: appThemeColors.primaryWhite,

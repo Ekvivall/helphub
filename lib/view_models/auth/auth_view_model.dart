@@ -53,7 +53,7 @@ class AuthViewModel extends ChangeNotifier {
         }, SetOptions(merge: true));
       }
       Constants.showSuccessMessage(context, 'Успішний вхід!');
-      Navigator.of(context).pushNamed(AppRoutes.eventMapScreen);
+      Navigator.of(context).pushReplacementNamed(AppRoutes.eventListScreen);
     } on FirebaseAuthException catch (e) {
       String errorMessage =
           'Помилка входу: ${e.message ?? 'Невідома помилка автентифікації'}';

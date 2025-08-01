@@ -62,7 +62,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
             const SizedBox(height: 24),
             Text(
               'Категорії',
-              style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+              style: TextStyleHelper.instance.title16Bold.copyWith(
                 color: appThemeColors.primaryBlack,
               ),
             ),
@@ -96,7 +96,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
             const SizedBox(height: 24),
             Text(
               'Дата',
-              style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+              style: TextStyleHelper.instance.title16Bold.copyWith(
                 color: appThemeColors.primaryBlack,
               ),
             ),
@@ -116,7 +116,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
             const SizedBox(height: 24),
             Text(
               'Відстань від поточної локації',
-              style: TextStyleHelper.instance.title16ExtraBold.copyWith(
+              style: TextStyleHelper.instance.title16Bold.copyWith(
                 color: appThemeColors.primaryBlack,
               ),
             ),
@@ -173,7 +173,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
                     text: 'Очистити',
                     backgroundColor: appThemeColors.textMediumGrey,
                     borderRadius: 10,
-                    textStyle: TextStyleHelper.instance.title16ExtraBold
+                    textStyle: TextStyleHelper.instance.title16Bold
                         .copyWith(color: appThemeColors.primaryWhite),
                   ),
                 ),
@@ -187,7 +187,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
                     text: 'Застосувати',
                     backgroundColor: appThemeColors.blueAccent,
                     borderRadius: 10,
-                    textStyle: TextStyleHelper.instance.title16ExtraBold
+                    textStyle: TextStyleHelper.instance.title16Bold
                         .copyWith(color: appThemeColors.primaryWhite),
                   ),
                 ),

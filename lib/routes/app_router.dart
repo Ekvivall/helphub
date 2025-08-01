@@ -5,6 +5,7 @@ import 'package:helphub/views/auth/register_organization_step1_screen.dart';
 import 'package:helphub/views/auth/register_type_screen.dart';
 import 'package:helphub/views/auth/register_volunteer_screen.dart';
 import 'package:helphub/views/auth/login_screen.dart';
+import 'package:helphub/views/event/event_detail_screen.dart';
 import 'package:helphub/views/event/event_list_screen.dart';
 import 'package:helphub/views/profile/all_followed_organizations_screen.dart';
 import 'package:helphub/views/profile/edit_user_profile_screen.dart';
@@ -38,6 +39,7 @@ class AppRoutes {
   static const String allFollowedOrganizationsScreen =
       '/all_followed_organizations';
   static const String eventListScreen = 'event_list';
+  static const String eventDetailScreen = 'event_detail';
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
     loginScreen: (context) => LoginScreen(),
@@ -69,6 +71,11 @@ class AppRoutes {
         final String? userId = settings.arguments as String?;
         return MaterialPageRoute(
           builder: (context) => OrganizationProfileScreen(userId: userId),
+        );
+      case eventDetailScreen:
+        final String eventId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (context) => EventDetailScreen(eventId: eventId),
         );
       default:
         if (routes.containsKey(settings.name)) {

@@ -1,13 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:helphub/models/volunteer_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../models/activity_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
 
@@ -97,7 +97,7 @@ class Constants {
           context,
           'Вхід через Google успішно завершено!',
         );
-        Navigator.of(context).pushNamed(AppRoutes.eventMapScreen);
+        Navigator.of(context).pushReplacementNamed(AppRoutes.eventListScreen);
       } else {
         Constants.showErrorMessage(
           context,
@@ -162,7 +162,7 @@ class Constants {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(title, style: TextStyleHelper.instance.title16ExtraBold),
+          title: Text(title, style: TextStyleHelper.instance.title16Bold),
           content: Text(
             content,
             style: TextStyleHelper.instance.title14Regular,
@@ -198,19 +198,6 @@ class Constants {
         );
       },
     );
-  }
-
-  static Future<void> logActivity(String uid, ActivityModel activity) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .collection('activities')
-          .doc(activity.id)
-          .set(activity.toMap());
-    } catch (e) {
-      print('Error logging activity: $e');
-    }
   }
 
   static String formatDate(DateTime date) {
@@ -252,4 +239,21 @@ class Constants {
     return null;
   }
 
+
+  static String calculateDistance(GeoPoint? eventLocation, GeoPoint? userLocation) {
+    if (eventLocation == null || userLocation == null) {
+      return '';
+    }
+    double distanceInMeters = Geolocator.distanceBetween(
+      userLocation.latitude,
+      userLocation.longitude,
+      eventLocation.latitude,
+      eventLocation.longitude,
+    );
+    if (distanceInMeters < 1000) {
+      return '${distanceInMeters.round()} м';
+    } else {
+      return '${(distanceInMeters / 1000).toStringAsFixed(1)} км';
+    }
+  }
 }

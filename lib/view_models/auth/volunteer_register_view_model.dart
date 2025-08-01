@@ -86,7 +86,7 @@ class VolunteerRegisterViewModel extends ChangeNotifier {
             .doc(user.uid)
             .set(newUser.toMap(), SetOptions(merge: true));
         Constants.showSuccessMessage(context, 'Реєстрацію успішно завершено!');
-        Navigator.of(context).pushNamed(AppRoutes.eventMapScreen);
+        Navigator.of(context).pushReplacementNamed(AppRoutes.eventListScreen);
       } else {
         Constants.showErrorMessage(
           context,

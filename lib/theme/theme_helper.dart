@@ -56,6 +56,8 @@ class LightCodeColors {
 
   Color get grey400 => Colors.grey.shade400;
 
+  Color get textLightColor => const Color(0xFFE0E0E0);
+
   Color get grey200 => Colors.grey.shade200;
 
   Color get grey100 => Colors.grey.shade100;

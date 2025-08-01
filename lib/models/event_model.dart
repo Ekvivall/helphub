@@ -8,14 +8,15 @@ class EventModel {
   final GeoPoint? locationGeoPoint;
   final List<CategoryChipModel> categories;
   final DateTime date;
-  final String startTime;
   final String duration;
   final String description;
   final String? photoUrl;
   final int maxParticipants;
   final String organizerId;
   final String organizerName;
+  final String city;
   final List<String> participantIds;
+  final String? reportId;
 
   EventModel({
     this.id,
@@ -24,14 +25,15 @@ class EventModel {
     this.locationGeoPoint,
     required this.categories,
     required this.date,
-    required this.startTime,
     required this.duration,
     required this.description,
     this.photoUrl,
     required this.maxParticipants,
     required this.organizerId,
     required this.organizerName,
+    required this.city,
     this.participantIds = const [],
+    this.reportId,
   });
 
   Map<String, dynamic> toMap() {
@@ -41,18 +43,18 @@ class EventModel {
       'locationGeoPoint': locationGeoPoint,
       'categories': categories.map((e) => e.toMap()).toList(),
       'date': Timestamp.fromDate(date),
-      'startTime': startTime,
       'duration': duration,
       'description': description,
       'photoUrl': photoUrl,
       'maxParticipants': maxParticipants,
       'organizerId': organizerId,
       'organizerName': organizerName,
+      'city': city,
       'participantIds': participantIds,
+      'reportId': reportId,
     };
   }
 
-  
   factory EventModel.fromMap(Map<String, dynamic> map, String id) {
     return EventModel(
       id: id,
@@ -63,14 +65,15 @@ class EventModel {
           .map((e) => CategoryChipModel.fromMap(e as Map<String, dynamic>))
           .toList(),
       date: (map['date'] as Timestamp).toDate(),
-      startTime: map['startTime'] as String,
       duration: map['duration'] as String,
       description: map['description'] as String,
       photoUrl: map['photoUrl'] as String?,
       maxParticipants: map['maxParticipants'] as int,
       organizerId: map['organizerId'] as String,
       organizerName: map['organizerName'] as String,
+      city: map['city'] as String,
       participantIds: List<String>.from(map['participantIds'] as List<dynamic>),
+      reportId: map['reportId'] as String?,
     );
   }
 }
