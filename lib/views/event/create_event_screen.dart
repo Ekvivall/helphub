@@ -227,7 +227,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       const SizedBox(height: 16),
                       CustomDropdown(
                         labelText: 'Місто',
-                        //value: _selectedCity,
+                        value: viewModel.currentEvent?.city,
                         hintText: 'Оберіть місто',
                         items: Constants.cities,
                         onChanged: (String? newValue) {
@@ -290,7 +290,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     SizedBox(height: 8),
                     CustomDatePicker(
                       firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(Duration(days: 74)),
+                      lastDate: DateTime.now().add(Duration(days: 365)),
                       date: _selectedDate,
                       onDateChanged: (date) {
                         setState(() {

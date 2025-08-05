@@ -12,8 +12,9 @@ import 'package:intl/intl.dart';
 
 class EventParticipationActivityItem extends StatelessWidget {
   final ActivityModel activity;
+  final bool isOwner;
 
-  const EventParticipationActivityItem({super.key, required this.activity});
+  const EventParticipationActivityItem({super.key, required this.activity, required this.isOwner});
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +93,8 @@ class EventParticipationActivityItem extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     // TODO: Реалізувати логіку переходу до чату події
-                    IconButton(
+                    if(isOwner)
+                      IconButton(
                       icon: Icon(
                         Icons.chat_bubble_outline,
                         color: appThemeColors.blueAccent,
@@ -167,7 +169,7 @@ class EventParticipationActivityItem extends StatelessWidget {
                   ),
                 // Сіра рамка для коментаря організатора (placeholder)
                 // TODO: Реалізувати отримання коментаря організатора для конкретного учасника
-                if (false /* event.organizerCommentForParticipant != null */ ) // Заглушка, поки немає поля в моделі
+                if ( event.organizerCommentForParticipant != null) // Заглушка, поки немає поля в моделі
                   Padding(
                     padding: const EdgeInsets.only(top: 16),
                     child: Container(

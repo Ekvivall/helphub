@@ -144,6 +144,7 @@ class _FriendsListScreenState extends State<FriendsListScreen> {
                                   role: UserRole.volunteer,
                                   photoUrl: friend.photoUrl,
                                   frame: friend.frame,
+                                  uid: friend.uid,
                                 ),
 
                                 const SizedBox(width: 16),

@@ -13,8 +13,13 @@ import '../../routes/app_router.dart';
 
 class EventOrganizationActivityItem extends StatelessWidget {
   final ActivityModel activity;
+  final bool isOwner;
 
-  const EventOrganizationActivityItem({super.key, required this.activity});
+  const EventOrganizationActivityItem({
+    super.key,
+    required this.activity,
+    required this.isOwner,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -94,6 +99,7 @@ class EventOrganizationActivityItem extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     // TODO: Реалізувати логіку переходу до чату події
+                    if(isOwner)
                     IconButton(
                       icon: Icon(
                         Icons.chat_bubble_outline,
@@ -142,75 +148,76 @@ class EventOrganizationActivityItem extends StatelessWidget {
                   text: event.locationText,
                   color: appThemeColors.textMediumGrey,
                 ),
-                const SizedBox(height: 8),
-                // Кнопки "Відредагувати" або "Додати звіт"
-                if (!isEventFinished)
-                  CustomElevatedButton(
-                    onPressed: () {
-                      // TODO: Визначити правильний маршрут для редагування події
-                      // Можливо, це буде EventCreationScreen або EventEditScreen
-                      Navigator.of(context).pushNamed(
-                        AppRoutes.createEventScreen,
-                        arguments: event.id,
-                      );
-                    },
-                    backgroundColor: appThemeColors.blueAccent,
-                    borderRadius: 8,
-                    height: 34,
-                    text: 'Відредагувати',
-                    textStyle: TextStyleHelper.instance.title14Regular.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: appThemeColors.primaryWhite,
-                    ),
-                  )
-                else // Подія завершена
-                  event.reportId == null
-                      ? CustomElevatedButton(
-                          onPressed: () {
-                            // TODO: Реалізувати логіку переходу на екран додавання звіту
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Перехід до додавання звіту для "${event.name}" (не реалізовано)',
+                if (isOwner) ...[
+                  const SizedBox(height: 8),
+                  // Кнопки "Відредагувати" або "Додати звіт"
+                  if (!isEventFinished)
+                    CustomElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).pushNamed(
+                          AppRoutes.createEventScreen,
+                          arguments: event.id,
+                        );
+                      },
+                      backgroundColor: appThemeColors.blueAccent,
+                      borderRadius: 8,
+                      height: 34,
+                      text: 'Відредагувати',
+                      textStyle: TextStyleHelper.instance.title14Regular
+                          .copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: appThemeColors.primaryWhite,
+                          ),
+                    )
+                  else // Подія завершена
+                    event.reportId == null
+                        ? CustomElevatedButton(
+                            onPressed: () {
+                              // TODO: Реалізувати логіку переходу на екран додавання звіту
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Перехід до додавання звіту для "${event.name}" (не реалізовано)',
+                                  ),
                                 ),
-                              ),
-                            );
-                            // Navigator.of(context).pushNamed(AppRoutes.createReportScreen, arguments: event.id);
-                          },
-                          backgroundColor: appThemeColors.successGreen,
-                          // Зелена кнопка для додавання звіту
-                          borderRadius: 8,
-                          height: 34,
-                          text: 'Додати звіт',
-                          textStyle: TextStyleHelper.instance.title14Regular
-                              .copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: appThemeColors.primaryWhite,
-                              ),
-                        )
-                      : CustomElevatedButton(
-                          onPressed: () {
-                            // TODO: Реалізувати логіку переходу на екран перегляду звіту
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Перехід до перегляду звіту для "${event.name}" (не реалізовано)',
+                              );
+                              // Navigator.of(context).pushNamed(AppRoutes.createReportScreen, arguments: event.id);
+                            },
+                            backgroundColor: appThemeColors.successGreen,
+                            // Зелена кнопка для додавання звіту
+                            borderRadius: 8,
+                            height: 34,
+                            text: 'Додати звіт',
+                            textStyle: TextStyleHelper.instance.title14Regular
+                                .copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: appThemeColors.primaryWhite,
                                 ),
-                              ),
-                            );
-                            // Navigator.of(context).pushNamed(AppRoutes.viewReportScreen, arguments: event.reportId);
-                          },
-                          backgroundColor: appThemeColors.textMediumGrey,
-                          // Сіра кнопка, якщо звіт є
-                          borderRadius: 8,
-                          height: 34,
-                          text: 'Переглянути звіт',
-                          textStyle: TextStyleHelper.instance.title14Regular
-                              .copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: appThemeColors.primaryWhite,
-                              ),
-                        ),
+                          )
+                        : CustomElevatedButton(
+                            onPressed: () {
+                              // TODO: Реалізувати логіку переходу на екран перегляду звіту
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Перехід до перегляду звіту для "${event.name}" (не реалізовано)',
+                                  ),
+                                ),
+                              );
+                              // Navigator.of(context).pushNamed(AppRoutes.viewReportScreen, arguments: event.reportId);
+                            },
+                            backgroundColor: appThemeColors.textMediumGrey,
+                            // Сіра кнопка, якщо звіт є
+                            borderRadius: 8,
+                            height: 34,
+                            text: 'Переглянути звіт',
+                            textStyle: TextStyleHelper.instance.title14Regular
+                                .copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: appThemeColors.primaryWhite,
+                                ),
+                          ),
+                ],
               ],
             ),
           ),

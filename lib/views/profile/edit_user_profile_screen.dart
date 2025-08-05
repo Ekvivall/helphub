@@ -348,7 +348,13 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        UserAvatarWithFrame(size: 50, role: user.role, photoUrl: user.photoUrl, frame: volunteer?.frame,),
+        UserAvatarWithFrame(
+          size: 50,
+          role: user.role,
+          photoUrl: user.photoUrl,
+          frame: volunteer?.frame,
+          uid: null,
+        ),
         const SizedBox(width: 16),
         Column(
           children: [

@@ -14,6 +14,8 @@ class CustomDatePicker extends StatefulWidget {
   final EdgeInsets? padding;
   final BorderRadius? borderRadius;
 
+  final Color? errorColor;
+
   const CustomDatePicker({
     super.key,
     this.date,
@@ -22,7 +24,7 @@ class CustomDatePicker extends StatefulWidget {
     required this.onDateChanged,
     this.dateLabel = 'Оберіть дату',
     this.padding,
-    this.borderRadius,
+    this.borderRadius, this.errorColor,
   });
 
   @override
@@ -96,7 +98,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
       inputType: TextInputType.number,
       textColor: appThemeColors.primaryBlack,
       showErrorsLive: true,
-      errorColor: appThemeColors.errorLight,
+      errorColor: widget.errorColor ??appThemeColors.errorLight,
       hintText: 'дд.мм.рррр',
       prefixIcon: Icon(Icons.calendar_today),
       validator: _validateDate,

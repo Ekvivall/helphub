@@ -17,7 +17,9 @@ import '../../theme/theme_helper.dart';
 import '../../view_models/profile/profile_view_model.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_image_view.dart';
+import '../../widgets/profile/event_organization_activity_item.dart';
 import '../../widgets/profile/event_participation_activity_item.dart';
+import '../../widgets/profile/project_organization_activity_item.dart';
 import '../../widgets/profile/statistic_item_widget.dart';
 
 class OrganizationProfileScreen extends StatelessWidget {
@@ -168,19 +170,11 @@ class OrganizationProfileScreen extends StatelessWidget {
                                 switch (activity.type) {
                                   case ActivityType.eventParticipation:
                                     return EventParticipationActivityItem(
-                                      activity: activity,
+                                      activity: activity, isOwner: isOwner,
                                     );
-                                // TODO: Додати інші типи активностей тут
                                   case ActivityType.eventOrganization:
-                                    return Text(
-                                      'Організація події: ${activity.title}',
-                                      style: TextStyleHelper
-                                          .instance
-                                          .title16Regular
-                                          .copyWith(
-                                        color: appThemeColors
-                                            .backgroundLightGrey,
-                                      ),
+                                    return EventOrganizationActivityItem(
+                                      activity: activity, isOwner: isOwner,
                                     );
                                   case ActivityType.projectTaskCompletion:
                                     return Text(
@@ -193,17 +187,9 @@ class OrganizationProfileScreen extends StatelessWidget {
                                             .backgroundLightGrey,
                                       ),
                                     );
-                                  case ActivityType.projectNewApplication:
-                                    return Text(
-                                      'Нова заявка на проект: ${activity.title}',
-                                      style: TextStyleHelper
-                                          .instance
-                                          .title16Regular
-                                          .copyWith(
-                                        color: appThemeColors
-                                            .backgroundLightGrey,
-                                      ),
-                                    );
+                                  case ActivityType.projectOrganization:
+                                    return ProjectOrganizationActivityItem(
+                                        activity: activity, isOwner: isOwner);
                                   case ActivityType.fundraiserCreation:
                                     return Text(
                                       'Створено збір коштів: ${activity.title}',

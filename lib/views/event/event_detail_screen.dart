@@ -284,43 +284,44 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                     frame: organizer is VolunteerModel
                                         ? organizer.frame
                                         : null,
+                                    role: organizer?.role,
+                                    uid:  organizer?.uid,
                                   ),
                                   const SizedBox(width: 12),
-                                  if (organizer != null)
-                                    Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          organizer is VolunteerModel
-                                              ? organizer.fullName ??
-                                              organizer.displayName ??
-                                              'Волонтер'
-                                              : organizer is OrganizationModel
-                                              ? organizer.organizationName ??
-                                              'Благодійний фонд'
-                                              : 'Невідомий користувач',
-                                          style: TextStyleHelper
-                                              .instance
-                                              .title16Bold
-                                              .copyWith(
-                                            color: appThemeColors
-                                                .backgroundLightGrey,
-                                          ),
+                                  Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        organizer is VolunteerModel
+                                            ? organizer.fullName ??
+                                            organizer.displayName ??
+                                            'Волонтер'
+                                            : organizer is OrganizationModel
+                                            ? organizer.organizationName ??
+                                            'Благодійний фонд'
+                                            : 'Невідомий користувач',
+                                        style: TextStyleHelper
+                                            .instance
+                                            .title16Bold
+                                            .copyWith(
+                                          color: appThemeColors
+                                              .backgroundLightGrey,
                                         ),
-                                        Text(
-                                          '${organizer.eventsCount ??
-                                              0} організованих подій',
-                                          style: TextStyleHelper
-                                              .instance
-                                              .title14Regular
-                                              .copyWith(
-                                            color: appThemeColors
-                                                .textLightColor,
-                                          ),
+                                      ),
+                                      Text(
+                                        '${organizer?.eventsCount ??
+                                            0} організованих подій',
+                                        style: TextStyleHelper
+                                            .instance
+                                            .title14Regular
+                                            .copyWith(
+                                          color: appThemeColors
+                                              .textLightColor,
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 24),
@@ -487,10 +488,12 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   size: 20,
                   photoUrl: currentFriend?.photoUrl,
                   frame: currentFriend?.frame,
+                  role: currentFriend?.role,
+                  uid:  currentFriend!.uid!,
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  currentFriend?.fullName ?? currentFriend?.displayName ?? '',
+                  currentFriend.fullName ?? currentFriend.displayName ?? '',
                   style: TextStyleHelper.instance.title13Regular.copyWith(
                     color: appThemeColors.backgroundLightGrey,
                   ),

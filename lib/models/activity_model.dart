@@ -4,7 +4,7 @@ enum ActivityType {
   eventParticipation, // Користувач взяв участь у події
   eventOrganization,  // Користувач був організатором події
   projectTaskCompletion, // Завдання в проекті виконано
-  projectNewApplication, // Нова заявка на проект
+  projectOrganization, // Користувач був організатором проєкту
   fundraiserCreation, // Створено новий збір коштів
 }
 

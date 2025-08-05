@@ -19,6 +19,7 @@ import 'package:helphub/views/splash/splash_screen.dart';
 import '../views/auth/register_organization_step2_screen.dart';
 import '../views/event/event_map_screen.dart';
 import '../views/profile/friend_requests_screen.dart';
+import '../views/project/create_project_screen.dart';
 
 class AppRoutes {
   static const String splashScreen = '/splash';
@@ -42,6 +43,7 @@ class AppRoutes {
   static const String eventListScreen = 'event_list';
   static const String eventDetailScreen = 'event_detail';
   static const String createEventScreen = 'create_event';
+  static const String createProjectScreen = 'create_project';
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
     loginScreen: (context) => LoginScreen(),
@@ -83,6 +85,11 @@ class AppRoutes {
         final String eventId = settings.arguments as String;
         return MaterialPageRoute(
           builder: (context) => CreateEventScreen(eventId: eventId),
+        );
+      case createProjectScreen:
+        final String projectId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (context) => CreateProjectScreen(projectId: projectId),
         );
       default:
         if (routes.containsKey(settings.name)) {

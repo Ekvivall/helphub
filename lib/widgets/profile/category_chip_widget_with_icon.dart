@@ -32,15 +32,16 @@ class CategoryChipWidgetWithIcon extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (isSelected) Icon(Icons.check, color: appThemeColors.successGreen, size: 35,),
+          if (isSelected) Icon(Icons.check, color: appThemeColors.successGreen, size: 30,),
           CustomImageView(imagePath: chip.imagePath, height: 35, width: 35,),
           SizedBox(width: 14),
           Text(
             chip.title ?? '',
-            style: TextStyleHelper.instance.title16Regular.copyWith(
+            style: TextStyleHelper.instance.title14Regular.copyWith(
               color: isSelected
                   ? appThemeColors.successGreen
                   : chip.textColor,
+              fontSize: 15,
               fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
             ),
           ),

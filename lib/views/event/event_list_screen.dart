@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';
@@ -76,13 +75,18 @@ class _EventListScreenState extends State<EventListScreen> {
       // Плаваюча кнопка дії
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).pushNamed(AppRoutes.createEventScreen, arguments: '');
+          Navigator.of(
+            context,
+          ).pushNamed(AppRoutes.createEventScreen, arguments: '');
         },
         backgroundColor: appThemeColors.blueAccent,
         shape: const CircleBorder(),
         child: Icon(Icons.add, color: appThemeColors.primaryWhite, size: 37),
       ),
-      bottomNavigationBar: buildBottomNavigationBar(context, 0),
+      bottomNavigationBar: buildBottomNavigationBar(
+        context,
+        0
+      ),
     );
   }
 
@@ -98,26 +102,12 @@ class _EventListScreenState extends State<EventListScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          GestureDetector(
-            onTap: () {
-              if (user.role == UserRole.volunteer) {
-                Navigator.of(
-                  context,
-                ).pushNamed(AppRoutes.volunteerProfileScreen);
-              } else if (user.role == UserRole.organization) {
-                Navigator.of(
-                  context,
-                ).pushNamed(AppRoutes.organizationProfileScreen);
-              } else {
-                Navigator.of(context).pushNamed(AppRoutes.loginScreen);
-              }
-            },
-            child: UserAvatarWithFrame(
-              size: 22,
-              role: user.role,
-              photoUrl: user.photoUrl,
-              frame: volunteer?.frame,
-            ),
+          UserAvatarWithFrame(
+            size: 22,
+            role: user.role,
+            photoUrl: user.photoUrl,
+            frame: volunteer?.frame,
+            uid: user.uid!,
           ),
           const SizedBox(width: 7),
           Expanded(

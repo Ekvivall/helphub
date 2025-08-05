@@ -7,7 +7,7 @@ import 'package:helphub/widgets/custom_input_field.dart';
 class CustomTextField extends StatelessWidget {
   final String label;
   final String hintText;
-  final TextEditingController controller;
+  final TextEditingController? controller;
   final bool isPassword;
   final TextInputType? inputType;
   final Function(String)? onChanged;
@@ -23,12 +23,13 @@ class CustomTextField extends StatelessWidget {
   final bool isRequired;
   final List<TextInputFormatter>? inputFormatters;
   final Color? errorColor;
+  final String? initialValue;
 
   const CustomTextField({
     super.key,
     required this.label,
     required this.hintText,
-    required this.controller,
+    this.controller,
     this.isPassword = false,
     this.inputType,
     this.onChanged,
@@ -43,7 +44,7 @@ class CustomTextField extends StatelessWidget {
     this.prefixIcon,
     this.isRequired = true,
     this.inputFormatters,
-    this.errorColor
+    this.errorColor, this.initialValue
   });
 
   @override
@@ -82,6 +83,7 @@ class CustomTextField extends StatelessWidget {
           prefixIcon: prefixIcon,
           inputFormatters: inputFormatters,
           errorColor: errorColor,
+          initialValue: initialValue,
         ),
       ],
     );
