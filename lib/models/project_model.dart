@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/models/project_task_model.dart';
+import 'package:uuid/uuid.dart';
 
 class ProjectModel {
   final String? id;
@@ -51,7 +52,9 @@ class ProjectModel {
       'organizerName': organizerName,
       'city': city,
       'timestamp': timestamp?.toIso8601String(),
-      'tasks': tasks?.map((t) => t.toMap()).toList(),
+      'tasks': tasks
+          ?.map((task) => task.toMap()..['id'] = task.id ?? Uuid().v4())
+          .toList(),
       'locationText': locationText,
       'locationGeo': locationGeo,
       'skills': skills,
@@ -81,7 +84,12 @@ class ProjectModel {
           ? DateTime.tryParse(map['timestamp'] as String)
           : null,
       tasks: (map['tasks'] as List<dynamic>?)
-          ?.map((e) => ProjectTaskModel.fromMap(e as Map<String, dynamic>))
+          ?.map(
+            (e) => ProjectTaskModel.fromMap(
+              e as Map<String, dynamic>,
+              e['id'] ?? Uuid().v4(),
+            ),
+          )
           .toList(),
       locationText: map['locationText'] as String?,
       locationGeo: map['locationGeo'] as GeoPoint?,

@@ -39,7 +39,6 @@ class ProjectApplicationService {
 
   Stream<List<ProjectApplicationModel>> getProjectApplicationsForOrganizer(
       String projectId,) {
-    // TODO: Get projects created by this user. Then query projectApplication where 'projectId' is one of the organizer's project ID.
     return _projectApplicationsCollection
         .orderBy('timestamp', descending: true)
         .snapshots()

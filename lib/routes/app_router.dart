@@ -14,6 +14,7 @@ import 'package:helphub/views/profile/find_friends_screen.dart';
 import 'package:helphub/views/profile/friends_list_screen.dart';
 import 'package:helphub/views/profile/organization_profile_screen.dart';
 import 'package:helphub/views/profile/volunteer_profile_screen.dart';
+import 'package:helphub/views/project/apply_to_project_screen.dart';
 import 'package:helphub/views/project/project_list_screen.dart';
 import 'package:helphub/views/splash/splash_screen.dart';
 
@@ -21,6 +22,7 @@ import '../views/auth/register_organization_step2_screen.dart';
 import '../views/event/event_map_screen.dart';
 import '../views/profile/friend_requests_screen.dart';
 import '../views/project/create_project_screen.dart';
+import '../views/profile/all_project_applications_screen.dart';
 
 class AppRoutes {
   static const String splashScreen = '/splash';
@@ -46,6 +48,9 @@ class AppRoutes {
   static const String createEventScreen = 'create_event';
   static const String createProjectScreen = 'create_project';
   static const String projectListScreen = 'project_list';
+  static const String applyToProjectScreen = 'apply_to_project';
+  static const String allProjectApplicationsScreen = 'all_project_applications';
+
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
     loginScreen: (context) => LoginScreen(),
@@ -65,6 +70,7 @@ class AppRoutes {
         AllFollowedOrganizationsScreen(),
     eventListScreen: (context) => EventListScreen(),
     projectListScreen: (context) => ProjectListScreen(),
+    allProjectApplicationsScreen: (context) => AllProjectApplicationsScreen(),
   };
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -93,6 +99,11 @@ class AppRoutes {
         final String projectId = settings.arguments as String;
         return MaterialPageRoute(
           builder: (context) => CreateProjectScreen(projectId: projectId),
+        );
+      case applyToProjectScreen:
+        final String projectId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (context) => ApplyToProjectScreen(projectId: projectId),
         );
       default:
         if (routes.containsKey(settings.name)) {

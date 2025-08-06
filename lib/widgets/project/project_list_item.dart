@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:helphub/routes/app_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/utils/constants.dart';
@@ -73,7 +74,9 @@ class ProjectListItem extends StatelessWidget {
       buttonText = 'Подати заявку';
       buttonColor = appThemeColors.blueAccent;
       onPressedAction = () {
-        // TODO: implement logic to apply for a project
+        Navigator.of(
+          context,
+        ).pushNamed(AppRoutes.applyToProjectScreen, arguments: project.id);
       };
     }
 
@@ -205,26 +208,34 @@ class ProjectListItem extends StatelessWidget {
                   itemBuilder: (context, index) {
                     final task = project.tasks!.elementAt(index);
                     final freeSpots =
-                        (task.neededPeople ?? 0) - (task.assignedVolunteerIds?.length ?? 0);
+                        (task.neededPeople ?? 0) -
+                        (task.assignedVolunteerIds?.length ?? 0);
                     final isTaskFull = freeSpots <= 0;
 
-                    final formattedDate = DateFormat('d MMM yyyy', 'uk').format(task.deadline!);
+                    final formattedDate = DateFormat(
+                      'd MMM yyyy',
+                      'uk',
+                    ).format(task.deadline!);
 
                     return Container(
                       color: index % 2 == 0
                           ? appThemeColors.blueMixedColor.withAlpha(75)
                           : Colors.transparent,
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 16.0,
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
                               child: Text(
                                 task.title ?? '',
-                                style: TextStyleHelper.instance.title14Regular.copyWith(
-                                  color: appThemeColors.primaryBlack,
-                                ),
+                                style: TextStyleHelper.instance.title14Regular
+                                    .copyWith(
+                                      color: appThemeColors.primaryBlack,
+                                    ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -233,19 +244,21 @@ class ProjectListItem extends StatelessWidget {
                               children: [
                                 Text(
                                   '$formattedDate • ',
-                                  style: TextStyleHelper.instance.title13Regular.copyWith(
-                                    color: appThemeColors.textMediumGrey,
-                                  ),
+                                  style: TextStyleHelper.instance.title13Regular
+                                      .copyWith(
+                                        color: appThemeColors.textMediumGrey,
+                                      ),
                                 ),
                                 Text(
                                   isTaskFull
                                       ? 'зайнято'
                                       : '$freeSpots місц${freeSpots == 1 ? 'е' : 'я'} вільно',
-                                  style: TextStyleHelper.instance.title13Regular.copyWith(
-                                    color: isTaskFull
-                                        ? appThemeColors.errorRed
-                                        : appThemeColors.successGreen,
-                                  ),
+                                  style: TextStyleHelper.instance.title13Regular
+                                      .copyWith(
+                                        color: isTaskFull
+                                            ? appThemeColors.errorRed
+                                            : appThemeColors.successGreen,
+                                      ),
                                 ),
                               ],
                             ),

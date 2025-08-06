@@ -11,6 +11,7 @@ import 'package:helphub/core/services/friend_service.dart';
 import 'package:helphub/core/services/fundraiser_application_service.dart';
 import 'package:helphub/core/services/fundraiser_service.dart';
 import 'package:helphub/core/services/project_application_service.dart';
+import 'package:helphub/core/services/project_service.dart';
 import 'package:helphub/core/utils/user_role_extension.dart';
 import 'package:helphub/models/activity_model.dart';
 import 'package:helphub/models/base_profile_model.dart';
@@ -21,6 +22,8 @@ import 'package:helphub/models/fundraiser_application_model.dart';
 import 'package:helphub/models/organization_model.dart';
 import 'package:helphub/models/project_application_model.dart';
 import 'package:helphub/models/volunteer_model.dart';
+
+import '../../models/project_model.dart';
 
 class ProfileViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -34,6 +37,7 @@ class ProfileViewModel extends ChangeNotifier {
   final FundraiserApplicationService _fundraiserApplicationService =
       FundraiserApplicationService();
   final FollowService _followService = FollowService();
+  final ProjectService _projectService = ProjectService();
 
   BaseProfileModel? _user; // Поточні дані користувача
   bool _isLoading = false;
@@ -46,14 +50,11 @@ class ProfileViewModel extends ChangeNotifier {
   StreamSubscription<List<Fundraiser>>? _savedFundraiserSubscription;
   List<ProjectApplicationModel> _volunteerProjectApplications = [];
   List<FundraiserApplicationModel> _volunteerFundraiserApplications = [];
-  List<ProjectApplicationModel> _organizerProjectApplications = [];
   List<FundraiserApplicationModel> _organizationFundraiserApplications = [];
   StreamSubscription<List<ProjectApplicationModel>>?
   _projectApplicationsForVolunteerSubscription;
   StreamSubscription<List<FundraiserApplicationModel>>?
   _fundraiserApplicationsForVolunteerSubscription;
-  StreamSubscription<List<ProjectApplicationModel>>?
-  _projectApplicationsForOrganizerSubscription;
   StreamSubscription<List<FundraiserApplicationModel>>?
   _fundraiserApplicationsForOrganizationSubscription;
 
@@ -128,9 +129,6 @@ class ProfileViewModel extends ChangeNotifier {
   List<FundraiserApplicationModel> get volunteerFundraiserApplications =>
       _volunteerFundraiserApplications;
 
-  List<ProjectApplicationModel> get organizerProjectApplications =>
-      _organizerProjectApplications;
-
   List<FundraiserApplicationModel> get organizationFundraiserApplications =>
       _organizationFundraiserApplications;
 
@@ -165,6 +163,9 @@ class ProfileViewModel extends ChangeNotifier {
   String? get currentAuthUserId => _currentAuthUserId;
 
   String? get viewingUserId => _viewingUserId;
+  Map<String, ProjectModel> _projectsData = {};
+  Map<String, ProjectModel> get projectsData => _projectsData;
+
 
   ProfileViewModel({String? viewingUserId}) : _viewingUserId = viewingUserId {
     fullNameController = TextEditingController();
@@ -203,7 +204,6 @@ class ProfileViewModel extends ChangeNotifier {
     _savedFundraiserSubscription?.cancel();
     _projectApplicationsForVolunteerSubscription?.cancel();
     _fundraiserApplicationsForVolunteerSubscription?.cancel();
-    _projectApplicationsForOrganizerSubscription?.cancel();
     _fundraiserApplicationsForOrganizationSubscription?.cancel();
     _followersCountSubscription?.cancel();
     _isFollowingSubscription?.cancel();
@@ -244,7 +244,6 @@ class ProfileViewModel extends ChangeNotifier {
           _user = OrganizationModel.fromMap(doc.data()!);
           if (viewingUserId == null ||
               viewingUserId == _auth.currentUser!.uid) {
-            _listenToProjectApplicationsForOrganization(_user!.uid!);
             _listenToFundraiserApplicationsForOrganization(_user!.uid!);
             _listenToFollowersCount(_user!.uid!);
           } else {
@@ -761,8 +760,15 @@ class ProfileViewModel extends ChangeNotifier {
     _projectApplicationsForVolunteerSubscription?.cancel();
     _projectApplicationsForVolunteerSubscription = _projectApplicationService
         .getProjectApplicationsForVolunteer(volunteerUid)
-        .listen((applications) {
+        .listen((applications) async {
           _volunteerProjectApplications = applications;
+          final projectIds = applications.map((app) => app.projectId).toSet();
+          final projects = await Future.wait(
+              projectIds.map((id) => _projectService.getProjectById(id)));
+          _projectsData = {
+            for (var project in projects.where((p) => p != null))
+              project!.id!: project
+          };
           notifyListeners();
         });
   }
@@ -778,19 +784,9 @@ class ProfileViewModel extends ChangeNotifier {
             });
   }
 
-  void _listenToProjectApplicationsForOrganization(String organizationUid) {
-    _projectApplicationsForVolunteerSubscription?.cancel();
-    _projectApplicationsForVolunteerSubscription = _projectApplicationService
-        .getProjectApplicationsForOrganizer(organizationUid)
-        .listen((applications) {
-          _organizerProjectApplications = applications;
-          notifyListeners();
-        });
-  }
-
   void _listenToFundraiserApplicationsForOrganization(String organizationUid) {
-    _fundraiserApplicationsForVolunteerSubscription?.cancel();
-    _fundraiserApplicationsForVolunteerSubscription =
+    _fundraiserApplicationsForOrganizationSubscription?.cancel();
+    _fundraiserApplicationsForOrganizationSubscription =
         _fundraiserApplicationService
             .getFundraiserApplicationsForOrganizer(organizationUid)
             .listen((applications) {

@@ -305,6 +305,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                       lastDate:
                           _selectedEndDate ??
                           DateTime.now().add(const Duration(days: 365 * 2)),
+                      date: viewModel.currentProject?.startDate,
                       onDateChanged: (date) {
                         setState(() {
                           _selectedStartDate = date;
@@ -324,6 +325,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                       lastDate: DateTime.now().add(
                         const Duration(days: 365 * 2),
                       ),
+                      date: viewModel.currentProject?.endDate,
                       onDateChanged: (date) {
                         setState(() {
                           _selectedEndDate = date;

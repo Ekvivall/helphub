@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProjectTaskModel {
+  final String? id;
   final String? title;
   final String? description;
   final int? neededPeople;
@@ -8,11 +9,12 @@ class ProjectTaskModel {
   final DateTime? deadline;
 
   ProjectTaskModel({
+    this.id,
     this.title,
     this.description,
     this.neededPeople,
     this.assignedVolunteerIds,
-    this.deadline
+    this.deadline,
   });
 
   Map<String, dynamic> toMap() {
@@ -21,12 +23,13 @@ class ProjectTaskModel {
       'description': description,
       'neededPeople': neededPeople,
       'assignedVolunteerIds': assignedVolunteerIds,
-      'deadline':deadline
+      'deadline': deadline,
     };
   }
 
-  factory ProjectTaskModel.fromMap(Map<String, dynamic> map) {
+  factory ProjectTaskModel.fromMap(Map<String, dynamic> map, String id) {
     return ProjectTaskModel(
+      id: id,
       title: map['title'] as String?,
       description: map['description'] as String?,
       neededPeople: map['neededPeople'] as int?,
@@ -38,6 +41,7 @@ class ProjectTaskModel {
   }
 
   ProjectTaskModel copyWith({
+    String? id,
     String? title,
     String? description,
     int? neededPeople,
@@ -45,6 +49,7 @@ class ProjectTaskModel {
     DateTime? deadline,
   }) {
     return ProjectTaskModel(
+      id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
       neededPeople: neededPeople ?? this.neededPeople,

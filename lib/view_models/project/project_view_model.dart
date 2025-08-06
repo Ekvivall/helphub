@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:helphub/core/services/friend_service.dart';
+import 'package:helphub/core/services/project_application_service.dart';
 
 import '../../core/services/activity_service.dart';
 import '../../core/services/category_service.dart';
@@ -15,6 +16,7 @@ import '../../models/activity_model.dart';
 import '../../models/base_profile_model.dart';
 import '../../models/category_chip_model.dart';
 import '../../models/organization_model.dart';
+import '../../models/project_application_model.dart';
 import '../../models/project_model.dart';
 import '../../models/project_task_model.dart';
 import '../../models/volunteer_model.dart';
@@ -27,6 +29,7 @@ class ProjectViewModel extends ChangeNotifier {
   final SkillService _skillService = SkillService();
   final ActivityService _activityService = ActivityService();
   final FriendService _friendService = FriendService();
+  final ProjectApplicationService _projectApplicationService = ProjectApplicationService();
 
   StreamSubscription<List<ProjectModel>>? _projectsSubscription;
   List<ProjectModel> _allProjects = [];
@@ -41,6 +44,7 @@ class ProjectViewModel extends ChangeNotifier {
   bool _isOnlyOpen = false;
 
   BaseProfileModel? _user;
+  BaseProfileModel? _organizer;
   String? _currentAuthUserId;
   ProjectModel? _currentProject;
   bool _isLoading = false;
@@ -76,6 +80,8 @@ class ProjectViewModel extends ChangeNotifier {
 
   BaseProfileModel? get user => _user;
 
+  BaseProfileModel? get organizer => _organizer;
+
   ProjectModel? get currentProject => _currentProject;
 
   bool get isLoading => _isLoading;
@@ -101,7 +107,7 @@ class ProjectViewModel extends ChangeNotifier {
   Future<void> _init() async {
     _currentAuthUserId = _auth.currentUser?.uid;
     if (_currentAuthUserId != null) {
-      await _fetchCurrentUserProfile();
+      _user = await _fetchCurrentUserProfile(_currentAuthUserId);
       await _fetchCurrentUserFriends();
       await _getCurrentUserLocation();
       _listenToProjects();
@@ -109,18 +115,17 @@ class ProjectViewModel extends ChangeNotifier {
     await fetchSkillsAndCategories();
   }
 
-  Future<void> _fetchCurrentUserProfile() async {
+  Future<BaseProfileModel?> _fetchCurrentUserProfile(String? userId) async {
     try {
-      final userId = _auth.currentUser?.uid;
-      if (userId == null) return;
+      if (userId == null) return null;
 
       final doc = await _firestore.collection('users').doc(userId).get();
       if (doc.exists && doc.data() != null) {
         final data = doc.data()!;
         if (data['role'] == 'volunteer') {
-          _user = VolunteerModel.fromMap(data);
+          return VolunteerModel.fromMap(data);
         } else if (data['role'] == 'organization') {
-          _user = OrganizationModel.fromMap(data);
+          return OrganizationModel.fromMap(data);
         }
       }
     } catch (e) {
@@ -128,6 +133,7 @@ class ProjectViewModel extends ChangeNotifier {
       _user = null;
     }
     notifyListeners();
+    return null;
   }
 
   Future<void> _fetchCurrentUserFriends() async {
@@ -161,17 +167,19 @@ class ProjectViewModel extends ChangeNotifier {
     notifyListeners();
     _projectsSubscription?.cancel();
     _projectsSubscription = _projectService.fetchProjectsStream().listen(
-      (projects) {
+          (projects) {
         _allProjects =
-            projects.where((project) {
-              return _user == null ||
-                  _user!.city == null ||
-                  project.city == _user!.city;
-            }).toList()..sort(
-              (a, b) => (a.startDate ?? DateTime(9999)).compareTo(
-                b.startDate ?? DateTime(9999),
-              ),
-            );
+        projects.where((project) {
+          return _user == null ||
+              _user!.city == null ||
+              project.city == _user!.city;
+        }).toList()
+          ..sort(
+                (a, b) =>
+                (a.startDate ?? DateTime(9999)).compareTo(
+                  b.startDate ?? DateTime(9999),
+                ),
+          );
         _isLoading = false;
         _applyFilters();
       },
@@ -190,15 +198,13 @@ class ProjectViewModel extends ChangeNotifier {
     _applyFilters();
   }
 
-  void setFilters(
-    List<CategoryChipModel> categories,
-    List<String> skills,
-    double? radius,
-    DateTime? startDate,
-    DateTime? endDate,
-    bool isOnlyFriends,
-    bool isOnlyOpen,
-  ) {
+  void setFilters(List<CategoryChipModel> categories,
+      List<String> skills,
+      double? radius,
+      DateTime? startDate,
+      DateTime? endDate,
+      bool isOnlyFriends,
+      bool isOnlyOpen,) {
     _selectedCategories = categories;
     _selectedSkills = skills;
     _searchRadius = radius;
@@ -239,11 +245,12 @@ class ProjectViewModel extends ChangeNotifier {
     if (_selectedCategories.isNotEmpty) {
       tempProjects = tempProjects.where((project) {
         return project.categories?.any(
-              (projectCategory) => _selectedCategories.any(
-                (selectedCategory) =>
-                    selectedCategory.title == projectCategory.title,
+              (projectCategory) =>
+              _selectedCategories.any(
+                    (selectedCategory) =>
+                selectedCategory.title == projectCategory.title,
               ),
-            ) ??
+        ) ??
             false;
       }).toList();
     }
@@ -253,7 +260,7 @@ class ProjectViewModel extends ChangeNotifier {
       tempProjects = tempProjects.where((project) {
         return project.skills?.any(
               (projectSkill) => _selectedSkills.contains(projectSkill),
-            ) ??
+        ) ??
             false;
       }).toList();
     }
@@ -268,12 +275,12 @@ class ProjectViewModel extends ChangeNotifier {
         final endDate = _selectedEndDate;
         bool matchesStartDate =
             startDate == null ||
-            projectStartDate.isAtSameMomentAs(startDate) ||
-            projectStartDate.isAfter(startDate);
+                projectStartDate.isAtSameMomentAs(startDate) ||
+                projectStartDate.isAfter(startDate);
         bool matchesEndtDate =
             endDate == null ||
-            projectEndDate.isAtSameMomentAs(endDate) ||
-            projectEndDate.isBefore(endDate);
+                projectEndDate.isAtSameMomentAs(endDate) ||
+                projectEndDate.isBefore(endDate);
         return matchesStartDate && matchesEndtDate;
       }).toList();
     }
@@ -324,6 +331,8 @@ class ProjectViewModel extends ChangeNotifier {
         _errorMessage = 'Проект не знайдено.';
       } else {
         _projectCoordinates = _currentProject!.locationGeo;
+        _organizer =
+        await _fetchCurrentUserProfile(_currentProject!.organizerId!);
       }
     } catch (e) {
       _errorMessage = 'Помилка завантаження проекту: $e';
@@ -368,8 +377,8 @@ class ProjectViewModel extends ChangeNotifier {
         organizerId: _currentAuthUserId!,
         organizerName: _user is VolunteerModel
             ? (_user as VolunteerModel).fullName ??
-                  (_user as VolunteerModel).displayName ??
-                  'Волонтер'
+            (_user as VolunteerModel).displayName ??
+            'Волонтер'
             : _user is OrganizationModel
             ? (_user as OrganizationModel).organizationName ?? 'Фонд'
             : 'Невідомий користувач',
@@ -464,6 +473,53 @@ class ProjectViewModel extends ChangeNotifier {
       return null;
     } catch (e) {
       _errorMessage = 'Помилка при оновленні проекту: $e';
+      _isSubmitting = false;
+      notifyListeners();
+      return _errorMessage;
+    }
+  }
+
+  Future<String?> applyToProject({
+    required String projectId,
+    required List<ProjectTaskModel> selectedTasks,
+    required Map<String, String> messages,
+  }) async {
+    _isSubmitting = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    if (_currentAuthUserId == null || _user == null) {
+      _isSubmitting = false;
+      notifyListeners();
+      return 'Користувач не авторизований. Будь ласка, увійдіть.';
+    }
+
+    if (selectedTasks.isEmpty) {
+      _isSubmitting = false;
+      notifyListeners();
+      return 'Будь ласка, оберіть хоча б одне завдання для участі.';
+    }
+
+    try {
+      for (var task in selectedTasks) {
+        final newApplication = ProjectApplicationModel(
+          id: _firestore.collection('projectApplications').doc().id,
+          volunteerId: _currentAuthUserId!,
+          projectId: projectId,
+          taskId: task.id,
+          message: messages[task.id!],
+          status: 'pending',
+          timestamp: Timestamp.now(),
+        );
+        await _projectApplicationService.submitProjectApplication(newApplication);
+
+      }
+
+      _isSubmitting = false;
+      notifyListeners();
+      return null;
+    } catch (e) {
+      _errorMessage = 'Помилка при подачі заявки: $e';
       _isSubmitting = false;
       notifyListeners();
       return _errorMessage;

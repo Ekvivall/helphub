@@ -55,6 +55,7 @@ dependencies:
   geolocator: ^10.1.0
   google_maps_flutter: ^2.12.3
   geocoding: ^4.0.0
+  expandable_text: ^2.3.0
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   mockito: ^5.4.4

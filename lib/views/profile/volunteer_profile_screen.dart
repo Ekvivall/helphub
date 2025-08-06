@@ -10,23 +10,21 @@ import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:helphub/widgets/custom_image_view.dart';
 import 'package:helphub/widgets/profile/achievement_item.dart';
-import 'package:helphub/widgets/profile/project_organization_activity_item.dart';
 import 'package:helphub/widgets/profile/statistic_item_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/utils/constants.dart';
-import '../../models/activity_model.dart';
 import '../../models/friend_request_model.dart';
 import '../../models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/profile/category_chip_widget.dart';
-import '../../widgets/profile/event_organization_activity_item.dart';
-import '../../widgets/profile/event_participation_activity_item.dart';
 import '../../widgets/profile/medal_item.dart';
+import '../../widgets/profile/project_application_item.dart';
 import '../../widgets/user_avatar_with_frame.dart';
+import '../../widgets/profile/latest_activities.dart';
 
 class VolunteerProfileScreen extends StatelessWidget {
   VolunteerProfileScreen({super.key, this.userId});
@@ -38,8 +36,7 @@ class VolunteerProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) =>
-      ProfileViewModel(viewingUserId: userId)
-        ..fetchUserProfile(),
+          ProfileViewModel(viewingUserId: userId)..fetchUserProfile(),
       child: Consumer<ProfileViewModel>(
         builder: (context, viewModel, child) {
           final bool isOwner =
@@ -48,9 +45,7 @@ class VolunteerProfileScreen extends StatelessWidget {
           if (viewModel.user != null &&
               viewModel.user!.role != UserRole.volunteer) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (ModalRoute
-                  .of(context)
-                  ?.isCurrent ?? false) {
+              if (ModalRoute.of(context)?.isCurrent ?? false) {
                 Navigator.of(
                   context,
                 ).pushReplacementNamed(AppRoutes.organizationProfileScreen);
@@ -109,116 +104,73 @@ class VolunteerProfileScreen extends StatelessWidget {
               ),
               child: viewModel.isLoading && viewModel.user == null
                   ? Center(
-                child: CircularProgressIndicator(
-                  color: appThemeColors.primaryWhite,
-                ),
-              )
+                      child: CircularProgressIndicator(
+                        color: appThemeColors.primaryWhite,
+                      ),
+                    )
                   : viewModel.user == null
                   ? Center(
-                child: Text(
-                  'Профіль не знайдено або стався збій',
-                  style: TextStyleHelper.instance.title14Regular.copyWith(
-                    color: appThemeColors.primaryWhite,
-                  ),
-                ),
-              )
+                      child: Text(
+                        'Профіль не знайдено або стався збій',
+                        style: TextStyleHelper.instance.title14Regular.copyWith(
+                          color: appThemeColors.primaryWhite,
+                        ),
+                      ),
+                    )
                   : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    //Блок інформації про користувача (шапка)
-                    _buildProfileSection(volunteer!, isOwner, viewModel),
-                    _buildLevelCard(volunteer, isOwner),
-                    _buildStatistics(volunteer),
-                    if (volunteer.aboutMe != null) _buildBio(volunteer),
-                    _buildContactInfo(context, volunteer),
-                    if (volunteer.categoryChips != null)
-                      _buildBadge(volunteer),
-                    _buildEditProfileButton(context, viewModel),
-                    if (volunteer.achievements != null)
-                      _buildAchievementsSection(volunteer),
-                    if (volunteer.achievements != null)
-                      _buildAchievementsList(volunteer),
-                    if (volunteer.medals != null)
-                      _buildMedalsSection(viewModel),
-                    if (volunteer.medals != null)
-                      _buildMedalsList(volunteer),
-                    _buildRecentActivityScreen(viewModel),
-                    if (viewModel.latestActivities.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                        ),
-                        child: Text(
-                          'Немає останніх активностей.',
-                          style: TextStyleHelper.instance.title16Regular
-                              .copyWith(
-                            color: appThemeColors.backgroundLightGrey,
-                          ),
-                        ),
-                      )
-                    else
-                      ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: viewModel.latestActivities.length,
-                        padding: const EdgeInsets.all(12),
-                        itemBuilder: (context, index) {
-                          final activity =
-                          viewModel.latestActivities[index];
-                          switch (activity.type) {
-                            case ActivityType.eventParticipation:
-                              return EventParticipationActivityItem(
-                                activity: activity, isOwner: isOwner,
-                              );
-                          // TODO: Додати інші типи активностей тут
-                            case ActivityType.eventOrganization:
-                              return EventOrganizationActivityItem(
-                                activity: activity, isOwner: isOwner,
-                              );
-                            case ActivityType.projectTaskCompletion:
-                              return Text(
-                                'Виконано завдання в проекті: ${activity
-                                    .title}',
-                                style: TextStyleHelper
-                                    .instance
-                                    .title16Regular
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          //Блок інформації про користувача (шапка)
+                          _buildProfileSection(volunteer!, isOwner, viewModel),
+                          _buildLevelCard(volunteer, isOwner),
+                          _buildStatistics(volunteer),
+                          if (volunteer.aboutMe != null) _buildBio(volunteer),
+                          _buildContactInfo(context, volunteer),
+                          if (volunteer.categoryChips != null)
+                            _buildBadge(volunteer),
+                          _buildEditProfileButton(context, viewModel),
+                          if (volunteer.achievements != null)
+                            _buildAchievementsSection(volunteer),
+                          if (volunteer.achievements != null)
+                            _buildAchievementsList(volunteer),
+                          if (volunteer.medals != null)
+                            _buildMedalsSection(viewModel),
+                          if (volunteer.medals != null)
+                            _buildMedalsList(volunteer),
+                          _buildRecentActivityScreen(viewModel),
+                          if (viewModel.latestActivities.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              child: Text(
+                                'Немає останніх активностей.',
+                                style: TextStyleHelper.instance.title16Regular
                                     .copyWith(
-                                  color: appThemeColors
-                                      .backgroundLightGrey,
-                                ),
-                              );
-                            case ActivityType.projectOrganization:
-                              return ProjectOrganizationActivityItem(
-                                  activity: activity, isOwner: isOwner);
-                            case ActivityType.fundraiserCreation:
-                              return Text(
-                                'Створено збір коштів: ${activity.title}',
-                                style: TextStyleHelper
-                                    .instance
-                                    .title16Regular
-                                    .copyWith(
-                                  color: appThemeColors
-                                      .backgroundLightGrey,
-                                ),
-                              );
-                          }
-                        },
+                                      color: appThemeColors.backgroundLightGrey,
+                                    ),
+                              ),
+                            )
+                          else
+                            LatestActivities(
+                              isOwner: isOwner,
+                              viewModel: viewModel,
+                            ),
+                          if (isOwner) ...[
+                            _buildSavedFees(viewModel),
+                            _buildProjectApplications(viewModel, context),
+                            _buildFollowedOrganizationsSection(
+                              context,
+                              viewModel,
+                            ),
+                            _buildMyFriends(context, viewModel),
+                            _buildFriendList(context, viewModel),
+                            _buildFooterMyFriends(context, viewModel),
+                          ],
+                        ],
                       ),
-                    if (isOwner) ...[
-                      _buildSavedFees(viewModel),
-                      _buildProjectApplications(viewModel),
-                      _buildFollowedOrganizationsSection(
-                        context,
-                        viewModel,
-                      ),
-                      _buildMyFriends(context, viewModel),
-                      _buildFriendList(context, viewModel),
-                      _buildFooterMyFriends(context, viewModel),
-                    ],
-                  ],
-                ),
-              ),
+                    ),
             ),
           );
         },
@@ -226,9 +178,11 @@ class VolunteerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProfileSection(VolunteerModel user,
-      bool isOwner,
-      ProfileViewModel viewModel,) {
+  Widget _buildProfileSection(
+    VolunteerModel user,
+    bool isOwner,
+    ProfileViewModel viewModel,
+  ) {
     final String displayName = user.fullName ?? user.displayName ?? 'Волонтер';
     final String displayCity = user.city != null && user.city!.isNotEmpty
         ? 'м. ${user.city}'
@@ -248,10 +202,10 @@ class VolunteerProfileScreen extends StatelessWidget {
                     : null,
                 child: user.photoUrl == null
                     ? Icon(
-                  Icons.person,
-                  size: 60,
-                  color: appThemeColors.primaryWhite,
-                )
+                        Icons.person,
+                        size: 60,
+                        color: appThemeColors.primaryWhite,
+                      )
                     : null,
               ),
               if (user.frame != null && user.frame!.isNotEmpty)
@@ -434,8 +388,10 @@ class VolunteerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildEditProfileButton(BuildContext context,
-      ProfileViewModel viewModel,) {
+  Widget _buildEditProfileButton(
+    BuildContext context,
+    ProfileViewModel viewModel,
+  ) {
     final FriendshipStatus status = viewModel.friendshipStatus;
 
     switch (status) {
@@ -641,8 +597,8 @@ class VolunteerProfileScreen extends StatelessWidget {
             .take(3)
             .map(
               (achievement) =>
-              AchievementItemWidget(achievementItemModel: achievement),
-        )
+                  AchievementItemWidget(achievementItemModel: achievement),
+            )
             .toList(),
       ),
     );
@@ -744,31 +700,61 @@ class VolunteerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProjectApplications(ProfileViewModel viewModel) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Заявки на проєкти',
-            style: TextStyleHelper.instance.title16Bold.copyWith(
-              color: appThemeColors.backgroundLightGrey,
-            ),
+  Widget _buildProjectApplications(ProfileViewModel viewModel, BuildContext context) {
+    // Витягуємо перші 3 заявки
+    final applications = viewModel.volunteerProjectApplications
+        .take(3)
+        .toList();
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Заявки на проєкти',
+                style: TextStyleHelper.instance.title16Bold.copyWith(
+                  color: appThemeColors.backgroundLightGrey,
+                ),
+              ),
+              if (viewModel.volunteerProjectApplications.length > 3)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pushNamed(AppRoutes.allProjectApplicationsScreen);
+                  },
+                  child: Text(
+                    'Переглянути всі',
+                    style: TextStyleHelper.instance.title16Regular.copyWith(
+                      color: appThemeColors.lightGreenColor,
+                      decoration: TextDecoration.underline,
+                      decorationColor: appThemeColors.lightGreenColor,
+                    ),
+                  ),
+                ),
+            ],
           ),
-          GestureDetector(
-            onTap: () {},
+        ),
+        if (applications.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'Переглянути всі',
-              style: TextStyleHelper.instance.title16Regular.copyWith(
-                color: appThemeColors.lightGreenColor,
-                decoration: TextDecoration.underline,
-                decorationColor: appThemeColors.lightGreenColor,
+              'Ви ще не подавали заявок на проєкти.',
+              style: TextStyleHelper.instance.title14Regular.copyWith(
+                color: appThemeColors.backgroundLightGrey,
               ),
             ),
           ),
-        ],
-      ),
+        if (applications.isNotEmpty)
+          ...applications.map((app) {
+            final project = viewModel.projectsData[app.projectId];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: ProjectApplicationItem(application: app, project: project),
+            );
+          }),
+      ],
     );
   }
 
@@ -849,17 +835,17 @@ class VolunteerProfileScreen extends StatelessWidget {
                                 'Невідомий користувач',
                             style: TextStyleHelper.instance.title14Regular
                                 .copyWith(
-                              color: appThemeColors.primaryBlack,
-                              fontWeight: FontWeight.w800,
-                            ),
+                                  color: appThemeColors.primaryBlack,
+                                  fontWeight: FontWeight.w800,
+                                ),
                           ),
                           if (friend.city != null && friend.city!.isNotEmpty)
                             Text(
                               'м. ${friend.city!}',
                               style: TextStyleHelper.instance.title13Regular
                                   .copyWith(
-                                color: appThemeColors.textMediumGrey,
-                              ),
+                                    color: appThemeColors.textMediumGrey,
+                                  ),
                             ),
                         ],
                       ),
@@ -874,8 +860,10 @@ class VolunteerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFooterMyFriends(BuildContext context,
-      ProfileViewModel viewModel,) {
+  Widget _buildFooterMyFriends(
+    BuildContext context,
+    ProfileViewModel viewModel,
+  ) {
     final int requestCount = viewModel.incomingFriendRequestsCount;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
@@ -938,9 +926,9 @@ class VolunteerProfileScreen extends StatelessWidget {
   Widget _buildContactInfo(BuildContext context, VolunteerModel user) {
     bool hasContactInfo =
         (user.email != null && user.email!.isNotEmpty) ||
-            (user.phoneNumber != null && user.phoneNumber!.isNotEmpty) ||
-            (user.telegramLink != null && user.telegramLink!.isNotEmpty) ||
-            (user.instagramLink != null && user.instagramLink!.isNotEmpty);
+        (user.phoneNumber != null && user.phoneNumber!.isNotEmpty) ||
+        (user.telegramLink != null && user.telegramLink!.isNotEmpty) ||
+        (user.instagramLink != null && user.instagramLink!.isNotEmpty);
     if (!hasContactInfo) {
       return const SizedBox.shrink(); // Не відображати секцію, якщо немає даних
     }
@@ -1068,8 +1056,7 @@ class VolunteerProfileScreen extends StatelessWidget {
                   String link = user.instagramLink!;
                   if (!link.startsWith('http')) {
                     link =
-                    'https://instagram.com/${link.replaceAll(
-                        '@', '')}'; // Форматуємо для Instagram
+                        'https://instagram.com/${link.replaceAll('@', '')}'; // Форматуємо для Instagram
                   }
                   final Uri instagramUri = Uri.parse(link);
                   if (await canLaunchUrl(instagramUri)) {
@@ -1111,8 +1098,10 @@ class VolunteerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFollowedOrganizationsSection(BuildContext context,
-      ProfileViewModel viewModel,) {
+  Widget _buildFollowedOrganizationsSection(
+    BuildContext context,
+    ProfileViewModel viewModel,
+  ) {
     final int organizationsToShow = viewModel.followedOrganizations.length > 2
         ? 2
         : viewModel.followedOrganizations.length;
@@ -1190,10 +1179,10 @@ class VolunteerProfileScreen extends StatelessWidget {
                             : null,
                         child: organization.photoUrl == null
                             ? Icon(
-                          Icons.business,
-                          size: 80,
-                          color: appThemeColors.primaryWhite,
-                        )
+                                Icons.business,
+                                size: 80,
+                                color: appThemeColors.primaryWhite,
+                              )
                             : null,
                       ),
                       const SizedBox(height: 8),

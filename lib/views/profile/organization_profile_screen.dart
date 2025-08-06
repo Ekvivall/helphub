@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/utils/image_constant.dart';
-import '../../models/activity_model.dart';
 import '../../models/base_profile_model.dart';
 import '../../models/organization_model.dart';
 import '../../routes/app_router.dart';
@@ -17,10 +16,8 @@ import '../../theme/theme_helper.dart';
 import '../../view_models/profile/profile_view_model.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_image_view.dart';
-import '../../widgets/profile/event_organization_activity_item.dart';
-import '../../widgets/profile/event_participation_activity_item.dart';
-import '../../widgets/profile/project_organization_activity_item.dart';
 import '../../widgets/profile/statistic_item_widget.dart';
+import '../../widgets/profile/latest_activities.dart';
 
 class OrganizationProfileScreen extends StatelessWidget {
   OrganizationProfileScreen({super.key, this.userId});
@@ -159,51 +156,7 @@ class OrganizationProfileScreen extends StatelessWidget {
                               ),
                             )
                           else
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: viewModel.latestActivities.length,
-                              padding: const EdgeInsets.all(12),
-                              itemBuilder: (context, index) {
-                                final activity =
-                                viewModel.latestActivities[index];
-                                switch (activity.type) {
-                                  case ActivityType.eventParticipation:
-                                    return EventParticipationActivityItem(
-                                      activity: activity, isOwner: isOwner,
-                                    );
-                                  case ActivityType.eventOrganization:
-                                    return EventOrganizationActivityItem(
-                                      activity: activity, isOwner: isOwner,
-                                    );
-                                  case ActivityType.projectTaskCompletion:
-                                    return Text(
-                                      'Виконано завдання в проекті: ${activity.title}',
-                                      style: TextStyleHelper
-                                          .instance
-                                          .title16Regular
-                                          .copyWith(
-                                        color: appThemeColors
-                                            .backgroundLightGrey,
-                                      ),
-                                    );
-                                  case ActivityType.projectOrganization:
-                                    return ProjectOrganizationActivityItem(
-                                        activity: activity, isOwner: isOwner);
-                                  case ActivityType.fundraiserCreation:
-                                    return Text(
-                                      'Створено збір коштів: ${activity.title}',
-                                      style: TextStyleHelper
-                                          .instance
-                                          .title16Regular
-                                          .copyWith(
-                                        color: appThemeColors
-                                            .backgroundLightGrey,
-                                      ),
-                                    );
-                                  }
-                              },
-                            ),
+                            LatestActivities(isOwner: isOwner, viewModel: viewModel,),
                           if (isOwner) _buildApplicationsSection(viewModel),
                           SizedBox(height: 70),
                         ],
@@ -755,78 +708,8 @@ class OrganizationProfileScreen extends StatelessWidget {
   }
 
   Widget _buildApplicationsSection(ProfileViewModel viewModel) {
-    final projectApplications = viewModel.organizerProjectApplications;
-    final fundraiserApplications = viewModel.organizationFundraiserApplications;
-    if (projectApplications.isEmpty && fundraiserApplications.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Заявки',
-            style: TextStyleHelper.instance.title16Bold.copyWith(
-              color: appThemeColors.backgroundLightGrey,
-            ),
-          ),
-          SizedBox(height: 8),
-          if (projectApplications.isNotEmpty) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Заявки на проєкти',
-                  style: TextStyleHelper.instance.title14Regular.copyWith(
-                    color: appThemeColors.backgroundLightGrey,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {},
-                  child: Text(
-                    'Переглянути всі',
-                    style: TextStyleHelper.instance.title16Regular.copyWith(
-                      color: appThemeColors.lightGreenColor,
-                      decoration: TextDecoration.underline,
-                      decorationColor: appThemeColors.lightGreenColor,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-              ],
-            ),
-          ],
-          if (fundraiserApplications.isNotEmpty) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Заявки на збори',
-                  style: TextStyleHelper.instance.title14Regular.copyWith(
-                    color: appThemeColors.backgroundLightGrey,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {},
-                  child: Text(
-                    'Переглянути всі',
-                    style: TextStyleHelper.instance.title16Regular.copyWith(
-                      color: appThemeColors.lightGreenColor,
-                      decoration: TextDecoration.underline,
-                      decorationColor: appThemeColors.lightGreenColor,
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
+    //TODO Тільки заявки на збори
+    return Container();
   }
 
   Widget _buildFollowSection(
