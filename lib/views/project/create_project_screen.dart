@@ -388,6 +388,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                             });
                           },
                           child: Chip(
+                            padding: const EdgeInsets.all(5),
                             label: Text(skill.title!),
                             backgroundColor: isSelected
                                 ? appThemeColors.blueAccent

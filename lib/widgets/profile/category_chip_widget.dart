@@ -16,9 +16,8 @@ class CategoryChipWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(right: 8),
       height: 28,
-      width: 100,
+      width: 109,
       decoration: BoxDecoration(
         color: isSelected
             ? appThemeColors.primaryWhite
@@ -31,7 +30,7 @@ class CategoryChipWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          if (isSelected) Icon(Icons.check, color: appThemeColors.successGreen, size: 24,),
+          if (isSelected) Icon(Icons.check, color: appThemeColors.successGreen, size: 20,),
           Text(
             chip.title ?? '',
             style: TextStyleHelper.instance.title14Regular.copyWith(

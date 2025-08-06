@@ -16,7 +16,7 @@ Widget buildBottomNavigationBar(
           break;
         case 1:
         // Екран "Проєкти"
-          Navigator.pushReplacementNamed(context, AppRoutes.createProjectScreen, arguments: '');
+          Navigator.pushReplacementNamed(context, AppRoutes.projectListScreen);
           break;
         case 2:
         // Екран "Збори"

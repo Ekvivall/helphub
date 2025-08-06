@@ -1,9 +1,11 @@
+import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
+import 'package:geolocator/geolocator.dart' hide ActivityType;
+import 'package:helphub/core/services/friend_service.dart';
 
 import '../../core/services/activity_service.dart';
 import '../../core/services/category_service.dart';
@@ -24,6 +26,19 @@ class ProjectViewModel extends ChangeNotifier {
   final CategoryService _categoryService = CategoryService();
   final SkillService _skillService = SkillService();
   final ActivityService _activityService = ActivityService();
+  final FriendService _friendService = FriendService();
+
+  StreamSubscription<List<ProjectModel>>? _projectsSubscription;
+  List<ProjectModel> _allProjects = [];
+  List<ProjectModel> _filteredProjects = [];
+  String _searchQuery = '';
+  List<CategoryChipModel> _selectedCategories = [];
+  List<String> _selectedSkills = [];
+  DateTime? _selectedStartDate;
+  DateTime? _selectedEndDate;
+  double? _searchRadius;
+  bool _isOnlyFriends = false;
+  bool _isOnlyOpen = false;
 
   BaseProfileModel? _user;
   String? _currentAuthUserId;
@@ -33,10 +48,31 @@ class ProjectViewModel extends ChangeNotifier {
   String? _errorMessage;
 
   GeoPoint? _projectCoordinates;
+  GeoPoint? _currentUserLocation;
   bool _isGeocodingLoading = false;
   String? _geocodingError;
   List<CategoryChipModel> _availableCategories = [];
   List<CategoryChipModel> _availableSkills = [];
+
+  List<String> _friendsUids = [];
+
+  List<ProjectModel> get filteredProjects => _filteredProjects;
+
+  List<CategoryChipModel> get selectedCategories => _selectedCategories;
+
+  List<String> get selectedSkills => _selectedSkills;
+
+  DateTime? get selectedStartDate => _selectedStartDate;
+
+  DateTime? get selectedEndDate => _selectedEndDate;
+
+  double? get searchRadius => _searchRadius;
+
+  bool get isOnlyFriends => _isOnlyFriends;
+
+  bool get isOnlyOpen => _isOnlyOpen;
+
+  GeoPoint? get currentUserLocation => _currentUserLocation;
 
   BaseProfileModel? get user => _user;
 
@@ -47,7 +83,6 @@ class ProjectViewModel extends ChangeNotifier {
   bool get isSubmitting => _isSubmitting;
 
   String? get errorMessage => _errorMessage;
-
 
   GeoPoint? get projectCoordinates => _projectCoordinates;
 
@@ -67,7 +102,11 @@ class ProjectViewModel extends ChangeNotifier {
     _currentAuthUserId = _auth.currentUser?.uid;
     if (_currentAuthUserId != null) {
       await _fetchCurrentUserProfile();
+      await _fetchCurrentUserFriends();
+      await _getCurrentUserLocation();
+      _listenToProjects();
     }
+    await fetchSkillsAndCategories();
   }
 
   Future<void> _fetchCurrentUserProfile() async {
@@ -91,6 +130,17 @@ class ProjectViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _fetchCurrentUserFriends() async {
+    if (_currentAuthUserId != null) {
+      try {
+        _friendsUids = await _friendService.getFriendsUids();
+      } catch (e) {
+        print('Error fetching friends: $e');
+        _friendsUids = [];
+      }
+    }
+  }
+
   Future<void> fetchSkillsAndCategories() async {
     _isLoading = true;
     notifyListeners();
@@ -102,6 +152,165 @@ class ProjectViewModel extends ChangeNotifier {
       _errorMessage = 'Не вдалося завантажити навички та категорії: $e';
       _isLoading = false;
     }
+    notifyListeners();
+  }
+
+  void _listenToProjects() {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    _projectsSubscription?.cancel();
+    _projectsSubscription = _projectService.fetchProjectsStream().listen(
+      (projects) {
+        _allProjects =
+            projects.where((project) {
+              return _user == null ||
+                  _user!.city == null ||
+                  project.city == _user!.city;
+            }).toList()..sort(
+              (a, b) => (a.startDate ?? DateTime(9999)).compareTo(
+                b.startDate ?? DateTime(9999),
+              ),
+            );
+        _isLoading = false;
+        _applyFilters();
+      },
+      onError: (error) {
+        _errorMessage = 'Помилка завантаження проєктів: $error';
+        _isLoading = false;
+        _allProjects = [];
+        _filteredProjects = [];
+        notifyListeners();
+      },
+    );
+  }
+
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    _applyFilters();
+  }
+
+  void setFilters(
+    List<CategoryChipModel> categories,
+    List<String> skills,
+    double? radius,
+    DateTime? startDate,
+    DateTime? endDate,
+    bool isOnlyFriends,
+    bool isOnlyOpen,
+  ) {
+    _selectedCategories = categories;
+    _selectedSkills = skills;
+    _searchRadius = radius;
+    _selectedStartDate = startDate;
+    _selectedEndDate = endDate;
+    _isOnlyFriends = isOnlyFriends;
+    _isOnlyOpen = isOnlyOpen;
+    _applyFilters();
+  }
+
+  void clearFilters() {
+    _selectedCategories = [];
+    _selectedSkills = [];
+    _selectedStartDate = null;
+    _selectedEndDate = null;
+    _searchQuery = '';
+    _searchRadius = null;
+    _isOnlyFriends = false;
+    _isOnlyOpen = false;
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    List<ProjectModel> tempProjects = List.from(_allProjects);
+
+    // Фільтрація за пошуковим запитом
+    if (_searchQuery.isNotEmpty) {
+      final queryLower = _searchQuery.toLowerCase();
+      tempProjects = tempProjects.where((project) {
+        return (project.title?.toLowerCase().contains(queryLower) ?? false) ||
+            (project.description?.toLowerCase().contains(queryLower) ??
+                false) ||
+            (project.locationText?.toLowerCase().contains(queryLower) ?? false);
+      }).toList();
+    }
+
+    // Фільтрація за категоріями
+    if (_selectedCategories.isNotEmpty) {
+      tempProjects = tempProjects.where((project) {
+        return project.categories?.any(
+              (projectCategory) => _selectedCategories.any(
+                (selectedCategory) =>
+                    selectedCategory.title == projectCategory.title,
+              ),
+            ) ??
+            false;
+      }).toList();
+    }
+
+    // Фільтрація за навичками
+    if (_selectedSkills.isNotEmpty) {
+      tempProjects = tempProjects.where((project) {
+        return project.skills?.any(
+              (projectSkill) => _selectedSkills.contains(projectSkill),
+            ) ??
+            false;
+      }).toList();
+    }
+
+    // Фільтрація за датою
+    if (_selectedStartDate != null || _selectedEndDate != null) {
+      tempProjects = tempProjects.where((project) {
+        final projectStartDate = project.startDate;
+        final projectEndDate = project.endDate;
+        if (projectStartDate == null || projectEndDate == null) return false;
+        final startDate = _selectedStartDate;
+        final endDate = _selectedEndDate;
+        bool matchesStartDate =
+            startDate == null ||
+            projectStartDate.isAtSameMomentAs(startDate) ||
+            projectStartDate.isAfter(startDate);
+        bool matchesEndtDate =
+            endDate == null ||
+            projectEndDate.isAtSameMomentAs(endDate) ||
+            projectEndDate.isBefore(endDate);
+        return matchesStartDate && matchesEndtDate;
+      }).toList();
+    }
+    // Фільтрація за локацією (радіус)
+    if (_currentUserLocation != null &&
+        _searchRadius != null &&
+        _searchRadius! > 0) {
+      tempProjects = tempProjects.where((project) {
+        if (project.locationGeo == null) return false;
+        final double distanceInMeters = Geolocator.distanceBetween(
+          _currentUserLocation!.latitude,
+          _currentUserLocation!.longitude,
+          project.locationGeo!.latitude,
+          project.locationGeo!.longitude,
+        );
+        final double searchRadiusMeters = _searchRadius! * 1000;
+        return distanceInMeters <= searchRadiusMeters;
+      }).toList();
+    }
+
+    // Фільтрація за "Тільки для друзів"
+    if (_isOnlyFriends) {
+      tempProjects = tempProjects.where((project) {
+        return project.organizerId != null &&
+            _friendsUids.contains(project.organizerId);
+      }).toList();
+    }
+
+    // Фільтрація за "Тільки відкриті проєкти"
+    if (_isOnlyOpen) {
+      tempProjects = tempProjects.where((project) {
+        final projectEndDate = project.endDate;
+        return projectEndDate == null || projectEndDate.isAfter(DateTime.now());
+      }).toList();
+    }
+
+    _filteredProjects = tempProjects;
     notifyListeners();
   }
 
@@ -123,6 +332,7 @@ class ProjectViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
   Future<String?> createProject({
     required String title,
     required String description,
@@ -158,8 +368,8 @@ class ProjectViewModel extends ChangeNotifier {
         organizerId: _currentAuthUserId!,
         organizerName: _user is VolunteerModel
             ? (_user as VolunteerModel).fullName ??
-            (_user as VolunteerModel).displayName ??
-            'Волонтер'
+                  (_user as VolunteerModel).displayName ??
+                  'Волонтер'
             : _user is OrganizationModel
             ? (_user as OrganizationModel).organizationName ?? 'Фонд'
             : 'Невідомий користувач',
@@ -265,7 +475,7 @@ class ProjectViewModel extends ChangeNotifier {
     _geocodingError = null;
     notifyListeners();
     try {
-      List<Location> locations = await geocoding.locationFromAddress(
+      List<geocoding.Location> locations = await geocoding.locationFromAddress(
         '$address, $city, Ukraine',
       );
       if (locations.isNotEmpty) {
@@ -300,9 +510,37 @@ class ProjectViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _getCurrentUserLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      _currentUserLocation = null;
+      notifyListeners();
+      return;
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        _currentUserLocation = null;
+        notifyListeners();
+        return;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      _currentUserLocation = null;
+      notifyListeners();
+      return;
+    }
+    Position position = await Geolocator.getCurrentPosition();
+    _currentUserLocation = GeoPoint(position.latitude, position.longitude);
+    notifyListeners();
+  }
 
   @override
   void dispose() {
+    _projectsSubscription?.cancel();
     super.dispose();
   }
 }

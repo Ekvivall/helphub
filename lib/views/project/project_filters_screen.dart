@@ -1,42 +1,47 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
-import 'package:helphub/view_models/event/event_view_model.dart';
+import 'package:helphub/widgets/profile/category_chip_widget.dart';
 import 'package:provider/provider.dart';
 
+import '../../view_models/project/project_view_model.dart';
 import '../../widgets/custom_date_range_picker.dart';
 import '../../widgets/custom_elevated_button.dart';
-import '../../widgets/profile/category_chip_widget.dart';
 
-class EventFiltersBottomSheet extends StatefulWidget {
-  const EventFiltersBottomSheet({super.key});
+class ProjectFiltersBottomSheet extends StatefulWidget {
+  const ProjectFiltersBottomSheet({super.key});
 
   @override
-  State<StatefulWidget> createState() => _EventFiltersBottomSheetState();
+  State<StatefulWidget> createState() => _ProjectFiltersBottomSheetState();
 }
 
-class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
+class _ProjectFiltersBottomSheetState extends State<ProjectFiltersBottomSheet> {
   List<CategoryChipModel> _tempSelectedCategories = [];
+  List<String> _tempSelectedSkills = [];
   DateTime? _tempSelectedStartDate;
   DateTime? _tempSelectedEndDate;
   double? _tempSearchRadius;
+  bool _tempIsOnlyFriends = false;
+  bool _tempIsOnlyOpen = false;
   Key _datePickerKey = UniqueKey();
 
   @override
   void initState() {
     super.initState();
-    final viewModel = Provider.of<EventViewModel>(context, listen: false);
+    final viewModel = Provider.of<ProjectViewModel>(context, listen: false);
     _tempSelectedCategories = List.from(viewModel.selectedCategories);
+    _tempSelectedSkills = List.from(viewModel.selectedSkills);
     _tempSelectedStartDate = viewModel.selectedStartDate;
     _tempSelectedEndDate = viewModel.selectedEndDate;
     _tempSearchRadius = viewModel.searchRadius;
+    _tempIsOnlyFriends = viewModel.isOnlyFriends;
+    _tempIsOnlyOpen = viewModel.isOnlyOpen;
   }
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<EventViewModel>(context);
+    final viewModel = Provider.of<ProjectViewModel>(context);
     return SingleChildScrollView(
       child: Container(
         padding: EdgeInsets.only(
@@ -54,26 +59,26 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Фільтри подій',
+              'Фільтри проєктів',
               style: TextStyleHelper.instance.title20Regular.copyWith(
                 fontWeight: FontWeight.w700,
                 color: appThemeColors.primaryBlack,
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
             Text(
               'Категорії',
               style: TextStyleHelper.instance.title16Bold.copyWith(
                 color: appThemeColors.primaryBlack,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 5),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: viewModel.availableCategories.map((category) {
                 final isSelected = _tempSelectedCategories.any(
-                  (element) => element.title == category.title,
+                      (element) => element.title == category.title,
                 );
                 return GestureDetector(
                   onTap: () {
@@ -82,7 +87,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
                         _tempSelectedCategories.add(category);
                       } else {
                         _tempSelectedCategories.removeWhere(
-                          (element) => element.title == category.title,
+                              (element) => element.title == category.title,
                         );
                       }
                     });
@@ -94,14 +99,55 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
                 );
               }).toList(),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
+            Text(
+              'Навички',
+              style: TextStyleHelper.instance.title16Bold.copyWith(
+                color: appThemeColors.primaryBlack,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Wrap(
+              spacing: 8,
+              runSpacing: 0,
+              children: viewModel.availableSkills.map((skill) {
+                final bool isSelected = _tempSelectedSkills.contains(
+                  skill.title,
+                );
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (isSelected) {
+                        _tempSelectedSkills.remove(skill.title);
+                      } else {
+                        _tempSelectedSkills.add(skill.title!);
+                      }
+                    });
+                  },
+                  child: Chip(
+                    padding: const EdgeInsets.all(1),
+                    label: Text(skill.title!),
+                    backgroundColor: isSelected
+                        ? appThemeColors.blueAccent
+                        : appThemeColors.textMediumGrey,
+                    labelStyle: TextStyleHelper.instance.title14Regular
+                        .copyWith(
+                      color: isSelected
+                          ? appThemeColors.primaryWhite
+                          : appThemeColors.textLightColor,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 10),
             Text(
               'Дата',
               style: TextStyleHelper.instance.title16Bold.copyWith(
                 color: appThemeColors.primaryBlack,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 5),
             SimpleDateRangePicker(
               key: _datePickerKey,
               firstDate: DateTime.now(),
@@ -115,7 +161,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
                 });
               },
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
             Text(
               'Відстань від поточної локації',
               style: TextStyleHelper.instance.title16Bold.copyWith(
@@ -132,7 +178,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
                   ),
                 ),
               ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 5),
             if (viewModel.currentUserLocation != null)
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,7 +208,61 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
                   ),
                 ],
               ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Тільки для друзів',
+                    style: TextStyleHelper.instance.title16Bold.copyWith(
+                      color: appThemeColors.primaryBlack,
+                    ),
+                  ),
+                ),
+                Switch(
+                  value: _tempIsOnlyFriends,
+                  onChanged: (value) {
+                    setState(() {
+                      _tempIsOnlyFriends = value;
+                    });
+                  },
+                  activeColor: appThemeColors.appBarBg,
+                  inactiveTrackColor: appThemeColors.appBarBg,
+                  inactiveThumbColor: appThemeColors.primaryWhite,
+                  trackOutlineColor: WidgetStateProperty.all(
+                    Colors.transparent,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Тільки відкриті проєкти',
+                    style: TextStyleHelper.instance.title16Bold.copyWith(
+                      color: appThemeColors.primaryBlack,
+                    ),
+                  ),
+                ),
+                Switch(
+                  value: _tempIsOnlyOpen,
+                  onChanged: (value) {
+                    setState(() {
+                      _tempIsOnlyOpen = value;
+                    });
+                  },
+                  activeColor: appThemeColors.appBarBg,
+                  inactiveTrackColor: appThemeColors.appBarBg,
+                  inactiveThumbColor: appThemeColors.primaryWhite,
+                  trackOutlineColor: WidgetStateProperty.all(
+                    Colors.transparent,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -171,6 +271,7 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
                     onPressed: () {
                       _clearFiltersLocally();
                       viewModel.clearFilters();
+                      Navigator.pop(context);
                     },
                     text: 'Очистити',
                     backgroundColor: appThemeColors.textMediumGrey,
@@ -206,21 +307,25 @@ class _EventFiltersBottomSheetState extends State<EventFiltersBottomSheet> {
   void _clearFiltersLocally() {
     setState(() {
       _tempSelectedCategories = [];
+      _tempSelectedSkills = [];
       _tempSelectedStartDate = null;
       _tempSelectedEndDate = null;
       _tempSearchRadius = null;
+      _tempIsOnlyFriends = false;
+      _tempIsOnlyOpen = false;
       _datePickerKey = UniqueKey();
     });
   }
 
-  void _applyFiltersToViewModel(EventViewModel viewModel) {
+  void _applyFiltersToViewModel(ProjectViewModel viewModel) {
     viewModel.setFilters(
       _tempSelectedCategories,
-      null,
-      null,
+      _tempSelectedSkills,
       _tempSearchRadius,
       _tempSelectedStartDate,
       _tempSelectedEndDate,
+      _tempIsOnlyFriends,
+      _tempIsOnlyOpen,
     );
   }
 }

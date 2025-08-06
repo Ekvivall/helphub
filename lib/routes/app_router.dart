@@ -14,6 +14,7 @@ import 'package:helphub/views/profile/find_friends_screen.dart';
 import 'package:helphub/views/profile/friends_list_screen.dart';
 import 'package:helphub/views/profile/organization_profile_screen.dart';
 import 'package:helphub/views/profile/volunteer_profile_screen.dart';
+import 'package:helphub/views/project/project_list_screen.dart';
 import 'package:helphub/views/splash/splash_screen.dart';
 
 import '../views/auth/register_organization_step2_screen.dart';
@@ -44,6 +45,7 @@ class AppRoutes {
   static const String eventDetailScreen = 'event_detail';
   static const String createEventScreen = 'create_event';
   static const String createProjectScreen = 'create_project';
+  static const String projectListScreen = 'project_list';
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
     loginScreen: (context) => LoginScreen(),
@@ -62,6 +64,7 @@ class AppRoutes {
     allFollowedOrganizationsScreen: (context) =>
         AllFollowedOrganizationsScreen(),
     eventListScreen: (context) => EventListScreen(),
+    projectListScreen: (context) => ProjectListScreen(),
   };
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {

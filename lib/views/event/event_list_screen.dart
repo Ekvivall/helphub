@@ -13,6 +13,7 @@ import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/custom_bottom_navigation_bar.dart';
 import '../../widgets/custom_input_field.dart';
+import '../../widgets/custom_notification_icon_button.dart';
 import '../../widgets/events/event_list_item.dart';
 import '../../widgets/user_avatar_with_frame.dart';
 
@@ -149,43 +150,7 @@ class _EventListScreenState extends State<EventListScreen> {
               width: 24,
             ),
           ),
-          Stack(
-            children: [
-              IconButton(
-                onPressed: () {
-                  //TODO
-                },
-                icon: Icon(
-                  Icons.notifications,
-                  size: 24,
-                  color: appThemeColors.primaryWhite,
-                ),
-              ),
-              Positioned(
-                right: 4,
-                top: 4,
-                child: Container(
-                  padding: const EdgeInsets.all(3),
-                  decoration: BoxDecoration(
-                    color: appThemeColors.orangeAccent,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    '1',
-                    style: TextStyleHelper.instance.title13Regular.copyWith(
-                      color: appThemeColors.primaryWhite,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          CustomNotificationIconButton(),
         ],
       ),
     );
