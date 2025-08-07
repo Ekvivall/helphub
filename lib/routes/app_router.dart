@@ -5,9 +5,10 @@ import 'package:helphub/views/auth/register_organization_step1_screen.dart';
 import 'package:helphub/views/auth/register_type_screen.dart';
 import 'package:helphub/views/auth/register_volunteer_screen.dart';
 import 'package:helphub/views/auth/login_screen.dart';
+import 'package:helphub/views/chat/chat_project_screen.dart';
 import 'package:helphub/views/event/create_event_screen.dart';
 import 'package:helphub/views/event/event_detail_screen.dart';
-import 'package:helphub/views/event/event_list_screen.dart';
+import 'package:helphub/views/event/event_list_screen.dart' hide DisplayMode;
 import 'package:helphub/views/profile/all_followed_organizations_screen.dart';
 import 'package:helphub/views/profile/edit_user_profile_screen.dart';
 import 'package:helphub/views/profile/find_friends_screen.dart';
@@ -50,6 +51,7 @@ class AppRoutes {
   static const String projectListScreen = 'project_list';
   static const String applyToProjectScreen = 'apply_to_project';
   static const String allProjectApplicationsScreen = 'all_project_applications';
+  static const String chatProjectScreen = 'chat_project';
 
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
@@ -104,6 +106,15 @@ class AppRoutes {
         final String projectId = settings.arguments as String;
         return MaterialPageRoute(
           builder: (context) => ApplyToProjectScreen(projectId: projectId),
+        );
+      case chatProjectScreen:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (context) => ChatProjectScreen(
+            projectId: args?['projectId'] as String,
+            initialDisplayMode:
+                args?['displayMode'] as DisplayMode? ?? DisplayMode.chat,
+          ),
         );
       default:
         if (routes.containsKey(settings.name)) {

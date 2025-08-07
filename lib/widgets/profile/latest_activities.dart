@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
+import 'package:helphub/widgets/profile/project_participation_activity_item.dart';
 
 import '../../models/activity_model.dart';
 import '../../theme/text_style_helper.dart';
@@ -11,7 +12,8 @@ import 'project_organization_activity_item.dart';
 class LatestActivities extends StatelessWidget {
   const LatestActivities({
     super.key,
-    required this.isOwner, required this.viewModel,
+    required this.isOwner,
+    required this.viewModel,
   });
 
   final bool isOwner;
@@ -25,43 +27,42 @@ class LatestActivities extends StatelessWidget {
       itemCount: viewModel.latestActivities.length,
       padding: const EdgeInsets.all(12),
       itemBuilder: (context, index) {
-        final activity =
-        viewModel.latestActivities[index];
+        final activity = viewModel.latestActivities[index];
         switch (activity.type) {
           case ActivityType.eventParticipation:
             return EventParticipationActivityItem(
-              activity: activity, isOwner: isOwner,
+              activity: activity,
+              isOwner: isOwner,
             );
-        // TODO: Додати інші типи активностей тут
+          // TODO: Додати інші типи активностей тут
           case ActivityType.eventOrganization:
             return EventOrganizationActivityItem(
-              activity: activity, isOwner: isOwner,
+              activity: activity,
+              isOwner: isOwner,
             );
           case ActivityType.projectTaskCompletion:
             return Text(
-              'Виконано завдання в проекті: ${activity
-                  .title}',
-              style: TextStyleHelper
-                  .instance
-                  .title16Regular
-                  .copyWith(
-                color: appThemeColors
-                    .backgroundLightGrey,
+              'Виконано завдання в проекті: ${activity.title}',
+              style: TextStyleHelper.instance.title16Regular.copyWith(
+                color: appThemeColors.backgroundLightGrey,
               ),
             );
           case ActivityType.projectOrganization:
             return ProjectOrganizationActivityItem(
-                activity: activity, isOwner: isOwner);
+              activity: activity,
+              isOwner: isOwner,
+            );
           case ActivityType.fundraiserCreation:
             return Text(
               'Створено збір коштів: ${activity.title}',
-              style: TextStyleHelper
-                  .instance
-                  .title16Regular
-                  .copyWith(
-                color: appThemeColors
-                    .backgroundLightGrey,
+              style: TextStyleHelper.instance.title16Regular.copyWith(
+                color: appThemeColors.backgroundLightGrey,
               ),
+            );
+          case ActivityType.projectParticipation:
+            return ProjectParticipationActivityItem(
+              activity: activity,
+              isOwner: isOwner,
             );
         }
       },

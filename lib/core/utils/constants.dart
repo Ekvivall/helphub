@@ -85,6 +85,7 @@ class Constants {
           displayName: user.displayName,
           photoUrl: user.photoURL,
           lastSignInAt: DateTime.now(),
+          levelProgress: 1,
           createdAt: userCredential.additionalUserInfo?.isNewUser == true
               ? DateTime.now()
               : null,

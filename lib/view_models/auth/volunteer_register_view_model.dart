@@ -78,7 +78,11 @@ class VolunteerRegisterViewModel extends ChangeNotifier {
           email: emailController.text.trim(),
           fullName: fullNameController.text.trim(),
           city: _selectedCity,
-          displayName: Constants.generateUniqueDisplayName(emailController.text.trim()),
+          levelProgress: 1,
+
+          displayName: Constants.generateUniqueDisplayName(
+            emailController.text.trim(),
+          ),
           createdAt: DateTime.now(),
         );
         await FirebaseFirestore.instance

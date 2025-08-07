@@ -19,7 +19,9 @@ class EventService {
     return _firestore.collection(_collectionName).doc(eventId).snapshots().map((snapshot){
       if(snapshot.exists && snapshot.data() != null){
         return EventModel.fromMap(snapshot.data()!, snapshot.id);
-      } else throw Exception('Event not found or data is empty.');
+      } else {
+        throw Exception('Event not found or data is empty.');
+      }
     });
   }
 

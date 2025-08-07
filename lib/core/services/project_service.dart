@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:helphub/models/project_model.dart';
+import 'package:helphub/models/project_task_model.dart';
 
 class ProjectService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -61,6 +62,17 @@ class ProjectService {
     });
   }
 
+  Stream<ProjectModel> getProjectStream(String projectId) {
+    return _firestore.collection('projects').doc(projectId).snapshots().map((
+        snapshot,) {
+      if (snapshot.exists && snapshot.data() != null) {
+        return ProjectModel.fromMap(snapshot.data()!);
+      } else {
+        throw Exception('Project not found or data is empty.');
+      }
+    });
+  }
+
   Future<List<ProjectModel>> fetchProjectsOnce() async {
     try {
       final querySnapshot = await _firestore.collection('projects').get();
@@ -68,6 +80,37 @@ class ProjectService {
           .map((doc) => ProjectModel.fromMap(doc.data()))
           .toList();
     } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateTaskInProject(String projectId,
+      ProjectTaskModel updatedTask) async {
+    try {
+      final projectRef = _firestore.collection('projects').doc(projectId);
+      final projectSnapshot = await projectRef.get();
+      if (!projectSnapshot.exists) {
+        throw Exception('Проєкт з ID $projectId не знайдено.');
+      }
+      final projectData = projectSnapshot.data();
+      if (projectData == null || projectData['tasks'] == null) {
+        throw Exception('Завдання в проєкті не знайдено.');
+      }
+      List<dynamic> tasksList = projectData['tasks'];
+      final List<ProjectTaskModel> tasks = tasksList.map((taskMap) =>
+          ProjectTaskModel.fromMap(taskMap, taskMap['id'] as String)).toList();
+      // Індекс завдання для оновлення
+      final taskIndex = tasks.indexWhere((task) => task.id == updatedTask.id);
+      if (taskIndex != -1) {
+        // Заміна старого значення на оновлене
+        tasks[taskIndex] = updatedTask;
+        // Оновлення документу проєкту, записуючи оновлений список завдань
+        await projectRef.update(
+            {'tasks': tasks.map((t) => t.toMap()).toList()});
+      } else{
+        throw Exception('Завдання з ID ${updatedTask.id} не знайдено у проєкті.');
+      }
+    } catch (e){
       rethrow;
     }
   }

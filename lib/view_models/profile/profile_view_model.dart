@@ -919,7 +919,7 @@ class ProfileViewModel extends ChangeNotifier {
           .doc(userId)
           .collection('activities')
           .orderBy('timestamp', descending: true)
-          .limit(4)
+          .limit(3)
           .get();
 
       _latestActivities = querySnapshot.docs

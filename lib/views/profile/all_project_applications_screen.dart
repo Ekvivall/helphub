@@ -15,12 +15,10 @@ class AllProjectApplicationsScreen extends StatefulWidget {
 
 class _AllProjectApplicationsScreenState
     extends State<AllProjectApplicationsScreen> {
-  late ProfileViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
-    _viewModel = Provider.of<ProfileViewModel>(context, listen: false);
   }
 
   @override

@@ -8,6 +8,7 @@ import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
 import 'package:intl/intl.dart';
 
+import '../../views/chat/chat_project_screen.dart';
 import '../custom_elevated_button.dart';
 
 class ProjectOrganizationActivityItem extends StatelessWidget {
@@ -98,14 +99,7 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                           color: appThemeColors.blueAccent,
                         ),
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Перехід до чату проєкту "${project.title}" (не реалізовано)',
-                              ),
-                            ),
-                          );
-                          // Navigator.of(context).pushNamed(AppRoutes.projectChatScreen, arguments: project.id);
+                          //Navigator.of(context).pushNamed(AppRoutes.projectChatScreen, arguments: project.id);
                         },
                       ),
                   ],
@@ -150,15 +144,12 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                         Expanded(
                           child: CustomElevatedButton(
                             onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Перехід до списку завдань (не реалізовано)',
-                                  ),
-                                ),
+                              Navigator.of(context).pushNamed(
+                                AppRoutes.chatProjectScreen, arguments: {
+                                'projectId': project.id,
+                                'displayMode': DisplayMode.tasks,
+                              },
                               );
-                              // TODO: Реалізувати перехід до екрану зі списком завдань
-                              // Navigator.of(context).pushNamed(AppRoutes.projectTasksScreen, arguments: project.id);
                             },
                             backgroundColor: appThemeColors.successGreen,
                             borderRadius: 8,
