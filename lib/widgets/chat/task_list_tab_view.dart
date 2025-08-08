@@ -54,35 +54,132 @@ class _TaskListTabViewState extends State<TaskListTabView> {
                 );
               }
 
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: tasks.length,
-                itemBuilder: (context, index) {
-                  final task = tasks[index];
-                  final applications = viewModel.getApplicationsForTask(
-                    task.id!,
-                  );
-                  final bool isAssignedToCurrentUser =
-                      task.assignedVolunteerIds?.contains(
-                        viewModel.currentUserId,
-                      ) ??
-                      false;
-
-                  return ProjectTaskCard(
-                    task: task,
-                    isAssignedToCurrentUser: isAssignedToCurrentUser,
-                    applications: applications,
-                    projectId: viewModel.project!.id!,
-                    isOrganizer:
-                        viewModel.project?.organizerId ==
-                        viewModel.currentUserId,
-                  );
-                },
-              );
+              return _buildTaskListWithHeaders(tasks, viewModel);
             },
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTaskListWithHeaders(
+    List<ProjectTaskModel> tasks,
+    ChatViewModel viewModel,
+  ) {
+    final groupedTasks = _groupTasksByStatus(tasks);
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: _calculateTotalItems(groupedTasks),
+      itemBuilder: (context, index) {
+        return _buildItemAtIndex(index, groupedTasks, viewModel);
+      },
+    );
+  }
+
+  Map<String, List<ProjectTaskModel>> _groupTasksByStatus(
+    List<ProjectTaskModel> tasks,
+  ) {
+    final Map<String, List<ProjectTaskModel>> grouped = {};
+
+    for (final task in tasks) {
+      String groupKey;
+      switch (task.status) {
+        case TaskStatus.pending:
+        case TaskStatus.inProgress:
+        case TaskStatus.completed:
+          groupKey = 'planned';
+          break;
+        case TaskStatus.confirmed:
+          groupKey = 'completed';
+          break;
+      }
+
+      if (grouped[groupKey] == null) {
+        grouped[groupKey] = [];
+      }
+      grouped[groupKey]!.add(task);
+    }
+
+    return grouped;
+  }
+
+  int _calculateTotalItems(Map<String, List<ProjectTaskModel>> groupedTasks) {
+    int total = 0;
+
+    if (groupedTasks['planned']?.isNotEmpty == true) {
+      total += 1; // заголовок
+      total += groupedTasks['planned']!.length; // завдання
+    }
+
+    if (groupedTasks['completed']?.isNotEmpty == true) {
+      total += 1; // заголовок
+      total += groupedTasks['completed']!.length; // завдання
+    }
+
+    return total;
+  }
+
+  Widget _buildItemAtIndex(
+    int index,
+    Map<String, List<ProjectTaskModel>> groupedTasks,
+    ChatViewModel viewModel,
+  ) {
+    int currentIndex = 0;
+
+    final plannedTasks = groupedTasks['planned'] ?? [];
+    if (plannedTasks.isNotEmpty) {
+      if (index == currentIndex) {
+        return _buildSectionHeader('Заплановані завдання');
+      }
+      currentIndex++;
+
+      if (index < currentIndex + plannedTasks.length) {
+        final taskIndex = index - currentIndex;
+        return _buildTaskCard(plannedTasks[taskIndex], viewModel);
+      }
+      currentIndex += plannedTasks.length;
+    }
+
+    final completedTasks = groupedTasks['completed'] ?? [];
+    if (completedTasks.isNotEmpty) {
+      if (index == currentIndex) {
+        return _buildSectionHeader('Виконані завдання');
+      }
+      currentIndex++;
+
+      if (index < currentIndex + completedTasks.length) {
+        final taskIndex = index - currentIndex;
+        return _buildTaskCard(completedTasks[taskIndex], viewModel);
+      }
+    }
+
+    return const SizedBox(); // Fallback
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Text(
+        title,
+        style: TextStyleHelper.instance.title18Bold.copyWith(
+          color: appThemeColors.backgroundLightGrey,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTaskCard(ProjectTaskModel task, ChatViewModel viewModel) {
+    final applications = viewModel.getApplicationsForTask(task.id!);
+    final bool isAssignedToCurrentUser =
+        task.assignedVolunteerIds?.contains(viewModel.currentUserId) ?? false;
+
+    return ProjectTaskCard(
+      task: task,
+      isAssignedToCurrentUser: isAssignedToCurrentUser,
+      applications: applications,
+      projectId: viewModel.project!.id!,
+      isOrganizer: viewModel.project?.organizerId == viewModel.currentUserId,
     );
   }
 

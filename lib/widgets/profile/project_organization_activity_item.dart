@@ -91,7 +91,6 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // TODO: Реалізувати логіку переходу до чату проєкту
                     if (isOwner)
                       IconButton(
                         icon: Icon(
@@ -99,7 +98,13 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                           color: appThemeColors.blueAccent,
                         ),
                         onPressed: () {
-                          //Navigator.of(context).pushNamed(AppRoutes.projectChatScreen, arguments: project.id);
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.chatProjectScreen,
+                            arguments: {
+                              'projectId': project.id,
+                              'displayMode': DisplayMode.chat,
+                            },
+                          );
                         },
                       ),
                   ],
@@ -145,10 +150,11 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                           child: CustomElevatedButton(
                             onPressed: () {
                               Navigator.of(context).pushNamed(
-                                AppRoutes.chatProjectScreen, arguments: {
-                                'projectId': project.id,
-                                'displayMode': DisplayMode.tasks,
-                              },
+                                AppRoutes.chatProjectScreen,
+                                arguments: {
+                                  'projectId': project.id,
+                                  'displayMode': DisplayMode.tasks,
+                                },
                               );
                             },
                             backgroundColor: appThemeColors.successGreen,
@@ -157,9 +163,9 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                             text: 'Список завдань',
                             textStyle: TextStyleHelper.instance.title14Regular
                                 .copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: appThemeColors.primaryWhite,
-                            ),
+                                  fontWeight: FontWeight.w700,
+                                  color: appThemeColors.primaryWhite,
+                                ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -177,9 +183,9 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                             text: 'Редагувати',
                             textStyle: TextStyleHelper.instance.title14Regular
                                 .copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: appThemeColors.primaryWhite,
-                            ),
+                                  fontWeight: FontWeight.w700,
+                                  color: appThemeColors.primaryWhite,
+                                ),
                           ),
                         ),
                       ],
@@ -187,49 +193,49 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                   ] else // Проєкт завершений
                     project.reportId == null
                         ? CustomElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Перехід до додавання звіту для "${project.title}" (не реалізовано)',
-                            ),
-                          ),
-                        );
-                        // TODO: Реалізувати логіку переходу на екран додавання звіту
-                        // Navigator.of(context).pushNamed(AppRoutes.createReportScreen, arguments: project.id);
-                      },
-                      backgroundColor: appThemeColors.successGreen,
-                      borderRadius: 8,
-                      height: 34,
-                      text: 'Додати звіт',
-                      textStyle: TextStyleHelper.instance.title14Regular
-                          .copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: appThemeColors.primaryWhite,
-                      ),
-                    )
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Перехід до додавання звіту для "${project.title}" (не реалізовано)',
+                                  ),
+                                ),
+                              );
+                              // TODO: Реалізувати логіку переходу на екран додавання звіту
+                              // Navigator.of(context).pushNamed(AppRoutes.createReportScreen, arguments: project.id);
+                            },
+                            backgroundColor: appThemeColors.successGreen,
+                            borderRadius: 8,
+                            height: 34,
+                            text: 'Додати звіт',
+                            textStyle: TextStyleHelper.instance.title14Regular
+                                .copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: appThemeColors.primaryWhite,
+                                ),
+                          )
                         : CustomElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Перехід до перегляду звіту для "${project.title}" (не реалізовано)',
-                            ),
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Перехід до перегляду звіту для "${project.title}" (не реалізовано)',
+                                  ),
+                                ),
+                              );
+                              // TODO: Реалізувати логіку переходу на екран перегляду звіту
+                              // Navigator.of(context).pushNamed(AppRoutes.viewReportScreen, arguments: project.reportId);
+                            },
+                            backgroundColor: appThemeColors.textMediumGrey,
+                            borderRadius: 8,
+                            height: 34,
+                            text: 'Переглянути звіт',
+                            textStyle: TextStyleHelper.instance.title14Regular
+                                .copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: appThemeColors.primaryWhite,
+                                ),
                           ),
-                        );
-                        // TODO: Реалізувати логіку переходу на екран перегляду звіту
-                        // Navigator.of(context).pushNamed(AppRoutes.viewReportScreen, arguments: project.reportId);
-                      },
-                      backgroundColor: appThemeColors.textMediumGrey,
-                      borderRadius: 8,
-                      height: 34,
-                      text: 'Переглянути звіт',
-                      textStyle: TextStyleHelper.instance.title14Regular
-                          .copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: appThemeColors.primaryWhite,
-                      ),
-                    ),
                 ],
               ],
             ),

@@ -5,6 +5,11 @@ import 'package:helphub/models/project_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:intl/intl.dart';
+
+import '../../routes/app_router.dart';
+import '../../views/chat/chat_project_screen.dart';
+import '../custom_elevated_button.dart';
+
 class ProjectApplicationItem extends StatelessWidget {
   final ProjectApplicationModel application;
   final ProjectModel? project;
@@ -21,9 +26,7 @@ class ProjectApplicationItem extends StatelessWidget {
       return const SizedBox();
     }
 
-    final task = project!.tasks?.firstWhere(
-          (t) => t.id == application.taskId,
-    );
+    final task = project!.tasks?.firstWhere((t) => t.id == application.taskId);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -98,11 +101,30 @@ class ProjectApplicationItem extends StatelessWidget {
               color: appThemeColors.primaryBlack.withAlpha(175),
             ),
           ),
+          if (application.status == 'approved')
+            CustomElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed(
+                  AppRoutes.chatProjectScreen,
+                  arguments: {
+                    'projectId': project?.id,
+                    'displayMode': DisplayMode.tasks,
+                  },
+                );
+              },
+              backgroundColor: appThemeColors.blueAccent,
+              borderRadius: 8,
+              height: 34,
+              text: 'Список завдань',
+              textStyle: TextStyleHelper.instance.title14Regular.copyWith(
+                fontWeight: FontWeight.w700,
+                color: appThemeColors.primaryWhite,
+              ),
+            ),
         ],
       ),
     );
   }
-
 
   Widget _buildStatusText(String? status) {
     Color statusColor = appThemeColors.primaryBlack;

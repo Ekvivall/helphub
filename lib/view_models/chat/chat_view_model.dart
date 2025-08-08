@@ -76,18 +76,55 @@ class ChatViewModel extends ChangeNotifier {
         .listen(
           (project) async {
             _project = project;
-            _allTasks = project.tasks ?? [];
+            final tasks = project.tasks ?? [];
+            _allTasks = _sortTasksByStatus(tasks);
             await _fetchApplicationsAndVolunteers();
             _isLoading = false;
             _errorMessage = null;
             notifyListeners();
           },
-          onError: (error) {
-            _errorMessage = 'Помилка завантаження завдань: $error';
-            _isLoading = false;
-            notifyListeners();
-          },
-        );
+      onError: (error) {
+        _errorMessage = 'Помилка завантаження завдань: $error';
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  List<ProjectTaskModel> _sortTasksByStatus(List<ProjectTaskModel> tasks) {
+    final sortedTasks = List<ProjectTaskModel>.from(tasks);
+
+    sortedTasks.sort((a, b) {
+      final statusPriority = _getStatusPriority(a.status).compareTo(_getStatusPriority(b.status));
+      if (statusPriority != 0) return statusPriority;
+
+      if (a.deadline != null && b.deadline != null) {
+        return a.deadline!.compareTo(b.deadline!);
+      } else if (a.deadline != null) {
+        return -1;
+      } else if (b.deadline != null) {
+        return 1;
+      }
+
+      return 0;
+    });
+
+    return sortedTasks;
+  }
+
+  int _getStatusPriority(TaskStatus? status) {
+    switch (status) {
+      case TaskStatus.pending:
+        return 1; // Найвищий пріоритет - відкриті завдання
+      case TaskStatus.inProgress:
+        return 2; // Завдання в процесі
+      case TaskStatus.completed:
+        return 3; // Завдання на підтвердженні
+      case TaskStatus.confirmed:
+        return 4; // Найнижчий пріоритет - підтверджені завдання
+      default:
+        return 0; // Невідомий статус - найвищий пріоритет
+    }
   }
 
   Future<void> _fetchApplicationsAndVolunteers() async {

@@ -160,18 +160,20 @@ class ProjectTaskCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: _buildResponsibleInfo(viewModel)),
-            Text(
-              'до ${DateFormat('dd MMMM', 'uk').format(task.deadline!)}',
-              style: TextStyleHelper.instance.title14Regular.copyWith(
-                color: appThemeColors.textMediumGrey,
+        if (task.status == TaskStatus.pending ||
+            task.status == TaskStatus.inProgress)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: _buildResponsibleInfo(viewModel)),
+              Text(
+                'до ${DateFormat('dd MMMM', 'uk').format(task.deadline!)}',
+                style: TextStyleHelper.instance.title14Regular.copyWith(
+                  color: appThemeColors.textMediumGrey,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
       ],
     );
   }
@@ -206,7 +208,9 @@ class ProjectTaskCard extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
-          if (task.neededPeople! - assignedVolunteers.length > 0)
+          if (task.neededPeople! - assignedVolunteers.length > 0 &&
+              (task.status == TaskStatus.pending ||
+                  task.status == TaskStatus.inProgress))
             Text(
               'Ще потрібно ${task.neededPeople! - assignedVolunteers.length} відповідальних',
               style: TextStyleHelper.instance.title14Regular.copyWith(
@@ -260,30 +264,45 @@ class ProjectTaskCard extends StatelessWidget {
           _buildOrganizerConfirmationBlock(context, viewModel),
         const SizedBox(height: 8),
         Row(
-          mainAxisAlignment: MainAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (isAssignedToCurrentUser && task.status == TaskStatus.inProgress)
-              ElevatedButton(
-                onPressed: () {
-                  viewModel.markTaskAsCompleted(
-                    projectId: projectId,
-                    task: task,
-                    volunteerId: viewModel.currentUserId,
-                  );
-                },
-                style: _actionButtonStyle(),
-                child: const Text('Виконати завдання'),
-              ),
-            if (task.status == TaskStatus.pending)
-              ElevatedButton(
-                onPressed: () {
-                  viewModel.assignSelfToTask(task: task);
-                },
-                style: _actionButtonStyle(
-                  bgColor: appThemeColors.blueAccent,
-                  textColor: appThemeColors.primaryWhite,
+            if (isAssignedToCurrentUser &&
+                task.status == TaskStatus.inProgress) ...[
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    viewModel.markTaskAsCompleted(
+                      projectId: projectId,
+                      task: task,
+                      volunteerId: viewModel.currentUserId,
+                    );
+                  },
+                  style: _actionButtonStyle(
+                    bgColor: appThemeColors.successGreen,
+                  ),
+                  child: const Text(
+                    'Виконати завдання',
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-                child: const Text('Призначити себе'),
+              ),
+              const SizedBox(width: 26),
+            ],
+            if ((task.assignedVolunteerIds == null ||
+                    task.assignedVolunteerIds!.length < task.neededPeople!) &&
+                (task.status == TaskStatus.pending ||
+                    task.status == TaskStatus.inProgress))
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    viewModel.assignSelfToTask(task: task);
+                  },
+                  style: _actionButtonStyle(),
+                  child: const Text(
+                    'Призначити себе',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
             const SizedBox(width: 8),
           ],
@@ -293,33 +312,48 @@ class ProjectTaskCard extends StatelessWidget {
   }
 
   Widget _buildVolunteerActions(BuildContext context, ChatViewModel viewModel) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if (isAssignedToCurrentUser && task.status == TaskStatus.inProgress)
-          ElevatedButton(
-            onPressed: () {
-              viewModel.markTaskAsCompleted(
-                projectId: projectId,
-                task: task,
-                volunteerId: viewModel.currentUserId,
-              );
-            },
-            style: _actionButtonStyle(
-              bgColor: appThemeColors.successGreen,
-              textColor: appThemeColors.primaryWhite,
+        if (isAssignedToCurrentUser &&
+            task.status == TaskStatus.inProgress) ...[
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                viewModel.markTaskAsCompleted(
+                  projectId: projectId,
+                  task: task,
+                  volunteerId: viewModel.currentUserId,
+                );
+              },
+              style: _actionButtonStyle(
+                bgColor: appThemeColors.successGreen,
+                textColor: appThemeColors.primaryWhite,
+              ),
+              child: const Text(
+                'Виконати завдання',
+                textAlign: TextAlign.center,
+              ),
             ),
-            child: const Text('Виконати завдання'),
           ),
-        if (!isAssignedToCurrentUser && task.status == TaskStatus.pending)
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(
-                context,
-              ).pushNamed(AppRoutes.applyToProjectScreen, arguments: projectId);
-            },
-            style: _actionButtonStyle(),
-            child: const Text('Подати заявку'),
+          const SizedBox(width: 26),
+        ],
+        if (!isAssignedToCurrentUser &&
+            (task.assignedVolunteerIds == null ||
+                task.assignedVolunteerIds!.length < task.neededPeople!) &&
+            (task.status == TaskStatus.pending ||
+                task.status == TaskStatus.inProgress))
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed(
+                  AppRoutes.applyToProjectScreen,
+                  arguments: projectId,
+                );
+              },
+              style: _actionButtonStyle(),
+              child: const Text('Подати заявку', textAlign: TextAlign.center),
+            ),
           ),
         if (isAssignedToCurrentUser && task.status == TaskStatus.completed)
           Padding(
