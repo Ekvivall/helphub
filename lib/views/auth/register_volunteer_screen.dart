@@ -117,7 +117,9 @@ class _RegisterVolunteerScreenState extends State<RegisterVolunteerScreen> {
             labelText: 'Місто',
             value: controller.selectedCity,
             hintText: 'Оберіть місто',
-            items: Constants.cities,
+            items: Constants.cities.map((String item) {
+              return DropdownItem(key: item, value: item);
+            }).toList(),
             onChanged: (String? newValue) {
               if (newValue != null) {
                 controller.updateCity(newValue);

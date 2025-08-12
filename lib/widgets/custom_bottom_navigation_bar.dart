@@ -2,35 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/theme_helper.dart';
 
-Widget buildBottomNavigationBar(
-    BuildContext context,
-    int currentIndex,
-    ) {
+Widget buildBottomNavigationBar(BuildContext context, int currentIndex) {
   return BottomNavigationBar(
     currentIndex: currentIndex,
     onTap: (index) {
       switch (index) {
         case 0:
-        // Екран "Події"
+          // Екран "Події"
           Navigator.pushReplacementNamed(context, AppRoutes.eventListScreen);
           break;
         case 1:
-        // Екран "Проєкти"
+          // Екран "Проєкти"
           Navigator.pushReplacementNamed(context, AppRoutes.projectListScreen);
           break;
         case 2:
-        // Екран "Збори"
-          /*Navigator.pushReplacementNamed(
+          // Екран "Збори"
+          Navigator.pushReplacementNamed(
             context,
             AppRoutes.fundraisingListScreen,
-          );*/
+          );
           break;
         case 3:
-        // Екран "Календар"
+          // Екран "Календар"
           //Navigator.pushReplacementNamed(context, AppRoutes.calendarScreen);
           break;
         case 4:
-        // Екран "Чати"
+          // Екран "Чати"
           //Navigator.pushReplacementNamed(context, AppRoutes.chatListScreen);
           break;
       }
@@ -42,14 +39,8 @@ Widget buildBottomNavigationBar(
     type: BottomNavigationBarType.fixed,
     backgroundColor: appThemeColors.primaryWhite,
     items: const [
-      BottomNavigationBarItem(
-        icon: Icon(Icons.event),
-        label: 'Події',
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.assignment),
-        label: 'Проєкти',
-      ),
+      BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Події'),
+      BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Проєкти'),
       BottomNavigationBarItem(
         icon: Icon(Icons.monetization_on),
         label: 'Збори',
@@ -58,10 +49,7 @@ Widget buildBottomNavigationBar(
         icon: Icon(Icons.calendar_month),
         label: 'Календар',
       ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.chat),
-        label: 'Чати',
-      ),
+      BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Чати'),
     ],
   );
 }

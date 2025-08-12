@@ -241,7 +241,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                         labelText: 'Місто',
                         value: viewModel.currentProject?.city,
                         hintText: 'Оберіть місто',
-                        items: Constants.cities,
+                        items: Constants.cities.map((String item) {
+                          return DropdownItem(key: item, value: item);
+                        }).toList(),
                         onChanged: (String? newValue) {
                           if (newValue != null) {
                             setState(() {
@@ -572,9 +574,10 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                               _isOnlyFriends = value;
                             });
                           },
-                          activeColor: appThemeColors.appBarBg,
-                          inactiveTrackColor: appThemeColors.appBarBg,
-                          inactiveThumbColor: appThemeColors.primaryWhite,
+                          activeColor: appThemeColors.backgroundLightGrey,
+                          inactiveTrackColor:
+                              appThemeColors.backgroundLightGrey,
+                          inactiveThumbColor: appThemeColors.appBarBg,
                           trackOutlineColor: WidgetStateProperty.all(
                             Colors.transparent,
                           ),

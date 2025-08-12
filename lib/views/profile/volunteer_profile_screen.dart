@@ -21,10 +21,12 @@ import '../../models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/profile/category_chip_widget.dart';
+import '../../widgets/profile/fundraiser_application_item_widget.dart';
 import '../../widgets/profile/medal_item.dart';
 import '../../widgets/profile/project_application_item.dart';
 import '../../widgets/user_avatar_with_frame.dart';
 import '../../widgets/profile/latest_activities.dart';
+import 'all_applications_screen.dart';
 
 class VolunteerProfileScreen extends StatelessWidget {
   VolunteerProfileScreen({super.key, this.userId});
@@ -159,7 +161,7 @@ class VolunteerProfileScreen extends StatelessWidget {
                             ),
                           if (isOwner) ...[
                             _buildSavedFees(viewModel),
-                            _buildProjectApplications(viewModel, context),
+                            _buildAllApplications(viewModel, context),
                             _buildFollowedOrganizationsSection(
                               context,
                               viewModel,
@@ -416,20 +418,24 @@ class VolunteerProfileScreen extends StatelessWidget {
           ),
         );
       case FriendshipStatus.notFriends:
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
-          child: CustomElevatedButton(
-            text: 'Додати в друзі',
-            onPressed: () => viewModel.sendFriendRequest(userId!),
-            width: double.infinity,
-            height: 44,
-            borderRadius: 24,
-            textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-              color: appThemeColors.backgroundLightGrey,
+        if (viewModel.currentUserRole != UserRole.organization) {
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+            child: CustomElevatedButton(
+              text: 'Додати в друзі',
+              onPressed: () => viewModel.sendFriendRequest(userId!),
+              width: double.infinity,
+              height: 44,
+              borderRadius: 24,
+              textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                color: appThemeColors.backgroundLightGrey,
+              ),
+              backgroundColor: appThemeColors.successGreen,
             ),
-            backgroundColor: appThemeColors.successGreen,
-          ),
-        );
+          );
+        } else {
+          return SizedBox.shrink();
+        }
       case FriendshipStatus.requestSent:
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
@@ -700,11 +706,27 @@ class VolunteerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildProjectApplications(ProfileViewModel viewModel, BuildContext context) {
-    // Витягуємо перші 3 заявки
-    final applications = viewModel.volunteerProjectApplications
-        .take(3)
-        .toList();
+  Widget _buildAllApplications(
+    ProfileViewModel viewModel,
+    BuildContext context,
+  ) {
+    // Створюємо об'єднаний список заявок
+    List<ApplicationItem> allItems = [];
+
+    // Додаємо заявки на проєкти
+    for (var app in viewModel.volunteerProjectApplications) {
+      final project = viewModel.projectsData[app.projectId];
+      allItems.add(ApplicationItem.project(app, project));
+    }
+
+    // Додаємо заявки на збори
+    for (var app in viewModel.volunteerFundraiserApplications) {
+      allItems.add(ApplicationItem.fundraiser(app));
+    }
+
+    // Сортуємо за часом (найновіші спочатку) та беремо перші 3
+    allItems.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    final displayItems = allItems.take(3).toList();
 
     return Column(
       children: [
@@ -714,15 +736,17 @@ class VolunteerProfileScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Заявки на проєкти',
+                'Мої заявки',
                 style: TextStyleHelper.instance.title16Bold.copyWith(
                   color: appThemeColors.backgroundLightGrey,
                 ),
               ),
-              if (viewModel.volunteerProjectApplications.length > 3)
+              if (allItems.length > 3)
                 GestureDetector(
                   onTap: () {
-                    Navigator.of(context).pushNamed(AppRoutes.allProjectApplicationsScreen);
+                    Navigator.of(
+                      context,
+                    ).pushNamed(AppRoutes.allApplicationsScreen);
                   },
                   child: Text(
                     'Переглянути всі',
@@ -736,22 +760,47 @@ class VolunteerProfileScreen extends StatelessWidget {
             ],
           ),
         ),
-        if (applications.isEmpty)
+        if (allItems.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Ви ще не подавали заявок на проєкти.',
-              style: TextStyleHelper.instance.title14Regular.copyWith(
-                color: appThemeColors.backgroundLightGrey,
-              ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.inbox_outlined,
+                  size: 48,
+                  color: appThemeColors.backgroundLightGrey.withAlpha(100),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Ви ще не подавали заявок.',
+                  style: TextStyleHelper.instance.title14Regular.copyWith(
+                    color: appThemeColors.backgroundLightGrey,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Заявки на проєкти та збори з\'являться тут',
+                  style: TextStyleHelper.instance.title13Regular.copyWith(
+                    color: appThemeColors.backgroundLightGrey.withAlpha(150),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
           ),
-        if (applications.isNotEmpty)
-          ...applications.map((app) {
-            final project = viewModel.projectsData[app.projectId];
+        if (displayItems.isNotEmpty)
+          ...displayItems.map((item) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: ProjectApplicationItem(application: app, project: project),
+              child: item.isProject
+                  ? ProjectApplicationItem(
+                      application: item.projectApplication!,
+                      project: item.project,
+                    )
+                  : FundraiserApplicationItem(
+                      application: item.fundraiserApplication!,
+                    ),
             );
           }),
       ],

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/validators/auth_validator.dart';
-import 'package:helphub/widgets/custom_document_upload_field.dart';
+import 'package:helphub/widgets/custom_multi_document_upload_field.dart';
 import 'package:provider/provider.dart';
 
 import '../../theme/text_style_helper.dart';
@@ -103,18 +103,25 @@ class _RegisterOrganizationStep2ScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CustomDocumentUploadField(
-            labelText: '',
-            description:
-                'Завантажте документи, що підтверджують легальний статус вашої організації',
-            initialFiles: controller.selectedDocuments,
-            validator: AuthValidator.validateDocumentSelected,
-            onChanged: (files){
+          SizedBox(height: 13,),
+          CustomMultiDocumentUploadField(
+            labelText:
+                'Документи, що підтверджують легальний статус вашої організації',
+            onChanged: (files) {
               controller.updateSelectedDocuments(files);
             },
-            isLoading: controller.isLoading,
-            showErrorsLive: controller.showValidationErrors,
-          ),
+            labelStyle: TextStyleHelper.instance.title16Bold.copyWith(
+              color: appThemeColors.blueAccent,
+              height: 1.2,
+            ),
+            color: appThemeColors.cyanAccent,
+            validator: (file) {
+              if (file == null) {
+                return 'Будь ласка, завантажте документ.';
+              }
+              return null;
+            },          ),
+
           const SizedBox(height: 7),
           CustomTextField(
             label: 'Пароль',
@@ -158,7 +165,10 @@ class _RegisterOrganizationStep2ScreenState
             isLoading: controller.isLoading,
             onPressed: controller.isLoading
                 ? null
-                : () => controller.handleRegistrationStep2(context, _formKeyStep2),
+                : () => controller.handleRegistrationStep2(
+                    context,
+                    _formKeyStep2,
+                  ),
           ),
           const SizedBox(height: 8),
         ],

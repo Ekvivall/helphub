@@ -226,9 +226,9 @@ class _ProjectFiltersBottomSheetState extends State<ProjectFiltersBottomSheet> {
                       _tempIsOnlyFriends = value;
                     });
                   },
-                  activeColor: appThemeColors.appBarBg,
-                  inactiveTrackColor: appThemeColors.appBarBg,
-                  inactiveThumbColor: appThemeColors.primaryWhite,
+                  activeColor: appThemeColors.backgroundLightGrey,
+                  inactiveTrackColor: appThemeColors.backgroundLightGrey,
+                  inactiveThumbColor: appThemeColors.appBarBg,
                   trackOutlineColor: WidgetStateProperty.all(
                     Colors.transparent,
                   ),
@@ -253,9 +253,9 @@ class _ProjectFiltersBottomSheetState extends State<ProjectFiltersBottomSheet> {
                       _tempIsOnlyOpen = value;
                     });
                   },
-                  activeColor: appThemeColors.appBarBg,
-                  inactiveTrackColor: appThemeColors.appBarBg,
-                  inactiveThumbColor: appThemeColors.primaryWhite,
+                  activeColor: appThemeColors.backgroundLightGrey,
+                  inactiveTrackColor: appThemeColors.backgroundLightGrey,
+                  inactiveThumbColor: appThemeColors.appBarBg,
                   trackOutlineColor: WidgetStateProperty.all(
                     Colors.transparent,
                   ),

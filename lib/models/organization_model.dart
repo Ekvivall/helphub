@@ -9,7 +9,7 @@ class OrganizationModel extends BaseProfileModel {
   final String? website;
   final List<String>? documents;
   final bool? isVerification;
-  final int? feesCount;
+  final int? fundraisingsCount;
   final List<TrustBadgeModel>? trustBadges;
 
   OrganizationModel({
@@ -32,7 +32,7 @@ class OrganizationModel extends BaseProfileModel {
     this.website,
     this.documents,
     this.isVerification,
-    this.feesCount,
+    this.fundraisingsCount,
     this.trustBadges,
   }) : super(role: UserRole.organization);
 
@@ -61,7 +61,7 @@ class OrganizationModel extends BaseProfileModel {
       'website': website,
       'documents': documents,
       'isVerification': isVerification,
-      'feesCount': feesCount,
+      'feesCount': fundraisingsCount,
       'trustBadges': trustBadges?.map((e) => e.toMap()).toList(),
     };
   }
@@ -92,7 +92,7 @@ class OrganizationModel extends BaseProfileModel {
           ?.map((e) => e as String)
           .toList(),
       isVerification: map['isVerification'] as bool?,
-      feesCount: map['feesCount'] as int?,
+      fundraisingsCount: map['feesCount'] as int?,
       trustBadges: (map['trustBadges'] as List<dynamic>?)
           ?.map((e) => TrustBadgeModel.fromMap(e as Map<String, dynamic>))
           .toList(),
@@ -140,7 +140,7 @@ class OrganizationModel extends BaseProfileModel {
       website: website ?? this.website,
       documents: documents ?? this.documents,
       isVerification: isVerification ?? this.isVerification,
-      feesCount: feesCount ?? this.feesCount,
+      fundraisingsCount: feesCount ?? this.fundraisingsCount,
       trustBadges: trustBadges ?? this.trustBadges,
       categoryChips: categoryChips ?? this.categoryChips,
       phoneNumber: phoneNumber ?? this.phoneNumber,

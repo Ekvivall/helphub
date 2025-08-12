@@ -9,7 +9,7 @@ import 'package:helphub/core/services/category_service.dart';
 import 'package:helphub/core/services/follow_service.dart';
 import 'package:helphub/core/services/friend_service.dart';
 import 'package:helphub/core/services/fundraiser_application_service.dart';
-import 'package:helphub/core/services/fundraiser_service.dart';
+import 'package:helphub/core/services/fundraising_service.dart';
 import 'package:helphub/core/services/project_application_service.dart';
 import 'package:helphub/core/services/project_service.dart';
 import 'package:helphub/core/utils/user_role_extension.dart';
@@ -17,7 +17,7 @@ import 'package:helphub/models/activity_model.dart';
 import 'package:helphub/models/base_profile_model.dart';
 import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/models/friend_request_model.dart';
-import 'package:helphub/models/fundraiser.dart';
+import 'package:helphub/models/fundraising_model.dart';
 import 'package:helphub/models/fundraiser_application_model.dart';
 import 'package:helphub/models/organization_model.dart';
 import 'package:helphub/models/project_application_model.dart';
@@ -31,7 +31,7 @@ class ProfileViewModel extends ChangeNotifier {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final CategoryService _categoryService = CategoryService();
   final FriendService _friendService = FriendService();
-  final FundraiserService _fundraiserService = FundraiserService();
+  final FundraisingService _fundraiserService = FundraisingService();
   final ProjectApplicationService _projectApplicationService =
       ProjectApplicationService();
   final FundraiserApplicationService _fundraiserApplicationService =
@@ -46,8 +46,8 @@ class ProfileViewModel extends ChangeNotifier {
   List<CategoryChipModel> _availableInterests = [];
   List<CategoryChipModel> _selectedInterests = [];
 
-  List<Fundraiser> _savedFundraisers = [];
-  StreamSubscription<List<Fundraiser>>? _savedFundraiserSubscription;
+  List<FundraisingModel> _savedFundraisers = [];
+  StreamSubscription<List<FundraisingModel>>? _savedFundraiserSubscription;
   List<ProjectApplicationModel> _volunteerProjectApplications = [];
   List<FundraiserApplicationModel> _volunteerFundraiserApplications = [];
   List<FundraiserApplicationModel> _organizationFundraiserApplications = [];
@@ -121,7 +121,7 @@ class ProfileViewModel extends ChangeNotifier {
 
   int get incomingFriendRequestsCount => _incomingFriendRequests.length;
 
-  List<Fundraiser> get savedFundraiser => _savedFundraisers;
+  List<FundraisingModel> get savedFundraiser => _savedFundraisers;
 
   List<ProjectApplicationModel> get volunteerProjectApplications =>
       _volunteerProjectApplications;
@@ -161,6 +161,8 @@ class ProfileViewModel extends ChangeNotifier {
   final String? _viewingUserId; // ID користувача, який переглядається
   String? _currentAuthUserId; // UID поточного авторизованого користувача
   String? get currentAuthUserId => _currentAuthUserId;
+  UserRole? _currentUserRole;
+  UserRole? get currentUserRole  => _currentUserRole;
 
   String? get viewingUserId => _viewingUserId;
   Map<String, ProjectModel> _projectsData = {};
@@ -179,12 +181,12 @@ class ProfileViewModel extends ChangeNotifier {
 
     // Автоматичне завантаження профілю при ініціалізації ViewModel
     // Якщо ще не завантажено
-    _auth.authStateChanges().listen((user) {
+    _auth.authStateChanges().listen((user) async {
       _currentAuthUserId = user?.uid;
-      if ((_viewingUserId != null || user != null) && _user == null) {
-        fetchUserProfile();
-      } else if (_viewingUserId != null && _viewingUserId != user?.uid) {
-        fetchUserProfile();
+      fetchUserProfile();
+       if (_viewingUserId != null && _viewingUserId != _currentAuthUserId) {
+        BaseProfileModel? user = await fetchUser(_currentAuthUserId);
+        _currentUserRole = user?.role;
       }
     });
   }
@@ -933,6 +935,26 @@ class ProfileViewModel extends ChangeNotifier {
     } finally {
       _isActivitiesLoading = false;
       notifyListeners();
+    }
+  }
+  Future<BaseProfileModel?> fetchUser(String? userId) async {
+    try {
+      if (userId == null) return null;
+      final doc = await _firestore.collection('users').doc(userId).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data();
+        final roleString = data?['role'] as String?;
+        if (roleString == UserRole.volunteer.name) {
+          return VolunteerModel.fromMap(doc.data()!);
+        } else {
+          return OrganizationModel.fromMap(doc.data()!);
+        }
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching user profile: $e');
+      return null;
     }
   }
 }

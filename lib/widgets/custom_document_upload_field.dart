@@ -1,141 +1,135 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
 
 import '../theme/text_style_helper.dart';
 import '../theme/theme_helper.dart';
 
-class CustomDocumentUploadField extends FormField<List<PlatformFile>> {
-  CustomDocumentUploadField({
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+
+class CustomImageUploadField extends FormField<File> {
+  CustomImageUploadField({
     super.key,
     required String labelText,
-    String? description,
+    ValueChanged<File?>? onChanged,
     super.onSaved,
     super.validator,
-    ValueChanged<List<PlatformFile>>? onChanged,
-    List<PlatformFile>? initialFiles,
-    bool isLoading = false,
-    Color? backgroundColor,
-    Color? borderColor,
-    double borderWidth = 1.0,
-    double borderRadius = 12.0,
-    Color? iconColor,
-    Color? hintTextColor,
-    TextStyle? fileNameTextStyle,
-    TextStyle? labelTextStyle,
-    TextStyle? descriptionTextStyle,
-    String pickButtonText = 'Натисніть, щоб завантажити файл(и)',
-    List<String> allowedExtensions = const ['pdf', 'doc', 'docx', 'png', 'jpg', 'xlsx'],
-    bool showErrorsLive = false
+    super.initialValue,
   }) : super(
-    initialValue: initialFiles ?? [],
-    autovalidateMode: showErrorsLive ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
-    builder: (FormFieldState<List<PlatformFile>> state) {
-      final defaultBackgroundColor = backgroundColor ?? appThemeColors.backgroundLightGrey;
-      final defaultBorderColor = borderColor ?? appThemeColors.textMediumGrey;
-      final defaultIconColor = iconColor ?? appThemeColors.textMediumGrey;
-      final defaultHintTextColor = hintTextColor ?? appThemeColors.textMediumGrey;
-      final defaultFileNameTextStyle = fileNameTextStyle ??
-          TextStyleHelper.instance.title14Regular.copyWith(color: defaultHintTextColor);
-      final defaultLabelTextStyle = labelTextStyle ??
-          TextStyleHelper.instance.title16Bold.copyWith(
-            height: 1.2,
-            color: appThemeColors.blueAccent,
-          );
-      final defaultDescriptionTextStyle = descriptionTextStyle ??
-          TextStyleHelper.instance.title14Regular.copyWith(
-            height: 1.2,
-            color: appThemeColors.primaryBlack,
-          );
+         builder: (FormFieldState<File> state) {
+           Future<void> pickImage() async {
+             final ImagePicker picker = ImagePicker();
+             final XFile? image = await picker.pickImage(
+               source: ImageSource.gallery,
+             );
+             if (image != null) {
+               final file = File(image.path);
+               state.didChange(file);
+               onChanged?.call(file);
+             }
+           }
 
-      String displayText = (state.value != null && state.value!.isNotEmpty)
-          ? 'Вибрано: ${state.value!.map((f) => f.name).join(', ')}'
-          : pickButtonText;
+           void clearImage() {
+             state.didChange(null);
+             onChanged?.call(null);
+           }
 
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            labelText,
-            style: defaultLabelTextStyle,
-          ),
-          const SizedBox(height: 8),
-
-          if (description != null)
-            Text(
-              description,
-              style: defaultDescriptionTextStyle,
-            ),
-          if (description != null) const SizedBox(height: 8),
-
-          GestureDetector(
-            onTap: isLoading
-                ? null
-                : () async {
-              FilePickerResult? result = await FilePicker.platform.pickFiles(
-                type: FileType.custom,
-                allowedExtensions: allowedExtensions,
-                allowMultiple: true,
-              );
-
-              List<PlatformFile> newFiles = result?.files ?? [];
-              state.didChange(newFiles);
-              if (onChanged != null) {
-                onChanged(newFiles);
-              }
-            },
-            child: Container(
-              width: double.infinity,
-              constraints: const BoxConstraints(minHeight: 120.0),
-              padding: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: defaultBackgroundColor,
-                border: Border.all(
-                  color: state.hasError ? appThemeColors.errorRed : defaultBorderColor,
-                  width: borderWidth,
-                  style: BorderStyle.solid,
-                ),
-                borderRadius: BorderRadius.circular(borderRadius),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.cloud_upload,
-                    size: 40,
-                    color: defaultIconColor,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    displayText,
-                    style: defaultFileNameTextStyle,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (isLoading)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: appThemeColors.blueAccent,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          if (state.hasError)
-            Padding(
-              padding: const EdgeInsets.only(top: 4.0),
-              child: Text(
-                state.errorText!,
-                style: TextStyleHelper.instance.title13Regular.copyWith(
-                  color: appThemeColors.errorRed,
-                ),
-              ),
-            ),
-        ],
-      );
-    },
-  );
+           return Column(
+             crossAxisAlignment: CrossAxisAlignment.start,
+             children: [
+               Text(
+                 labelText,
+                 style: TextStyleHelper.instance.title16Bold.copyWith(
+                   color: appThemeColors.backgroundLightGrey,
+                 ),
+               ),
+               const SizedBox(height: 8),
+               if (state.value != null)
+                 // --- Вигляд з обраним зображенням ---
+                 Container(
+                   height: 200,
+                   width: double.infinity,
+                   decoration: BoxDecoration(
+                     borderRadius: BorderRadius.circular(10),
+                     image: DecorationImage(
+                       image: FileImage(state.value!),
+                       fit: BoxFit.cover,
+                     ),
+                   ),
+                   child: Stack(
+                     children: [
+                       Positioned(
+                         top: 8,
+                         right: 8,
+                         child: GestureDetector(
+                           onTap: clearImage,
+                           child: Container(
+                             padding: const EdgeInsets.all(4),
+                             decoration: BoxDecoration(
+                               color: appThemeColors.errorRed.withAlpha(177),
+                               borderRadius: BorderRadius.circular(15),
+                             ),
+                             child: Icon(
+                               Icons.close,
+                               color: appThemeColors.primaryWhite,
+                               size: 20,
+                             ),
+                           ),
+                         ),
+                       ),
+                     ],
+                   ),
+                 )
+               else
+                 // --- Вигляд-заповнювач для вибору зображення ---
+                 GestureDetector(
+                   onTap: pickImage,
+                   child: Container(
+                     height: 120,
+                     width: double.infinity,
+                     decoration: BoxDecoration(
+                       color: appThemeColors.blueMixedColor.withAlpha(77),
+                       borderRadius: BorderRadius.circular(10),
+                       border: Border.all(
+                         color: state.hasError
+                             ? appThemeColors.errorRed
+                             : appThemeColors.backgroundLightGrey,
+                         width: 2,
+                       ),
+                     ),
+                     child: Column(
+                       mainAxisAlignment: MainAxisAlignment.center,
+                       children: [
+                         Icon(
+                           Icons.add_a_photo,
+                           color: appThemeColors.backgroundLightGrey,
+                           size: 40,
+                         ),
+                         const SizedBox(height: 8),
+                         Text(
+                           'Додати фото',
+                           style: TextStyleHelper.instance.title14Regular
+                               .copyWith(
+                                 color: appThemeColors.backgroundLightGrey,
+                               ),
+                         ),
+                       ],
+                     ),
+                   ),
+                 ),
+               if (state.hasError)
+                 Padding(
+                   padding: const EdgeInsets.only(top: 8.0, left: 12.0),
+                   child: Text(
+                     state.errorText!,
+                     style: TextStyle(
+                       color: appThemeColors.errorRed,
+                       fontSize: 12,
+                     ),
+                   ),
+                 ),
+             ],
+           );
+         },
+       );
 }
+

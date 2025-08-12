@@ -9,6 +9,8 @@ import 'package:helphub/views/chat/chat_project_screen.dart';
 import 'package:helphub/views/event/create_event_screen.dart';
 import 'package:helphub/views/event/event_detail_screen.dart';
 import 'package:helphub/views/event/event_list_screen.dart' hide DisplayMode;
+import 'package:helphub/views/fundraising/fundraising_list_screen.dart';
+import 'package:helphub/views/profile/all_applications_screen.dart';
 import 'package:helphub/views/profile/all_followed_organizations_screen.dart';
 import 'package:helphub/views/profile/edit_user_profile_screen.dart';
 import 'package:helphub/views/profile/find_friends_screen.dart';
@@ -21,9 +23,11 @@ import 'package:helphub/views/splash/splash_screen.dart';
 
 import '../views/auth/register_organization_step2_screen.dart';
 import '../views/event/event_map_screen.dart';
+import '../views/fundraising/create_fundraising_application_screen.dart';
+import '../views/fundraising/create_fundraising_screen.dart';
+import '../views/profile/all_fundraiser_applications_screen.dart';
 import '../views/profile/friend_requests_screen.dart';
 import '../views/project/create_project_screen.dart';
-import '../views/profile/all_project_applications_screen.dart';
 
 class AppRoutes {
   static const String splashScreen = '/splash';
@@ -50,8 +54,13 @@ class AppRoutes {
   static const String createProjectScreen = 'create_project';
   static const String projectListScreen = 'project_list';
   static const String applyToProjectScreen = 'apply_to_project';
-  static const String allProjectApplicationsScreen = 'all_project_applications';
   static const String chatProjectScreen = 'chat_project';
+  static const String createFundraisingScreen = '/create_fundraising';
+  static const String fundraisingListScreen = '/fundraising_list';
+  static const String createFundraisingApplicationScreen = '/create_fundraising_application';
+  static const String allApplicationsScreen = '/all_applications';
+  static const String allFundraiserApplicationsScreen = '/all_fundraiser_applications';
+
 
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
@@ -72,8 +81,11 @@ class AppRoutes {
         AllFollowedOrganizationsScreen(),
     eventListScreen: (context) => EventListScreen(),
     projectListScreen: (context) => ProjectListScreen(),
-    allProjectApplicationsScreen: (context) => AllProjectApplicationsScreen(),
+    fundraisingListScreen: (context) => FundraisingListScreen(),
+    allApplicationsScreen: (context) => AllApplicationsScreen(),
+    allFundraiserApplicationsScreen: (context) => AllFundraiserApplicationsScreen(),
   };
+
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -115,6 +127,16 @@ class AppRoutes {
             initialDisplayMode:
                 args?['displayMode'] as DisplayMode? ?? DisplayMode.chat,
           ),
+        );
+      case createFundraisingScreen:
+        final String fundraisingId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (context) => CreateFundraisingScreen(fundraisingId: fundraisingId),
+        );
+      case createFundraisingApplicationScreen:
+        final String organizationId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (context) => CreateFundraisingApplicationScreen(organizationId: organizationId),
         );
       default:
         if (routes.containsKey(settings.name)) {

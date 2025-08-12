@@ -64,6 +64,12 @@ class LatestActivities extends StatelessWidget {
               activity: activity,
               isOwner: isOwner,
             );
+          case ActivityType.fundraiserDonation:
+            // TODO: Handle this case.
+            throw UnimplementedError();
+          case ActivityType.fundraiserCompletion:
+            // TODO: Handle this case.
+            throw UnimplementedError();
         }
       },
     );

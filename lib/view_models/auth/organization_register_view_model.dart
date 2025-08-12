@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -23,9 +22,9 @@ class OrganizationRegisterViewModel extends ChangeNotifier {
 
   String? get selectedCity => _selectedCity;
 
-  List<PlatformFile> _selectedDocuments = [];
+  List<File> _selectedDocuments = [];
 
-  List<PlatformFile> get selectedDocuments => _selectedDocuments;
+  List<File> get selectedDocuments => _selectedDocuments;
   bool _isAgreementAccepted = false;
 
   bool get isAgreementAccepted => _isAgreementAccepted;
@@ -52,31 +51,9 @@ class OrganizationRegisterViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateSelectedDocuments(List<PlatformFile> files) {
+  void updateSelectedDocuments(List<File> files) {
     _selectedDocuments = files;
     notifyListeners();
-  }
-
-  Future<void> pickDocument() async {
-    _isLoading = true;
-    notifyListeners();
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['pdf', 'doc', 'docx', 'png', 'jpg', 'xlsx'],
-        allowMultiple: true,
-      );
-      if (result != null && result.files.isNotEmpty) {
-        _selectedDocuments = result.files;
-      } else {
-        _selectedDocuments = [];
-      }
-    } catch (e) {
-      _selectedDocuments = [];
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
   }
 
   void updateAgreement(bool value) {
@@ -100,9 +77,9 @@ class OrganizationRegisterViewModel extends ChangeNotifier {
   }
 
   Future<void> handleRegistrationStep2(
-    BuildContext context,
-    GlobalKey<FormState> formKey,
-  ) async {
+      BuildContext context,
+      GlobalKey<FormState> formKey,
+      ) async {
     FocusScope.of(context).unfocus();
     if (!formKey.currentState!.validate()) {
       _showValidationErrors = true;
@@ -116,59 +93,66 @@ class OrganizationRegisterViewModel extends ChangeNotifier {
       // 1. Створення користувача в FirebaseAuth
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(
-            email: emailController.text.trim(),
-            password: passwordController.text.trim(),
-          );
+        email: emailController.text.trim(),
+        password: passwordController.text.trim(),
+      );
       User? user = userCredential.user;
       if (user != null) {
-        // 2. Завантаження документів у Firebase Storage
-        List<String> documentUrls = [];
-        if (_selectedDocuments.isNotEmpty) {
-          Constants.showSuccessMessage(context, 'Завантаження документів...');
-          for (PlatformFile file in _selectedDocuments) {
-            try {
-              //Створення унікального шляху для файлу в Storage
-              final String filePath =
-                  'users/${user.uid}/documents/${DateTime.now().microsecondsSinceEpoch}_${file.name}';
-              final Reference storageRef = FirebaseStorage.instance.ref().child(
-                filePath,
-              );
-              UploadTask uploadTask;
-              if (file.bytes != null) {
-                uploadTask = storageRef.putData(file.bytes!);
-              } else if (file.path != null) {
-                uploadTask = storageRef.putFile(File(file.path!));
-              } else {
-                throw Exception('Немає даних файлу для завантаження.');
-              }
-              final TaskSnapshot snapshot = await uploadTask.whenComplete(
-                () {},
-              );
-              final String downloadUrl = await snapshot.ref.getDownloadURL();
-              documentUrls.add(downloadUrl);
-            } catch (storageError) {
-              Constants.showErrorMessage(
-                context,
-                'Помилка завантаження файлу ${file.name}: ${storageError.toString()}',
-              );
-            }
-          }
-        }
-        // 3. Збереження інформації про організацію до Firestore
+        // 2. Повторна аутентифікація для оновлення сесії
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
+
+        // 3. Збереження інформації про організацію до Firestore (перед завантаженням файлів)
         OrganizationModel newOrganization = OrganizationModel(
           uid: user.uid,
           email: emailController.text.trim(),
           organizationName: organizationNameController.text.trim(),
           website: websiteController.text.trim(),
           city: _selectedCity,
-          documents: documentUrls,
+          documents: [], // Спочатку зберігаємо порожній список
           isVerification: false,
           createdAt: DateTime.now(),
+          fundraisingsCount: 0,
+          eventsCount: 0,
+          projectsCount: 0,
         );
         await FirebaseFirestore.instance
             .collection('users')
             .doc(user.uid)
             .set(newOrganization.toMap(), SetOptions(merge: true));
+
+        // 4. Завантаження документів у Firebase Storage
+        List<String> documentUrls = [];
+        if (_selectedDocuments.isNotEmpty) {
+          Constants.showSuccessMessage(context, 'Завантаження документів...');
+          for (File file in _selectedDocuments) {
+            try {
+              final String filePath =
+                  'users/${user.uid}/documents/${DateTime.now().microsecondsSinceEpoch}_${file.path.split('/').last}';
+              final Reference storageRef = FirebaseStorage.instance.ref().child(
+                filePath,
+              );
+              UploadTask uploadTask = storageRef.putFile(File(file.path));
+              final TaskSnapshot snapshot = await uploadTask;
+              final String downloadUrl = await snapshot.ref.getDownloadURL();
+              documentUrls.add(downloadUrl);
+            } catch (storageError) {
+              Constants.showErrorMessage(
+                context,
+                'Помилка завантаження файлу: ${storageError.toString()}',
+              );
+            }
+          }
+        }
+
+        // 5. Оновлення інформації про організацію в Firestore з URL-адресами документів
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({'documents': documentUrls});
+
         Constants.showSuccessMessage(
           context,
           'Благодійний фонд успішно зареєстрований!',

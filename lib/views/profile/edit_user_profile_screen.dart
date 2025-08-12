@@ -202,7 +202,9 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                 labelText: 'Місто',
                                 value: viewModel.selectedCity,
                                 hintText: 'Оберіть місто',
-                                items: Constants.cities,
+                                items: Constants.cities.map((String item) {
+                                  return DropdownItem(key: item, value: item);
+                                }).toList(),
                                 onChanged: (String? newValue) {
                                   if (newValue != null) {
                                     viewModel.updateCity(newValue);

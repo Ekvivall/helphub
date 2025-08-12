@@ -1,0 +1,506 @@
+import 'dart:async';
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:path/path.dart' as p;
+
+import '../../core/services/activity_service.dart';
+import '../../core/services/category_service.dart';
+import '../../core/services/fundraising_service.dart';
+import '../../models/activity_model.dart';
+import '../../models/base_profile_model.dart';
+import '../../models/category_chip_model.dart';
+import '../../models/fundraising_model.dart';
+import '../../models/organization_model.dart';
+import '../../models/volunteer_model.dart';
+
+class FundraisingViewModel extends ChangeNotifier {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FundraisingService _fundraisingService = FundraisingService();
+  final CategoryService _categoryService = CategoryService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final ActivityService _activityService = ActivityService();
+
+  StreamSubscription<List<FundraisingModel>>? _fundraisingsSubscription;
+  List<FundraisingModel> _allFundraisings = [];
+  List<FundraisingModel> _filteredFundraisings = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  // Фільтри
+  List<CategoryChipModel> _availableCategories = [];
+  List<CategoryChipModel> _selectedCategories = [];
+  DateTime? _selectedStartDate;
+  DateTime? _selectedEndDate;
+  String _searchQuery = '';
+  bool _isUrgentOnly = false;
+  double? _minTargetAmount;
+  double? _maxTargetAmount;
+
+  File? _pickedImageFile;
+  List<File> _pickedDocuments = [];
+  bool _isUploadingFiles = false;
+
+  String? _currentAuthUserId;
+  BaseProfileModel? _user;
+
+  // Getters
+  List<FundraisingModel> get filteredFundraisings => _filteredFundraisings;
+
+  bool get isLoading => _isLoading;
+
+  String? get errorMessage => _errorMessage;
+
+  List<CategoryChipModel> get availableCategories => _availableCategories;
+
+  List<CategoryChipModel> get selectedCategories => _selectedCategories;
+
+  DateTime? get selectedStartDate => _selectedStartDate;
+
+  DateTime? get selectedEndDate => _selectedEndDate;
+
+  bool get isUrgentOnly => _isUrgentOnly;
+
+  double? get minTargetAmount => _minTargetAmount;
+
+  double? get maxTargetAmount => _maxTargetAmount;
+
+  File? get pickedImageFile => _pickedImageFile;
+
+  List<File> get pickedDocuments => _pickedDocuments;
+
+  bool get isUploadingFiles => _isUploadingFiles;
+
+  String? get currentAuthUserId => _currentAuthUserId;
+
+  BaseProfileModel? get user => _user;
+
+  FundraisingViewModel() {
+    _auth.authStateChanges().listen((user) async {
+      _currentAuthUserId = user?.uid;
+      _user = await fetchUserProfile(currentAuthUserId);
+      _listenToFundraisings();
+    });
+    _loadAvailableCategories();
+  }
+
+  Future<BaseProfileModel?> fetchUserProfile(String? userId) async {
+    try {
+      if (userId == null) return null;
+      final doc = await _firestore.collection('users').doc(userId).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data();
+        final roleString = data?['role'] as String?;
+        if (roleString == UserRole.volunteer.name) {
+          return VolunteerModel.fromMap(doc.data()!);
+        } else {
+          return OrganizationModel.fromMap(doc.data()!);
+        }
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching user profile: $e');
+      return null;
+    }
+  }
+
+  Future<void> _loadAvailableCategories() async {
+    try {
+      _availableCategories = await _categoryService.fetchCategories();
+      notifyListeners();
+    } catch (e) {
+      print('Error loading available categories: $e');
+    }
+  }
+
+  void _listenToFundraisings() {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    _fundraisingsSubscription?.cancel();
+    _fundraisingsSubscription = _fundraisingService
+        .getFundraisingsStream()
+        .listen(
+          (fundraisings) {
+            _allFundraisings =
+                fundraisings..sort(
+                  (a, b) => (b.timestamp ?? DateTime.now()).compareTo(
+                    a.timestamp ?? DateTime.now(),
+                  ),
+                );
+            _isLoading = false;
+            _applyFilters();
+          },
+          onError: (error) {
+            _errorMessage = 'Помилка завантаження зборів: $error';
+            _isLoading = false;
+            _allFundraisings = [];
+            _filteredFundraisings = [];
+            notifyListeners();
+          },
+        );
+  }
+
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    _applyFilters();
+  }
+
+  void setFilters(
+    List<CategoryChipModel> categories,
+    DateTime? startDate,
+    DateTime? endDate,
+    bool isUrgentOnly,
+    double? minAmount,
+    double? maxAmount,
+  ) {
+    _selectedCategories = categories;
+    _selectedStartDate = startDate;
+    _selectedEndDate = endDate;
+    _isUrgentOnly = isUrgentOnly;
+    _minTargetAmount = minAmount;
+    _maxTargetAmount = maxAmount;
+    _applyFilters();
+  }
+
+  void clearFilters() {
+    _selectedCategories = [];
+    _selectedStartDate = null;
+    _selectedEndDate = null;
+    _searchQuery = '';
+    _isUrgentOnly = false;
+    _minTargetAmount = null;
+    _maxTargetAmount = null;
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    List<FundraisingModel> tempFundraisings = List.from(_allFundraisings);
+
+    // Фільтрація за пошуковим запитом
+    if (_searchQuery.isNotEmpty) {
+      final queryLower = _searchQuery.toLowerCase();
+      tempFundraisings = tempFundraisings.where((fundraising) {
+        return (fundraising.title?.toLowerCase().contains(queryLower) ??
+                false) ||
+            (fundraising.description?.toLowerCase().contains(queryLower) ??
+                false) ||
+            (fundraising.organizationName?.toLowerCase().contains(queryLower) ??
+                false);
+      }).toList();
+    }
+
+    // Фільтрація за категоріями
+    if (_selectedCategories.isNotEmpty) {
+      tempFundraisings = tempFundraisings.where((fundraising) {
+        return fundraising.categories?.any(
+              (fundraisingCategory) => _selectedCategories.any(
+                (selectedCategory) =>
+                    selectedCategory.title == fundraisingCategory.title,
+              ),
+            ) ??
+            false;
+      }).toList();
+    }
+
+    // Фільтрація за датою
+    if (_selectedStartDate != null || _selectedEndDate != null) {
+      tempFundraisings = tempFundraisings.where((fundraising) {
+        final fundraisingDate = fundraising.startDate;
+        if (fundraisingDate == null) return false;
+        final startDate = _selectedStartDate;
+        final endDate = _selectedEndDate;
+        bool matchesStartDate =
+            startDate == null ||
+            fundraisingDate.isAfter(startDate) ||
+            fundraisingDate.isAtSameMomentAs(startDate);
+        bool matchesEndDate =
+            endDate == null ||
+            fundraisingDate.isBefore(endDate.add(const Duration(days: 1)));
+        return matchesStartDate && matchesEndDate;
+      }).toList();
+    }
+
+    // Фільтрація за терміновістю
+    if (_isUrgentOnly) {
+      tempFundraisings = tempFundraisings.where((fundraising) {
+        return fundraising.isUrgent == true;
+      }).toList();
+    }
+
+    // Фільтрація за сумою
+    if (_minTargetAmount != null || _maxTargetAmount != null) {
+      tempFundraisings = tempFundraisings.where((fundraising) {
+        final targetAmount = fundraising.targetAmount;
+        if (targetAmount == null) return false;
+        bool matchesMin =
+            _minTargetAmount == null || targetAmount >= _minTargetAmount!;
+        bool matchesMax =
+            _maxTargetAmount == null || targetAmount <= _maxTargetAmount!;
+        return matchesMin && matchesMax;
+      }).toList();
+    }
+
+    _filteredFundraisings = tempFundraisings;
+    notifyListeners();
+  }
+
+  void setPickedImageFile(File? file) {
+    _pickedImageFile = file;
+    notifyListeners();
+  }
+
+  void setPickedDocuments(List<File> file) {
+    _pickedDocuments = file;
+    notifyListeners();
+  }
+
+
+  void clearPickedFiles() {
+    _pickedImageFile = null;
+    _pickedDocuments.clear();
+    notifyListeners();
+  }
+
+  Future<String?> uploadFundraisingImage() async {
+    if (_pickedImageFile == null) return null;
+    _isUploadingFiles = true;
+    notifyListeners();
+    try {
+      final String fileName =
+          'fundraisings/images/${DateTime.now().millisecondsSinceEpoch}_${p.basename(_pickedImageFile!.path)}';
+      final storageRef = FirebaseStorage.instance.ref().child(fileName);
+      final UploadTask uploadTask = storageRef.putFile(_pickedImageFile!);
+      final TaskSnapshot snapshot = await uploadTask;
+      final String downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl;
+    } catch (e) {
+      _errorMessage = 'Помилка завантаження зображення: $e';
+      return null;
+    } finally {
+      _isUploadingFiles = false;
+      notifyListeners();
+    }
+  }
+
+  Future<List<String>> uploadFundraisingDocuments() async {
+    if (_pickedDocuments.isEmpty) return [];
+    _isUploadingFiles = true;
+    notifyListeners();
+    try {
+      List<String> documentUrls = [];
+      for (int i = 0; i < _pickedDocuments.length; i++) {
+        final file = _pickedDocuments[i];
+        final String fileName =
+            'fundraisings/documents/${DateTime.now().millisecondsSinceEpoch}_$i${p.extension(file.path)}';
+        final Reference storageRef = FirebaseStorage.instance.ref().child(
+          fileName,
+        );
+        final UploadTask uploadTask = storageRef.putFile(File(file.path));
+        final TaskSnapshot snapshot = await uploadTask;
+        final String downloadUrl = await snapshot.ref.getDownloadURL();
+        documentUrls.add(downloadUrl);
+      }
+      return documentUrls;
+    } catch (e) {
+      _errorMessage = 'Помилка завантаження документів: $e';
+      return [];
+    } finally {
+      _isUploadingFiles = false;
+      notifyListeners();
+    }
+  }
+
+  Future<String?> createFundraising({
+    required String title,
+    required String description,
+    required double targetAmount,
+    required List<CategoryChipModel> categories,
+    required DateTime startDate,
+    required DateTime endDate,
+    required String bankLink,
+    required String iban,
+    required bool isUrgent,
+    List<String> ? relatedApplicationIds
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    String? imageUrl;
+    List<String> documentUrls = [];
+    if (_pickedImageFile != null) {
+      imageUrl = await uploadFundraisingImage();
+      if (imageUrl == null) {
+        _isLoading = false;
+        notifyListeners();
+        return 'Не вдалося завантажити зображення збору.';
+      }
+    }
+
+    if (_pickedDocuments.isNotEmpty) {
+      documentUrls = await uploadFundraisingDocuments();
+      if (documentUrls.length != _pickedDocuments.length) {
+        _isLoading = false;
+        notifyListeners();
+        return 'Не вдалося завантажити всі документи.';
+      }
+    }
+
+    try {
+      if (_user == null || _user is! OrganizationModel) {
+        return 'Тільки фонди можуть створювати збори.';
+      }
+
+      final newFundraisingRef = FirebaseFirestore.instance
+          .collection('fundraisings')
+          .doc();
+
+      final newFundraising = FundraisingModel(
+        id: newFundraisingRef.id,
+        title: title,
+        description: description,
+        targetAmount: targetAmount,
+        currentAmount: 0.0,
+        categories: categories,
+        organizationId: _currentAuthUserId!,
+        organizationName:
+            (_user as OrganizationModel).organizationName ?? 'Фонд',
+        startDate: startDate,
+        endDate: endDate,
+        timestamp: DateTime.now(),
+        documentUrls: documentUrls,
+        photoUrl: imageUrl,
+        donorIds: [],
+        bankAccountIban: iban,
+        bankLink: bankLink,
+        isUrgent: isUrgent,
+        relatedApplicationIds: relatedApplicationIds ?? []
+      );
+
+      await newFundraisingRef.set(newFundraising.toMap());
+
+      final userRef = _firestore.collection('users').doc(_currentAuthUserId!);
+      await userRef.update({'fundraisingsCount': FieldValue.increment(1)});
+
+      final activity = ActivityModel(
+        type: ActivityType.fundraiserCreation,
+        entityId: newFundraising.id!,
+        title: newFundraising.title!,
+        description: newFundraising.description,
+        timestamp: DateTime.now(),
+      );
+      await _activityService.logActivity(currentAuthUserId!, activity);
+
+      clearPickedFiles();
+      _isLoading = false;
+      notifyListeners();
+      return null;
+    } catch (e) {
+      _errorMessage = 'Помилка при створенні збору: $e';
+      _isLoading = false;
+      notifyListeners();
+      return _errorMessage;
+    }
+  }
+
+  Future<String?> completeFundraising(String fundraisingId) async {
+    try {
+      _isLoading = true;
+      _errorMessage = null;
+      notifyListeners();
+
+      await _fundraisingService.completeFundraising(fundraisingId);
+
+      // Логуємо активність
+      final activity = ActivityModel(
+        type: ActivityType.fundraiserCompletion,
+        entityId: fundraisingId,
+        title: 'Збір завершено',
+        description: 'Збір коштів успішно завершено',
+        timestamp: DateTime.now(),
+      );
+      await _activityService.logActivity(currentAuthUserId!, activity);
+
+      _isLoading = false;
+      notifyListeners();
+      return null; // Успіх
+    } catch (e) {
+      _errorMessage = 'Помилка при завершенні збору: $e';
+      _isLoading = false;
+      notifyListeners();
+      return _errorMessage;
+    }
+  }
+
+  Future<String?> updateFundraisingAmount(String fundraisingId, double newAmount) async {
+    try {
+      await _fundraisingService.updateCurrentAmount(fundraisingId, newAmount);
+      return null; // Успіх
+    } catch (e) {
+      return 'Помилка при оновленні суми: $e';
+    }
+  }
+
+  Future<String?> addDonorToFundraising(String fundraisingId, String donorId) async {
+    try {
+      await _fundraisingService.addDonorToFundraising(fundraisingId, donorId);
+      return null; // Успіх
+    } catch (e) {
+      return 'Помилка при додаванні донора: $e';
+    }
+  }
+
+  Future<bool> isFundraisingSaved(String fundraisingId) async {
+    if (_currentAuthUserId == null) return false;
+    try {
+      return await _fundraisingService.isFundraisingSaved(_currentAuthUserId!, fundraisingId);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<String?> toggleSaveFundraising(String fundraisingId, bool isSaved) async {
+    if (_currentAuthUserId == null) return 'Користувач не авторизований';
+
+    try {
+      if (isSaved) {
+        await _fundraisingService.unsaveFundraiser(_currentAuthUserId!, fundraisingId);
+      } else {
+        await _fundraisingService.saveFundraiser(_currentAuthUserId!, fundraisingId);
+      }
+      return null; // Успіх
+    } catch (e) {
+      return 'Помилка при збереженні: $e';
+    }
+  }
+
+  void listenToOrganizationFundraisings(String organizationId) {
+    _fundraisingsSubscription?.cancel();
+    _fundraisingsSubscription = _fundraisingService
+        .getOrganizationFundraisingsStream(organizationId)
+        .listen(
+          (fundraisings) {
+        _allFundraisings = fundraisings;
+        _isLoading = false;
+        _applyFilters();
+      },
+      onError: (error) {
+        _errorMessage = 'Помилка завантаження зборів: $error';
+        _isLoading = false;
+        _allFundraisings = [];
+        _filteredFundraisings = [];
+        notifyListeners();
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _fundraisingsSubscription?.cancel();
+    super.dispose();
+  }
+}

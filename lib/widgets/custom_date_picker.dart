@@ -102,7 +102,6 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
       hintText: 'дд.мм.рррр',
       prefixIcon: Icon(Icons.calendar_today),
       validator: _validateDate,
-
       suffixIcon: _dateController.text.isNotEmpty
           ? IconButton(
               icon: Icon(Icons.clear),

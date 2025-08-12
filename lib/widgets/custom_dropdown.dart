@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 
+class DropdownItem {
+  final String key;
+  final String value;
+
+  DropdownItem({required this.key, required this.value});
+}
+
 class CustomDropdown extends StatelessWidget {
   const CustomDropdown({
     super.key,
@@ -33,7 +40,7 @@ class CustomDropdown extends StatelessWidget {
 
   final String hintText;
 
-  final List<String> items;
+  final List<DropdownItem> items;
 
   final ValueChanged<String?> onChanged;
 
@@ -118,26 +125,30 @@ class CustomDropdown extends StatelessWidget {
               filled: false,
               contentPadding: const EdgeInsets.symmetric(
                 vertical: 8,
-                horizontal: 0
+                horizontal: 0,
               ),
               isDense: true,
               errorMaxLines: 2,
-              errorStyle: TextStyleHelper.instance.title13Regular.copyWith(color: appThemeColors.errorRed)
+              errorStyle: TextStyleHelper.instance.title13Regular.copyWith(
+                color: appThemeColors.errorRed,
+              ),
             ),
             icon: Icon(
               Icons.keyboard_arrow_down,
               color: defaultDropdownIconColor,
             ),
             menuMaxHeight: menuMaxHeight,
-            items: items.map((String item) {
+            items: items.map((DropdownItem item) {
               return DropdownMenuItem<String>(
-                value: item,
-                child: Text(item, style: defaultItemTextStyle),
+                value: item.key,
+                child: Text(item.value, style: defaultItemTextStyle),
               );
             }).toList(),
             onChanged: onChanged,
             validator: validator,
-            autovalidateMode: showErrorsLive ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
+            autovalidateMode: showErrorsLive
+                ? AutovalidateMode.onUserInteraction
+                : AutovalidateMode.disabled,
           ),
         ),
       ],

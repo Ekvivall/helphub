@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/constants.dart';
 import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/widgets/custom_date_picker.dart';
-import 'package:helphub/widgets/custom_document_upload_field.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:helphub/widgets/custom_text_field.dart';
 import 'package:helphub/widgets/custom_time_picker.dart';
@@ -18,6 +16,7 @@ import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../validators/auth_validator.dart';
 import '../../view_models/event/event_view_model.dart';
+import '../../widgets/custom_document_upload_field.dart';
 import '../../widgets/custom_dropdown.dart';
 import '../../widgets/events/location_coordinates_widget.dart';
 
@@ -197,28 +196,14 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    CustomDocumentUploadField(
-                      labelText: 'Фото події',
-                      labelTextStyle: TextStyleHelper.instance.title16Bold
-                          .copyWith(color: appThemeColors.backgroundLightGrey),
-                      descriptionTextStyle: TextStyleHelper
-                          .instance
-                          .title14Regular
-                          .copyWith(color: appThemeColors.textLightColor),
-                      description: 'Завантажте фото, що відображає суть події.',
-                      pickButtonText: 'Виберіть фото',
-                      allowedExtensions: const ['jpg', 'png', 'jpeg'],
-                      isLoading: viewModel.isUploadingImage,
-                      onChanged: (files) {
-                        if (files.isNotEmpty && files.first.path != null) {
-                          viewModel.setPickedImageFile(File(files.first.path!));
-                        } else {
-                          viewModel.setPickedImageFile(null);
-                        }
+                    CustomImageUploadField(
+                      labelText: 'Фото збору',
+                      onChanged: (file) {
+                        viewModel.setPickedImageFile(file);
                       },
-                      validator: (files) {
-                        if (viewModel.pickedImageFile == null && !isEditing) {
-                          return 'Будь ласка, завантажте фото події.';
+                      validator: (file) {
+                        if (file == null) {
+                          return 'Будь ласка, завантажте фото.';
                         }
                         return null;
                       },
@@ -229,7 +214,9 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         labelText: 'Місто',
                         value: viewModel.currentEvent?.city,
                         hintText: 'Оберіть місто',
-                        items: Constants.cities,
+                        items: Constants.cities.map((String item) {
+                          return DropdownItem(key: item, value: item);
+                        }).toList(),
                         onChanged: (String? newValue) {
                           if (newValue != null) {
                             setState(() {
