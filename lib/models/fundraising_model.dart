@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:helphub/models/category_chip_model.dart';
 
 class FundraisingModel {
@@ -52,8 +53,8 @@ class FundraisingModel {
       'categories': categories?.map((c) => c.toMap()).toList(),
       'organizationId': organizationId,
       'organizationName': organizationName,
-      'startDate': startDate?.toIso8601String(),
-      'endDate': endDate?.toIso8601String(),
+      'startDate': startDate != null ? Timestamp.fromDate(startDate!) : null,
+      'endDate': endDate != null ? Timestamp.fromDate(endDate!) : null,
       'timestamp': timestamp?.toIso8601String(),
       'documentUrls': documentUrls,
       'photoUrl': photoUrl,
@@ -77,12 +78,8 @@ class FundraisingModel {
           .toList(),
       organizationId: map['organizationId'] as String?,
       organizationName: map['organizationName'] as String?,
-      startDate: map['startDate'] != null
-          ? DateTime.tryParse(map['startDate'] as String)
-          : null,
-      endDate: map['endDate'] != null
-          ? DateTime.tryParse(map['endDate'] as String)
-          : null,
+      startDate: (map['startDate'] as Timestamp?)?.toDate(),
+      endDate: (map['endDate'] as Timestamp?)?.toDate(),
       timestamp: map['timestamp'] != null
           ? DateTime.tryParse(map['timestamp'] as String)
           : null,

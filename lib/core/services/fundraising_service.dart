@@ -66,8 +66,9 @@ class FundraisingService {
   Future<void> completeFundraising(String fundraisingId) async {
     try {
       final batch = _firestore.batch();
-      final fundraisingRef = _firestore.collection('fundraisings').doc(
-          fundraisingId);
+      final fundraisingRef = _firestore
+          .collection('fundraisings')
+          .doc(fundraisingId);
       final fundraisingSnapshot = await fundraisingRef.get();
       if (!fundraisingSnapshot.exists) {
         throw Exception('Збір не знайдено');
@@ -102,7 +103,9 @@ class FundraisingService {
     try {
       final batch = _firestore.batch();
 
-      final fundraisingRef = _firestore.collection('fundraisings').doc(fundraisingId);
+      final fundraisingRef = _firestore
+          .collection('fundraisings')
+          .doc(fundraisingId);
       final fundraisingSnapshot = await fundraisingRef.get();
 
       if (!fundraisingSnapshot.exists) {
@@ -135,15 +138,17 @@ class FundraisingService {
   }
 
   Stream<List<FundraisingModel>> getFundraisingsStream() {
+
     return _firestore
         .collection('fundraisings')
-        .where('status', isEqualTo: 'active')
+        .where('startDate', isLessThanOrEqualTo: DateTime.now())
+        .where('endDate', isGreaterThanOrEqualTo: DateTime.now())
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => FundraisingModel.fromMap(doc.data()))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => FundraisingModel.fromMap(doc.data()))
+              .toList();
+        });
   }
 
   Stream<FundraisingModel> getFundraisingStream(String fundraisingId) {
@@ -152,12 +157,12 @@ class FundraisingService {
         .doc(fundraisingId)
         .snapshots()
         .map((snapshot) {
-      if (snapshot.exists && snapshot.data() != null) {
-        return FundraisingModel.fromMap(snapshot.data()!);
-      } else {
-        throw Exception('Fundraising not found or data is empty.');
-      }
-    });
+          if (snapshot.exists && snapshot.data() != null) {
+            return FundraisingModel.fromMap(snapshot.data()!);
+          } else {
+            throw Exception('Fundraising not found or data is empty.');
+          }
+        });
   }
 
   Future<List<FundraisingModel>> fetchFundraisingsOnce() async {
@@ -174,17 +179,19 @@ class FundraisingService {
     }
   }
 
-  Stream<List<FundraisingModel>> getOrganizationFundraisingsStream(String organizationId) {
+  Stream<List<FundraisingModel>> getOrganizationFundraisingsStream(
+    String organizationId,
+  ) {
     return _firestore
         .collection('fundraisings')
         .where('organizationId', isEqualTo: organizationId)
         .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => FundraisingModel.fromMap(doc.data()))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => FundraisingModel.fromMap(doc.data()))
+              .toList();
+        });
   }
 
   //Adds an entry to users/{uid}/savedFundraisers collection
@@ -196,9 +203,9 @@ class FundraisingService {
           .collection('savedFundraisers')
           .doc(fundId)
           .set({
-        'fundraiserId': fundId,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+            'fundraiserId': fundId,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
     } catch (e) {
       rethrow;
     }
@@ -226,34 +233,34 @@ class FundraisingService {
         .orderBy('timestamp', descending: true)
         .snapshots()
         .asyncMap((savedSnapshot) async {
-      if (savedSnapshot.docs.isEmpty) {
-        return [];
-      }
-      final List<String> fundraiserIds = savedSnapshot.docs
-          .map((doc) => doc.id)
-          .toList();
-      final List<FundraisingModel> savedFundraisers = [];
-      for (String fundId in fundraiserIds) {
-        final docSnapshot = await _firestore
-            .collection('fundraisings')
-            .doc(fundId)
-            .get();
-        if (docSnapshot.exists) {
-          savedFundraisers.add(
-            FundraisingModel.fromMap(docSnapshot.data()!),
-          );
-        }
-      }
-      return savedFundraisers;
-    });
+          if (savedSnapshot.docs.isEmpty) {
+            return [];
+          }
+          final List<String> fundraiserIds = savedSnapshot.docs
+              .map((doc) => doc.id)
+              .toList();
+          final List<FundraisingModel> savedFundraisers = [];
+          for (String fundId in fundraiserIds) {
+            final docSnapshot = await _firestore
+                .collection('fundraisings')
+                .doc(fundId)
+                .get();
+            if (docSnapshot.exists) {
+              savedFundraisers.add(
+                FundraisingModel.fromMap(docSnapshot.data()!),
+              );
+            }
+          }
+          return savedFundraisers;
+        });
   }
 
-  Future<void> updateCurrentAmount(String fundraisingId, double newAmount) async {
+  Future<void> updateCurrentAmount(
+    String fundraisingId,
+    double newAmount,
+  ) async {
     try {
-      await _firestore
-          .collection('fundraisings')
-          .doc(fundraisingId)
-          .update({
+      await _firestore.collection('fundraisings').doc(fundraisingId).update({
         'currentAmount': newAmount,
       });
     } catch (e) {
@@ -261,12 +268,12 @@ class FundraisingService {
     }
   }
 
-  Future<void> addDonorToFundraising(String fundraisingId, String donorId) async {
+  Future<void> addDonorToFundraising(
+    String fundraisingId,
+    String donorId,
+  ) async {
     try {
-      await _firestore
-          .collection('fundraisings')
-          .doc(fundraisingId)
-          .update({
+      await _firestore.collection('fundraisings').doc(fundraisingId).update({
         'donorIds': FieldValue.arrayUnion([donorId]),
       });
     } catch (e) {

@@ -126,12 +126,24 @@ class FundraisingViewModel extends ChangeNotifier {
         .getFundraisingsStream()
         .listen(
           (fundraisings) {
-            _allFundraisings =
-                fundraisings..sort(
-                  (a, b) => (b.timestamp ?? DateTime.now()).compareTo(
-                    a.timestamp ?? DateTime.now(),
-                  ),
-                );
+            _allFundraisings = fundraisings..sort((a, b) {
+              // Пріоритет для термінових зборів
+              final isAUrgent = a.isUrgent ?? false;
+              final isBUrgent = b.isUrgent ?? false;
+
+              if (isAUrgent && !isBUrgent) {
+                return -1;
+              }
+              if (!isAUrgent && isBUrgent) {
+                return 1;
+              }
+
+              // сортуємо за часом (новіші перші)
+              final aTimestamp = a.timestamp ?? DateTime(1970);
+              final bTimestamp = b.timestamp ?? DateTime(1970);
+
+              return bTimestamp.compareTo(aTimestamp);
+            });
             _isLoading = false;
             _applyFilters();
           },
@@ -207,21 +219,18 @@ class FundraisingViewModel extends ChangeNotifier {
       }).toList();
     }
 
-    // Фільтрація за датою
+    // Фільтрація за датою завершення
     if (_selectedStartDate != null || _selectedEndDate != null) {
       tempFundraisings = tempFundraisings.where((fundraising) {
-        final fundraisingDate = fundraising.startDate;
-        if (fundraisingDate == null) return false;
-        final startDate = _selectedStartDate;
-        final endDate = _selectedEndDate;
-        bool matchesStartDate =
-            startDate == null ||
-            fundraisingDate.isAfter(startDate) ||
-            fundraisingDate.isAtSameMomentAs(startDate);
-        bool matchesEndDate =
-            endDate == null ||
-            fundraisingDate.isBefore(endDate.add(const Duration(days: 1)));
-        return matchesStartDate && matchesEndDate;
+        final fundraisingEndDate = fundraising.endDate;
+        if (fundraisingEndDate == null) return false;
+
+        final startDate = _selectedStartDate ?? DateTime(1970);
+        final endDate = _selectedEndDate ?? DateTime(2100);
+
+        // Перевіряємо, чи дата завершення збору потрапляє у вибраний діапазон
+        return (fundraisingEndDate.isAtSameMomentAs(startDate) || fundraisingEndDate.isAfter(startDate)) &&
+            (fundraisingEndDate.isBefore(endDate.add(const Duration(days: 1))));
       }).toList();
     }
 

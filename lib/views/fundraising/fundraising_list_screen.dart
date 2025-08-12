@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/models/organization_model.dart';
 import 'package:helphub/theme/theme_helper.dart';
-import 'package:helphub/views/project/project_filters_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/image_constant.dart';
 import '../../models/base_profile_model.dart';
 import '../../models/volunteer_model.dart';
 import '../../routes/app_router.dart';
+import '../../theme/text_style_helper.dart';
 import '../../view_models/fundraising/fundraising_view_model.dart';
 import '../../widgets/custom_bottom_navigation_bar.dart';
 import '../../widgets/custom_image_view.dart';
 import '../../widgets/custom_input_field.dart';
 import '../../widgets/custom_notification_icon_button.dart';
+import '../../widgets/fundraising/fundraising_list_item.dart';
 import '../../widgets/user_avatar_with_frame.dart';
+import 'fundraising_filters_bottom_sheet.dart';
 
 class FundraisingListScreen extends StatefulWidget {
   const FundraisingListScreen({super.key});
@@ -53,7 +55,8 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
               children: [
                 _buildHeader(context, viewModel, user),
                 const SizedBox(height: 16),
-                //Expanded(child: _buildProjectList(viewModel)),
+                Expanded(child: _buildFundraisingList(viewModel)),
+                const SizedBox(height: 14,)
               ],
             ),
           ),
@@ -135,8 +138,7 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
                     context: context,
                     isScrollControlled: true,
                     builder: (BuildContext context) {
-                      //TODO
-                      return const ProjectFiltersBottomSheet();
+                      return const FundraisingFiltersBottomSheet();
                     },
                   );
                 },
@@ -163,9 +165,9 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
     );
   }
 
-  /*  Widget _buildProjectList(ProjectViewModel viewModel) {
+  Widget _buildFundraisingList(FundraisingViewModel viewModel) {
     final String? errorMessage = viewModel.errorMessage;
-    final List<dynamic> filteredProjects = viewModel.filteredProjects;
+    final List<dynamic> filteredFundraisings = viewModel.filteredFundraisings;
 
     if (viewModel.isLoading) {
       return Center(
@@ -176,38 +178,71 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Text(
-            errorMessage,
-            textAlign: TextAlign.center,
-            style: TextStyleHelper.instance.title16Regular.copyWith(
-              color: appThemeColors.errorRed,
-            ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: appThemeColors.errorLight,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                errorMessage,
+                textAlign: TextAlign.center,
+                style: TextStyleHelper.instance.title16Regular.copyWith(
+                  color: appThemeColors.errorLight,
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
-    if (filteredProjects.isEmpty) {
+    if (filteredFundraisings.isEmpty) {
       return Center(
-        child: Text(
-          'Проєктів не знайдено або вони не відповідають критеріям фільтрації.',
-          textAlign: TextAlign.center,
-          style: TextStyleHelper.instance.title16Regular.copyWith(
-            color: appThemeColors.backgroundLightGrey,
+        child:Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.volunteer_activism_outlined,
+                size: 64,
+                color: appThemeColors.backgroundLightGrey,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Зборів не знайдено',
+                textAlign: TextAlign.center,
+                style: TextStyleHelper.instance.title18Bold.copyWith(
+                  color: appThemeColors.backgroundLightGrey,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Спробуйте змінити критерії пошуку або очистити фільтри.',
+                textAlign: TextAlign.center,
+                style: TextStyleHelper.instance.title14Regular.copyWith(
+                  color: appThemeColors.backgroundLightGrey.withAlpha(177),
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
-    return ListView.builder(
+    return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: filteredProjects.length,
+      itemCount: filteredFundraisings.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 16,),
       itemBuilder: (context, index) {
-        final project = filteredProjects[index];
-        return ProjectListItem(
-          project: project,
+        final fundraising = filteredFundraisings[index];
+        return FundraisingListItem(
+          fundraising: fundraising,
           viewModel: viewModel,
-          userCurrentLocation: viewModel.currentUserLocation,
         );
       },
     );
-  }*/
+  }
 }

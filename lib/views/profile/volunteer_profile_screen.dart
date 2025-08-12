@@ -395,30 +395,29 @@ class VolunteerProfileScreen extends StatelessWidget {
     ProfileViewModel viewModel,
   ) {
     final FriendshipStatus status = viewModel.friendshipStatus;
-
-    switch (status) {
-      case FriendshipStatus.self:
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
-          child: CustomElevatedButton(
-            text: 'Редагувати профіль',
-            onPressed: () {
-              Navigator.of(
-                context,
-              ).pushNamed(AppRoutes.editUserProfileScreen).then((_) {
-                viewModel.fetchUserProfile();
-              });
-            },
-            width: double.infinity,
-            height: 44,
-            borderRadius: 24,
-            textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-              color: appThemeColors.backgroundLightGrey,
+    if (viewModel.currentUserRole != UserRole.organization) {
+      switch (status) {
+        case FriendshipStatus.self:
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+            child: CustomElevatedButton(
+              text: 'Редагувати профіль',
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).pushNamed(AppRoutes.editUserProfileScreen).then((_) {
+                  viewModel.fetchUserProfile();
+                });
+              },
+              width: double.infinity,
+              height: 44,
+              borderRadius: 24,
+              textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                color: appThemeColors.backgroundLightGrey,
+              ),
             ),
-          ),
-        );
-      case FriendshipStatus.notFriends:
-        if (viewModel.currentUserRole != UserRole.organization) {
+          );
+        case FriendshipStatus.notFriends:
           return Container(
             margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
             child: CustomElevatedButton(
@@ -433,103 +432,104 @@ class VolunteerProfileScreen extends StatelessWidget {
               backgroundColor: appThemeColors.successGreen,
             ),
           );
-        } else {
-          return SizedBox.shrink();
-        }
-      case FriendshipStatus.requestSent:
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
-          child: CustomElevatedButton(
-            text: 'Запит відправлено',
-            onPressed: null,
-            // Disabled button
-            width: double.infinity,
-            height: 44,
-            borderRadius: 24,
-            backgroundColor: appThemeColors.blueTransparent,
-            textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-              color: appThemeColors.backgroundLightGrey.withAlpha(179),
+        case FriendshipStatus.requestSent:
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+            child: CustomElevatedButton(
+              text: 'Запит відправлено',
+              onPressed: null,
+              // Disabled button
+              width: double.infinity,
+              height: 44,
+              borderRadius: 24,
+              backgroundColor: appThemeColors.blueTransparent,
+              textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                color: appThemeColors.backgroundLightGrey.withAlpha(179),
+              ),
             ),
-          ),
-        );
-      case FriendshipStatus.requestReceived:
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
-          child: Row(
-            children: [
-              Expanded(
-                child: CustomElevatedButton(
-                  text: 'Прийняти',
-                  onPressed: () =>
-                      viewModel.acceptFriendRequestFromUser(userId!),
-                  height: 44,
-                  borderRadius: 24,
-                  textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-                    color: appThemeColors.backgroundLightGrey,
+          );
+        case FriendshipStatus.requestReceived:
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+            child: Row(
+              children: [
+                Expanded(
+                  child: CustomElevatedButton(
+                    text: 'Прийняти',
+                    onPressed: () =>
+                        viewModel.acceptFriendRequestFromUser(userId!),
+                    height: 44,
+                    borderRadius: 24,
+                    textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                      color: appThemeColors.backgroundLightGrey,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: CustomElevatedButton(
-                  text: 'Відхилити',
-                  onPressed: () =>
-                      viewModel.rejectFriendRequestFromUser(userId!),
-                  height: 44,
-                  borderRadius: 24,
-                  backgroundColor: appThemeColors.blueTransparent,
-                  textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-                    color: appThemeColors.backgroundLightGrey,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: CustomElevatedButton(
+                    text: 'Відхилити',
+                    onPressed: () =>
+                        viewModel.rejectFriendRequestFromUser(userId!),
+                    height: 44,
+                    borderRadius: 24,
+                    backgroundColor: appThemeColors.blueTransparent,
+                    textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                      color: appThemeColors.backgroundLightGrey,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
-      case FriendshipStatus.friends:
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
-          child: Row(
-            children: [
-              Expanded(
-                child: CustomElevatedButton(
-                  text: 'Написати',
-                  onPressed: () {
-                    // TODO: Implement navigation to chat screen
-                  },
-                  height: 44,
-                  borderRadius: 24,
-                  backgroundColor: appThemeColors.blueTransparent,
-                  textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-                    color: appThemeColors.primaryBlack,
+              ],
+            ),
+          );
+        case FriendshipStatus.friends:
+          return Container(
+            margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+            child: Row(
+              children: [
+                Expanded(
+                  child: CustomElevatedButton(
+                    text: 'Написати',
+                    onPressed: () {
+                      // TODO: Implement navigation to chat screen
+                    },
+                    height: 44,
+                    borderRadius: 24,
+                    backgroundColor: appThemeColors.blueTransparent,
+                    textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                      color: appThemeColors.primaryBlack,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 7),
-              Expanded(
-                child: CustomElevatedButton(
-                  text: 'Видалити з друзів',
-                  onPressed: () {
-                    Constants.showConfirmationDialog(
-                      context,
-                      'Підтвердження видалення',
-                      'Ви впевнені, що хочете видалити цього користувача зі своїх друзів?',
-                      'Видалити',
-                      viewModel,
-                      userId!,
-                    );
-                  },
-                  height: 44,
-                  borderRadius: 24,
-                  backgroundColor: appThemeColors.errorRed.withAlpha(120),
-                  textStyle: TextStyleHelper.instance.title16Regular.copyWith(
-                    color: appThemeColors.primaryWhite,
+                const SizedBox(width: 7),
+                Expanded(
+                  child: CustomElevatedButton(
+                    text: 'Видалити з друзів',
+                    onPressed: () {
+                      Constants.showConfirmationDialog(
+                        context,
+                        'Підтвердження видалення',
+                        'Ви впевнені, що хочете видалити цього користувача зі своїх друзів?',
+                        'Видалити',
+                        viewModel,
+                        userId!,
+                      );
+                    },
+                    height: 44,
+                    borderRadius: 24,
+                    backgroundColor: appThemeColors.errorRed.withAlpha(120),
+                    textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                      color: appThemeColors.primaryWhite,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        );
+              ],
+            ),
+          );
+      }
+    }
+    else{
+      return SizedBox.shrink();
     }
   }
 

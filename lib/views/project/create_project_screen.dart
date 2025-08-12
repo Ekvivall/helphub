@@ -655,7 +655,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                       : 'Проєкт "${_titleController.text}" успішно створено!',
                                 );
                                 Navigator.of(context).pushReplacementNamed(
-                                  AppRoutes.eventListScreen, //TODO
+                                  AppRoutes.projectListScreen,
                                 );
                               } else {
                                 Constants.showErrorMessage(
