@@ -16,6 +16,7 @@ class CustomCheckboxWithText extends FormField<bool> {
     TextStyle? textStyle,
     CrossAxisAlignment crossAxisAlignment = CrossAxisAlignment.start,
     bool showErrorsLive = false,
+    Color? borderSideColor
   }) : super(
          autovalidateMode: showErrorsLive
              ? AutovalidateMode.onUserInteraction
@@ -48,6 +49,7 @@ class CustomCheckboxWithText extends FormField<bool> {
                      activeColor: defaultActiveColor,
                      checkColor: defaultCheckColor,
                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                     side: BorderSide(color: borderSideColor??appThemeColors.primaryBlack),
                    ),
                    Expanded(
                      child: GestureDetector(
@@ -58,7 +60,7 @@ class CustomCheckboxWithText extends FormField<bool> {
                            onChanged(newValue);
                          }
                        },
-                       child: Text(text, style: defaultTextStyle),
+                       child: Text(text, style: defaultTextStyle,),
                      ),
                    ),
                  ],

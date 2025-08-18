@@ -16,11 +16,14 @@ class FundraisingModel {
   final List<String>? documentUrls;
   final String? photoUrl;
   final List<String>? donorIds;
-  final String? bankAccountIban;
-  final String? bankLink;
+  final String? privatBankCard;
+  final String? monoBankCard;
   final bool? isUrgent;
   final List<String>?
   relatedApplicationIds; // ID заявок, які входять в цей збір
+  final bool hasRaffle;
+  double? ticketPrice;
+  List<String>? prizes;
 
   FundraisingModel({
     this.id,
@@ -37,10 +40,13 @@ class FundraisingModel {
     this.documentUrls,
     this.photoUrl,
     this.donorIds,
-    this.bankAccountIban,
-    this.bankLink,
+    this.privatBankCard,
+    this.monoBankCard,
     this.isUrgent = false,
     this.relatedApplicationIds,
+    this.hasRaffle = false,
+    this.ticketPrice,
+    this.prizes,
   });
 
   Map<String, dynamic> toMap() {
@@ -59,10 +65,13 @@ class FundraisingModel {
       'documentUrls': documentUrls,
       'photoUrl': photoUrl,
       'donorIds': donorIds ?? [],
-      'bankAccountIban': bankAccountIban,
-      'bankLink': bankLink,
+      'privatBankCard': privatBankCard,
+      'monoBankCard': monoBankCard,
       'isUrgent': isUrgent,
       'relatedApplicationIds': relatedApplicationIds ?? [],
+      'hasRaffle': hasRaffle,
+      'ticketPrice': ticketPrice,
+      'prizes': prizes ?? [],
     };
   }
 
@@ -92,13 +101,21 @@ class FundraisingModel {
               ?.map((e) => e as String)
               .toList() ??
           [],
-      bankAccountIban: map['bankAccountIban'] as String?,
-      bankLink: map['bankLink'] as String?,
+      privatBankCard: map['privatBankCard'] as String?,
+      monoBankCard: map['monoBankCard'] as String?,
       isUrgent: map['isUrgent'] as bool? ?? false,
       relatedApplicationIds:
           (map['relatedApplicationIds'] as List<dynamic>?)
               ?.map((e) => e as String)
               .toList() ??
+          [],
+      hasRaffle: map['hasRaffle'] ?? false,
+      ticketPrice: map['ticketPrice'] != null
+          ? (map['ticketPrice']).toDouble()
+          : null,
+      prizes: (map['prizes'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList() ??
           [],
     );
   }
@@ -119,10 +136,13 @@ class FundraisingModel {
     List<String>? documentUrls,
     String? photoUrl,
     List<String>? donorIds,
-    String? bankAccountIban,
-    String? bankLink,
+    String? privatBankCard,
+    String? monoBankCard,
     bool? isUrgent,
     List<String>? relatedApplicationIds,
+    bool? hasRaffle,
+    double? ticketPrice,
+    List<String>? prizes,
   }) {
     return FundraisingModel(
       id: id ?? this.id,
@@ -139,11 +159,14 @@ class FundraisingModel {
       documentUrls: documentUrls ?? this.documentUrls,
       photoUrl: photoUrl ?? this.photoUrl,
       donorIds: donorIds ?? this.donorIds,
-      bankAccountIban: bankAccountIban ?? this.bankAccountIban,
-      bankLink: bankLink ?? this.bankLink,
+      privatBankCard: privatBankCard ?? this.privatBankCard,
+      monoBankCard: monoBankCard ?? this.monoBankCard,
       isUrgent: isUrgent ?? this.isUrgent,
       relatedApplicationIds:
           relatedApplicationIds ?? this.relatedApplicationIds,
+      hasRaffle: hasRaffle ?? this.hasRaffle,
+      ticketPrice: ticketPrice ?? this.ticketPrice,
+      prizes: prizes ?? this.prizes,
     );
   }
 }

@@ -7,6 +7,7 @@ import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import 'event_organization_activity_item.dart';
 import 'event_participation_activity_item.dart';
+import 'fundraising_donation_activity_item.dart';
 import 'project_organization_activity_item.dart';
 
 class LatestActivities extends StatelessWidget {
@@ -65,11 +66,10 @@ class LatestActivities extends StatelessWidget {
               isOwner: isOwner,
             );
           case ActivityType.fundraiserDonation:
-            // TODO: Handle this case.
-            throw UnimplementedError();
-          case ActivityType.fundraiserCompletion:
-            // TODO: Handle this case.
-            throw UnimplementedError();
+            return FundraisingDonationActivityItem(
+              activity: activity,
+              isOwner: isOwner,
+            );
         }
       },
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/models/fundraiser_application_model.dart';
 import 'package:helphub/models/organization_model.dart';
+import 'package:helphub/widgets/custom_checkbox.dart';
 import 'package:helphub/widgets/custom_document_upload_field.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
@@ -33,8 +34,9 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _targetAmountController = TextEditingController();
-  final TextEditingController _bankLinkController = TextEditingController();
-  final TextEditingController _ibanController = TextEditingController();
+  final TextEditingController _privatBankCardController =
+      TextEditingController();
+  final TextEditingController _monoBankCardController = TextEditingController();
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
   final List<CategoryChipModel> _selectedCategories = [];
@@ -42,10 +44,14 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
   bool _isUrgent = false;
   bool _showApplicationsSection = false;
 
-  final _ibanFormatter = MaskTextInputFormatter(
-    mask: 'UA##-#####-#####-#####-#####-#####',
+  final _cardNumberFormatter = MaskTextInputFormatter(
+    mask: '#### #### #### ####',
     filter: {"#": RegExp(r'[0-9]')},
   );
+
+  bool hasRaffle = false;
+  final TextEditingController ticketPriceController = TextEditingController();
+  final TextEditingController prizesController = TextEditingController();
 
   @override
   void initState() {
@@ -80,8 +86,10 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
     _titleController.dispose();
     _descriptionController.dispose();
     _targetAmountController.dispose();
-    _bankLinkController.dispose();
-    _ibanController.dispose();
+    _privatBankCardController.dispose();
+    _monoBankCardController.dispose();
+    ticketPriceController.dispose();
+    prizesController.dispose();
     super.dispose();
   }
 
@@ -545,34 +553,52 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
-                      controller: _ibanController,
-                      label: 'IBAN',
-                      hintText: 'UA00-0000-0000-0000-0000-0000-0000-0000',
+                      controller: _privatBankCardController,
+                      label: 'Картка PrivatBank (необов\'язково)',
+                      hintText: '0000 0000 0000 0000',
                       labelColor: appThemeColors.backgroundLightGrey,
                       inputType: TextInputType.number,
-                      inputFormatters: [_ibanFormatter],
+                      inputFormatters: [_cardNumberFormatter],
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Будь ласка, введіть IBAN';
+                          return null;
                         }
 
-                        final cleanIban = _ibanFormatter.unmaskText(value);
+                        final cleanCardNumber = _cardNumberFormatter.unmaskText(
+                          value,
+                        );
 
-                        if (cleanIban.length != 27) {
-                          return 'Некоректний IBAN';
+                        if (cleanCardNumber.length != 16) {
+                          return 'Некоректний номер картки';
                         }
 
                         return null;
                       },
+                      isRequired: false,
                     ),
                     const SizedBox(height: 16),
-                    // Поле для посилання на банку
                     CustomTextField(
-                      controller: _bankLinkController,
-                      label: 'Посилання на банку (моно/приват)',
-                      hintText: 'https://send.monobank.ua/...',
+                      controller: _monoBankCardController,
+                      label: 'Картка Monobank (необов\'язково)',
+                      hintText: '0000 0000 0000 0000',
                       labelColor: appThemeColors.backgroundLightGrey,
-                      inputType: TextInputType.url,
+                      inputType: TextInputType.number,
+                      inputFormatters: [_cardNumberFormatter],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return null;
+                        }
+
+                        final cleanCardNumber = _cardNumberFormatter.unmaskText(
+                          value,
+                        );
+
+                        if (cleanCardNumber.length != 16) {
+                          return 'Некоректний номер картки';
+                        }
+
+                        return null;
+                      },
                       isRequired: false,
                     ),
                     const SizedBox(height: 16),
@@ -602,6 +628,57 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(height: 20),
+                    CustomCheckboxWithText(
+                      text: 'Додати розіграш',
+                      initialValue: hasRaffle,
+                      onChanged: (val) {
+                        setState(() {
+                          hasRaffle = val ?? false;
+                        });
+                      },
+                      textStyle: TextStyleHelper.instance.title16Bold.copyWith(
+                        color: appThemeColors.backgroundLightGrey,
+                      ),
+                      checkColor: appThemeColors.backgroundLightGrey,
+                      borderSideColor: appThemeColors.backgroundLightGrey,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                    ),
+                    if (hasRaffle) ...[
+                      const SizedBox(height: 12),
+                      CustomTextField(
+                        controller: ticketPriceController,
+                        label: 'Вартість квитка (грн)',
+                        hintText: 'Введіть вартість квитка',
+                        labelColor: appThemeColors.backgroundLightGrey,
+                        inputType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Будь ласка, введіть вартість квитка';
+                          }
+                          final amount = double.tryParse(value);
+                          if (amount == null || amount <= 0) {
+                            return 'Введіть коректну вартість більше 0';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16,),
+                      CustomTextField(
+                        controller: prizesController,
+                        label: 'Назви призів, розділяючи \';\'',
+                        hintText: "Наприклад: Powerbank;Футболка;Термос",
+                        labelColor: appThemeColors.backgroundLightGrey,
+                        inputType: TextInputType.text,
+                        maxLines: 3,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Будь ласка, введіть хоча б один приз';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     CustomImageUploadField(
                       labelText: 'Фото збору',
@@ -677,10 +754,15 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                                 categories: _selectedCategories,
                                 startDate: _selectedStartDate!,
                                 endDate: _selectedEndDate!,
-                                bankLink: _bankLinkController.text.trim(),
-                                iban: _ibanController.text.trim(),
+                                privatBankCard: _privatBankCardController.text
+                                    .trim(),
+                                monoBankCard: _monoBankCardController.text
+                                    .trim(),
                                 isUrgent: _isUrgent,
                                 relatedApplicationIds: selectedApplicationIds,
+                                hasRaffle: hasRaffle,
+                                ticketPrice: hasRaffle ? double.tryParse(ticketPriceController.text) ?? 1 : null,
+                                prizes: hasRaffle?prizesController.text.trim().split(';').toList(): null
                               );
 
                               if (errorMessage == null) {

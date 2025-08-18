@@ -18,4 +18,8 @@ class ImageConstant{
   static String instagramIcon = '${_basePath}instagram_icon.png';
 
   static String tournamentIcon = '${_basePath}tournament_icon.png';
+
+  static String privatLogo = '${_basePath}privat_logo.png';
+
+  static String monoLogo = '${_basePath}mono_logo.png';
 }

@@ -162,12 +162,13 @@ class ProfileViewModel extends ChangeNotifier {
   String? _currentAuthUserId; // UID поточного авторизованого користувача
   String? get currentAuthUserId => _currentAuthUserId;
   UserRole? _currentUserRole;
-  UserRole? get currentUserRole  => _currentUserRole;
+
+  UserRole? get currentUserRole => _currentUserRole;
 
   String? get viewingUserId => _viewingUserId;
   Map<String, ProjectModel> _projectsData = {};
-  Map<String, ProjectModel> get projectsData => _projectsData;
 
+  Map<String, ProjectModel> get projectsData => _projectsData;
 
   ProfileViewModel({String? viewingUserId}) : _viewingUserId = viewingUserId {
     fullNameController = TextEditingController();
@@ -184,7 +185,7 @@ class ProfileViewModel extends ChangeNotifier {
     _auth.authStateChanges().listen((user) async {
       _currentAuthUserId = user?.uid;
       fetchUserProfile();
-       if (_viewingUserId != null && _viewingUserId != _currentAuthUserId) {
+      if (_viewingUserId != null && _viewingUserId != _currentAuthUserId) {
         BaseProfileModel? user = await fetchUser(_currentAuthUserId);
         _currentUserRole = user?.role;
       }
@@ -241,8 +242,7 @@ class ProfileViewModel extends ChangeNotifier {
             _listenToFundraiserApplicationsForVolunteer(_user!.uid!);
             _listenToFollowingOrganizations(_user!.uid!);
           }
-        }
-        else {
+        } else {
           _user = OrganizationModel.fromMap(doc.data()!);
           if (viewingUserId == null ||
               viewingUserId == _auth.currentUser!.uid) {
@@ -682,7 +682,25 @@ class ProfileViewModel extends ChangeNotifier {
           .getSavedFundraisers(_user!.uid!)
           .listen(
             (fundraisers) {
-              _savedFundraisers = fundraisers;
+              _savedFundraisers = fundraisers
+                ..sort((a, b) {
+                  // Пріоритет для термінових зборів
+                  final isAUrgent = a.isUrgent ?? false;
+                  final isBUrgent = b.isUrgent ?? false;
+
+                  if (isAUrgent && !isBUrgent) {
+                    return -1;
+                  }
+                  if (!isAUrgent && isBUrgent) {
+                    return 1;
+                  }
+
+                  // сортуємо за часом (новіші перші)
+                  final aTimestamp = a.timestamp ?? DateTime(1970);
+                  final bTimestamp = b.timestamp ?? DateTime(1970);
+
+                  return bTimestamp.compareTo(aTimestamp);
+                });
               notifyListeners();
             },
             onError: (error) {
@@ -766,10 +784,11 @@ class ProfileViewModel extends ChangeNotifier {
           _volunteerProjectApplications = applications;
           final projectIds = applications.map((app) => app.projectId).toSet();
           final projects = await Future.wait(
-              projectIds.map((id) => _projectService.getProjectById(id)));
+            projectIds.map((id) => _projectService.getProjectById(id)),
+          );
           _projectsData = {
             for (var project in projects.where((p) => p != null))
-              project!.id!: project
+              project!.id!: project,
           };
           notifyListeners();
         });
@@ -937,6 +956,7 @@ class ProfileViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
+
   Future<BaseProfileModel?> fetchUser(String? userId) async {
     try {
       if (userId == null) return null;

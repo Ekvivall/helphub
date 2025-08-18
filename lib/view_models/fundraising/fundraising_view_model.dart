@@ -39,6 +39,7 @@ class FundraisingViewModel extends ChangeNotifier {
   bool _isUrgentOnly = false;
   double? _minTargetAmount;
   double? _maxTargetAmount;
+  String? _selectedBank;
 
   File? _pickedImageFile;
   List<File> _pickedDocuments = [];
@@ -73,6 +74,8 @@ class FundraisingViewModel extends ChangeNotifier {
   List<File> get pickedDocuments => _pickedDocuments;
 
   bool get isUploadingFiles => _isUploadingFiles;
+
+  String? get selectedBank => _selectedBank;
 
   String? get currentAuthUserId => _currentAuthUserId;
 
@@ -126,24 +129,25 @@ class FundraisingViewModel extends ChangeNotifier {
         .getFundraisingsStream()
         .listen(
           (fundraisings) {
-            _allFundraisings = fundraisings..sort((a, b) {
-              // Пріоритет для термінових зборів
-              final isAUrgent = a.isUrgent ?? false;
-              final isBUrgent = b.isUrgent ?? false;
+            _allFundraisings = fundraisings
+              ..sort((a, b) {
+                // Пріоритет для термінових зборів
+                final isAUrgent = a.isUrgent ?? false;
+                final isBUrgent = b.isUrgent ?? false;
 
-              if (isAUrgent && !isBUrgent) {
-                return -1;
-              }
-              if (!isAUrgent && isBUrgent) {
-                return 1;
-              }
+                if (isAUrgent && !isBUrgent) {
+                  return -1;
+                }
+                if (!isAUrgent && isBUrgent) {
+                  return 1;
+                }
 
-              // сортуємо за часом (новіші перші)
-              final aTimestamp = a.timestamp ?? DateTime(1970);
-              final bTimestamp = b.timestamp ?? DateTime(1970);
+                // сортуємо за часом (новіші перші)
+                final aTimestamp = a.timestamp ?? DateTime(1970);
+                final bTimestamp = b.timestamp ?? DateTime(1970);
 
-              return bTimestamp.compareTo(aTimestamp);
-            });
+                return bTimestamp.compareTo(aTimestamp);
+              });
             _isLoading = false;
             _applyFilters();
           },
@@ -169,6 +173,7 @@ class FundraisingViewModel extends ChangeNotifier {
     bool isUrgentOnly,
     double? minAmount,
     double? maxAmount,
+    String? selectedBank,
   ) {
     _selectedCategories = categories;
     _selectedStartDate = startDate;
@@ -176,6 +181,7 @@ class FundraisingViewModel extends ChangeNotifier {
     _isUrgentOnly = isUrgentOnly;
     _minTargetAmount = minAmount;
     _maxTargetAmount = maxAmount;
+    _selectedBank = selectedBank;
     _applyFilters();
   }
 
@@ -187,6 +193,7 @@ class FundraisingViewModel extends ChangeNotifier {
     _isUrgentOnly = false;
     _minTargetAmount = null;
     _maxTargetAmount = null;
+    _selectedBank = null;
     _applyFilters();
   }
 
@@ -229,7 +236,8 @@ class FundraisingViewModel extends ChangeNotifier {
         final endDate = _selectedEndDate ?? DateTime(2100);
 
         // Перевіряємо, чи дата завершення збору потрапляє у вибраний діапазон
-        return (fundraisingEndDate.isAtSameMomentAs(startDate) || fundraisingEndDate.isAfter(startDate)) &&
+        return (fundraisingEndDate.isAtSameMomentAs(startDate) ||
+                fundraisingEndDate.isAfter(startDate)) &&
             (fundraisingEndDate.isBefore(endDate.add(const Duration(days: 1))));
       }).toList();
     }
@@ -254,6 +262,15 @@ class FundraisingViewModel extends ChangeNotifier {
       }).toList();
     }
 
+    if (_selectedBank != null) {
+      tempFundraisings = tempFundraisings.where((f) {
+        if (_selectedBank == 'privat')
+          return f.privatBankCard?.isNotEmpty ?? false;
+        if (_selectedBank == 'mono') return f.monoBankCard?.isNotEmpty ?? false;
+        return false;
+      }).toList();
+    }
+
     _filteredFundraisings = tempFundraisings;
     notifyListeners();
   }
@@ -267,7 +284,6 @@ class FundraisingViewModel extends ChangeNotifier {
     _pickedDocuments = file;
     notifyListeners();
   }
-
 
   void clearPickedFiles() {
     _pickedImageFile = null;
@@ -331,10 +347,13 @@ class FundraisingViewModel extends ChangeNotifier {
     required List<CategoryChipModel> categories,
     required DateTime startDate,
     required DateTime endDate,
-    required String bankLink,
-    required String iban,
+    String? privatBankCard,
+    String? monoBankCard,
     required bool isUrgent,
-    List<String> ? relatedApplicationIds
+    List<String>? relatedApplicationIds,
+    required bool hasRaffle,
+    double? ticketPrice,
+    List<String>? prizes,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -358,7 +377,10 @@ class FundraisingViewModel extends ChangeNotifier {
         return 'Не вдалося завантажити всі документи.';
       }
     }
-
+    if ((privatBankCard == null || privatBankCard.isEmpty) &&
+        (monoBankCard == null || monoBankCard.isEmpty)) {
+      return 'Будь ласка, вкажіть картку хоча б одного банку.';
+    }
     try {
       if (_user == null || _user is! OrganizationModel) {
         return 'Тільки фонди можуть створювати збори.';
@@ -384,10 +406,13 @@ class FundraisingViewModel extends ChangeNotifier {
         documentUrls: documentUrls,
         photoUrl: imageUrl,
         donorIds: [],
-        bankAccountIban: iban,
-        bankLink: bankLink,
+        privatBankCard: privatBankCard,
+        monoBankCard: monoBankCard,
         isUrgent: isUrgent,
-        relatedApplicationIds: relatedApplicationIds ?? []
+        relatedApplicationIds: relatedApplicationIds ?? [],
+        hasRaffle: hasRaffle,
+        ticketPrice: ticketPrice,
+        prizes: prizes
       );
 
       await newFundraisingRef.set(newFundraising.toMap());
@@ -424,16 +449,6 @@ class FundraisingViewModel extends ChangeNotifier {
 
       await _fundraisingService.completeFundraising(fundraisingId);
 
-      // Логуємо активність
-      final activity = ActivityModel(
-        type: ActivityType.fundraiserCompletion,
-        entityId: fundraisingId,
-        title: 'Збір завершено',
-        description: 'Збір коштів успішно завершено',
-        timestamp: DateTime.now(),
-      );
-      await _activityService.logActivity(currentAuthUserId!, activity);
-
       _isLoading = false;
       notifyListeners();
       return null; // Успіх
@@ -445,41 +460,35 @@ class FundraisingViewModel extends ChangeNotifier {
     }
   }
 
-  Future<String?> updateFundraisingAmount(String fundraisingId, double newAmount) async {
-    try {
-      await _fundraisingService.updateCurrentAmount(fundraisingId, newAmount);
-      return null; // Успіх
-    } catch (e) {
-      return 'Помилка при оновленні суми: $e';
-    }
-  }
-
-  Future<String?> addDonorToFundraising(String fundraisingId, String donorId) async {
-    try {
-      await _fundraisingService.addDonorToFundraising(fundraisingId, donorId);
-      return null; // Успіх
-    } catch (e) {
-      return 'Помилка при додаванні донора: $e';
-    }
-  }
-
   Future<bool> isFundraisingSaved(String fundraisingId) async {
     if (_currentAuthUserId == null) return false;
     try {
-      return await _fundraisingService.isFundraisingSaved(_currentAuthUserId!, fundraisingId);
+      return await _fundraisingService.isFundraisingSaved(
+        _currentAuthUserId!,
+        fundraisingId,
+      );
     } catch (e) {
       return false;
     }
   }
 
-  Future<String?> toggleSaveFundraising(String fundraisingId, bool isSaved) async {
+  Future<String?> toggleSaveFundraising(
+    String fundraisingId,
+    bool isSaved,
+  ) async {
     if (_currentAuthUserId == null) return 'Користувач не авторизований';
 
     try {
       if (isSaved) {
-        await _fundraisingService.unsaveFundraiser(_currentAuthUserId!, fundraisingId);
+        await _fundraisingService.unsaveFundraiser(
+          _currentAuthUserId!,
+          fundraisingId,
+        );
       } else {
-        await _fundraisingService.saveFundraiser(_currentAuthUserId!, fundraisingId);
+        await _fundraisingService.saveFundraiser(
+          _currentAuthUserId!,
+          fundraisingId,
+        );
       }
       return null; // Успіх
     } catch (e) {
@@ -493,18 +502,18 @@ class FundraisingViewModel extends ChangeNotifier {
         .getOrganizationFundraisingsStream(organizationId)
         .listen(
           (fundraisings) {
-        _allFundraisings = fundraisings;
-        _isLoading = false;
-        _applyFilters();
-      },
-      onError: (error) {
-        _errorMessage = 'Помилка завантаження зборів: $error';
-        _isLoading = false;
-        _allFundraisings = [];
-        _filteredFundraisings = [];
-        notifyListeners();
-      },
-    );
+            _allFundraisings = fundraisings;
+            _isLoading = false;
+            _applyFilters();
+          },
+          onError: (error) {
+            _errorMessage = 'Помилка завантаження зборів: $error';
+            _isLoading = false;
+            _allFundraisings = [];
+            _filteredFundraisings = [];
+            notifyListeners();
+          },
+        );
   }
 
   @override

@@ -61,7 +61,7 @@ class OrganizationModel extends BaseProfileModel {
       'website': website,
       'documents': documents,
       'isVerification': isVerification,
-      'feesCount': fundraisingsCount,
+      'fundraisingsCount': fundraisingsCount,
       'trustBadges': trustBadges?.map((e) => e.toMap()).toList(),
     };
   }
@@ -92,7 +92,7 @@ class OrganizationModel extends BaseProfileModel {
           ?.map((e) => e as String)
           .toList(),
       isVerification: map['isVerification'] as bool?,
-      fundraisingsCount: map['feesCount'] as int?,
+      fundraisingsCount: map['fundraisingsCount'] as int?,
       trustBadges: (map['trustBadges'] as List<dynamic>?)
           ?.map((e) => TrustBadgeModel.fromMap(e as Map<String, dynamic>))
           .toList(),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:helphub/models/event_model.dart';
 import 'package:helphub/models/organization_model.dart';
 import 'package:helphub/models/volunteer_model.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';
@@ -7,6 +8,7 @@ import 'package:helphub/widgets/custom_image_view.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../core/utils/constants.dart';
 import '../../models/base_profile_model.dart';
@@ -66,6 +68,17 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
               style: TextStyleHelper.instance.headline24SemiBold.copyWith(
                 color: appThemeColors.backgroundLightGrey,
               ),
+            ),
+            Consumer<EventViewModel>(
+              builder: (context, viewModel, child) {
+                if (viewModel.currentEvent == null) {
+                  return const SizedBox.shrink();
+                }
+                return IconButton(
+                  icon: Icon(Icons.share, color: appThemeColors.primaryWhite),
+                  onPressed: () => _shareEvent(viewModel.currentEvent!),
+                );
+              },
             ),
           ],
         ),
@@ -152,7 +165,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                               Text(
                                 event.name,
                                 style:
-                                TextStyleHelper.instance.headline24SemiBold,
+                                    TextStyleHelper.instance.headline24SemiBold,
                               ),
                               const SizedBox(height: 12),
                               // Категорія
@@ -164,8 +177,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                   children: event.categories
                                       .map(
                                         (category) =>
-                                        CategoryChipWidget(chip: category),
-                                  )
+                                            CategoryChipWidget(chip: category),
+                                      )
                                       .toList(),
                                 ),
                               ),
@@ -180,20 +193,14 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    '${DateFormat('dd.MM.yyyy').format(
-                                        event.date)}, ${DateFormat('HH:mm')
-                                        .format(event.date)} - ${DateFormat(
-                                        'HH:mm').format(event.date.add(Duration(
-                                        minutes: Constants
-                                            .parseDurationStringToMinutes(
-                                            event.duration) ?? 0)))}',
+                                    '${DateFormat('dd.MM.yyyy').format(event.date)}, ${DateFormat('HH:mm').format(event.date)} - ${DateFormat('HH:mm').format(event.date.add(Duration(minutes: Constants.parseDurationStringToMinutes(event.duration) ?? 0)))}',
                                     style: TextStyleHelper
                                         .instance
                                         .title16Regular
                                         .copyWith(
-                                      color: appThemeColors
-                                          .backgroundLightGrey,
-                                    ),
+                                          color: appThemeColors
+                                              .backgroundLightGrey,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -209,17 +216,14 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      '${event.locationText}, ~${Constants
-                                          .calculateDistance(
-                                          event.locationGeoPoint, viewModel
-                                          .currentUserLocation)} від вас',
+                                      '${event.locationText}, ~${Constants.calculateDistance(event.locationGeoPoint, viewModel.currentUserLocation)} від вас',
                                       style: TextStyleHelper
                                           .instance
                                           .title16Regular
                                           .copyWith(
-                                        color: appThemeColors
-                                            .backgroundLightGrey,
-                                      ),
+                                            color: appThemeColors
+                                                .backgroundLightGrey,
+                                          ),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
@@ -241,9 +245,9 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                         .instance
                                         .title16Regular
                                         .copyWith(
-                                      color: appThemeColors
-                                          .backgroundLightGrey,
-                                    ),
+                                          color: appThemeColors
+                                              .backgroundLightGrey,
+                                        ),
                                   ),
                                 ],
                               ),
@@ -253,16 +257,16 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                 'Про подію',
                                 style: TextStyleHelper.instance.title18Bold
                                     .copyWith(
-                                  color: appThemeColors.backgroundLightGrey,
-                                ),
+                                      color: appThemeColors.backgroundLightGrey,
+                                    ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 event.description,
                                 style: TextStyleHelper.instance.title16Regular
                                     .copyWith(
-                                  color: appThemeColors.textLightColor,
-                                ),
+                                      color: appThemeColors.textLightColor,
+                                    ),
                                 textAlign: TextAlign.justify,
                               ),
                               const SizedBox(height: 24),
@@ -271,8 +275,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                 'Організатор',
                                 style: TextStyleHelper.instance.title18Bold
                                     .copyWith(
-                                  color: appThemeColors.backgroundLightGrey,
-                                ),
+                                      color: appThemeColors.backgroundLightGrey,
+                                    ),
                               ),
                               const SizedBox(height: 8),
                               Row(
@@ -285,40 +289,39 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                         ? organizer.frame
                                         : null,
                                     role: organizer?.role,
-                                    uid:  organizer?.uid,
+                                    uid: organizer?.uid,
                                   ),
                                   const SizedBox(width: 12),
                                   Column(
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         organizer is VolunteerModel
                                             ? organizer.fullName ??
-                                            organizer.displayName ??
-                                            'Волонтер'
+                                                  organizer.displayName ??
+                                                  'Волонтер'
                                             : organizer is OrganizationModel
                                             ? organizer.organizationName ??
-                                            'Благодійний фонд'
+                                                  'Благодійний фонд'
                                             : 'Невідомий користувач',
                                         style: TextStyleHelper
                                             .instance
                                             .title16Bold
                                             .copyWith(
-                                          color: appThemeColors
-                                              .backgroundLightGrey,
-                                        ),
+                                              color: appThemeColors
+                                                  .backgroundLightGrey,
+                                            ),
                                       ),
                                       Text(
-                                        '${organizer?.eventsCount ??
-                                            0} організованих подій',
+                                        '${organizer?.eventsCount ?? 0} організованих подій',
                                         style: TextStyleHelper
                                             .instance
                                             .title14Regular
                                             .copyWith(
-                                          color: appThemeColors
-                                              .textLightColor,
-                                        ),
+                                              color:
+                                                  appThemeColors.textLightColor,
+                                            ),
                                       ),
                                     ],
                                   ),
@@ -330,8 +333,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                 'Локація на карті:',
                                 style: TextStyleHelper.instance.title18Bold
                                     .copyWith(
-                                  color: appThemeColors.backgroundLightGrey,
-                                ),
+                                      color: appThemeColors.backgroundLightGrey,
+                                    ),
                               ),
                               const SizedBox(height: 8),
                               if (event.locationGeoPoint != null)
@@ -349,28 +352,27 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                 ),
                               const SizedBox(height: 24),
                               Text(
-                                'Друзі, які йдуть (${viewModel
-                                    .participatingFriends.length}):',
+                                'Друзі, які йдуть (${viewModel.participatingFriends.length}):',
                                 style: TextStyleHelper.instance.title18Bold
                                     .copyWith(
-                                  color: appThemeColors.backgroundLightGrey,
-                                ),
+                                      color: appThemeColors.backgroundLightGrey,
+                                    ),
                               ),
                               const SizedBox(height: 8),
                               viewModel.participatingFriends.isEmpty
                                   ? Text(
-                                'Наразі жоден з ваших друзів не долучився.',
-                                style: TextStyleHelper
-                                    .instance
-                                    .title14Regular
-                                    .copyWith(
-                                  color:
-                                  appThemeColors.textLightColor,
-                                ),
-                              )
+                                      'Наразі жоден з ваших друзів не долучився.',
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title14Regular
+                                          .copyWith(
+                                            color:
+                                                appThemeColors.textLightColor,
+                                          ),
+                                    )
                                   : _buildParticipatingFriendsList(
-                                viewModel.participatingFriends,
-                              ),
+                                      viewModel.participatingFriends,
+                                    ),
                               const SizedBox(height: 24),
                               // Друзі, які йдуть
                             ],
@@ -399,59 +401,59 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                         Expanded(
                           child: !isParticipant
                               ? Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                participantsStatus,
-                                style: TextStyleHelper
-                                    .instance
-                                    .title16Bold
-                                    .copyWith(
-                                  color: appThemeColors.primaryBlack,
-                                ),
-                              ),
-                              if (remainingSpotsText.isNotEmpty)
-                                Text(
-                                  remainingSpotsText,
-                                  style: TextStyleHelper
-                                      .instance
-                                      .title14Regular
-                                      .copyWith(
-                                    color:
-                                    appThemeColors.textMediumGrey,
-                                  ),
-                                ),
-                            ],
-                          )
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      participantsStatus,
+                                      style: TextStyleHelper
+                                          .instance
+                                          .title16Bold
+                                          .copyWith(
+                                            color: appThemeColors.primaryBlack,
+                                          ),
+                                    ),
+                                    if (remainingSpotsText.isNotEmpty)
+                                      Text(
+                                        remainingSpotsText,
+                                        style: TextStyleHelper
+                                            .instance
+                                            .title14Regular
+                                            .copyWith(
+                                              color:
+                                                  appThemeColors.textMediumGrey,
+                                            ),
+                                      ),
+                                  ],
+                                )
                               : CustomElevatedButton(
-                            text: viewModel.isJoiningLeaving
-                                ? 'Залишаю...'
-                                : 'Залишити подію',
-                            onPressed: viewModel.isJoiningLeaving
-                                ? null
-                                : () async {
-                              final result = await viewModel
-                                  .leaveEvent(
-                                event.id!,
-                                currentUserId,
-                              );
-                              if (result != null) {
-                                Constants.showErrorMessage(
-                                  context,
-                                  'Помилка: $result',
-                                );
-                              }
-                            },
-                            backgroundColor: appThemeColors.errorRed,
-                            height: 48,
-                            textStyle: TextStyleHelper
-                                .instance
-                                .title16Bold
-                                .copyWith(
-                              color: appThemeColors.primaryWhite,
-                            ),
-                          ),
+                                  text: viewModel.isJoiningLeaving
+                                      ? 'Залишаю...'
+                                      : 'Залишити подію',
+                                  onPressed: viewModel.isJoiningLeaving
+                                      ? null
+                                      : () async {
+                                          final result = await viewModel
+                                              .leaveEvent(
+                                                event.id!,
+                                                currentUserId,
+                                              );
+                                          if (result != null) {
+                                            Constants.showErrorMessage(
+                                              context,
+                                              'Помилка: $result',
+                                            );
+                                          }
+                                        },
+                                  backgroundColor: appThemeColors.errorRed,
+                                  height: 48,
+                                  textStyle: TextStyleHelper
+                                      .instance
+                                      .title16Bold
+                                      .copyWith(
+                                        color: appThemeColors.primaryWhite,
+                                      ),
+                                ),
                         ),
                         const SizedBox(width: 16),
                         buildActionButton(
@@ -476,39 +478,41 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   }
 
   Widget _buildParticipatingFriendsList(List<BaseProfileModel?> friends) {
-    final List<Widget> friendWidgets = friends
-        .map(
-            (friend) {
-          VolunteerModel? currentFriend = friend is VolunteerModel ? friend : null;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Column(
-              children: [
-                UserAvatarWithFrame(
-                  size: 20,
-                  photoUrl: currentFriend?.photoUrl,
-                  frame: currentFriend?.frame,
-                  role: currentFriend?.role,
-                  uid:  currentFriend!.uid!,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  currentFriend.fullName ?? currentFriend.displayName ?? '',
-                  style: TextStyleHelper.instance.title13Regular.copyWith(
-                    color: appThemeColors.backgroundLightGrey,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+    final List<Widget> friendWidgets = friends.map((friend) {
+      VolunteerModel? currentFriend = friend is VolunteerModel ? friend : null;
+      return Padding(
+        padding: const EdgeInsets.only(right: 8.0),
+        child: Column(
+          children: [
+            UserAvatarWithFrame(
+              size: 20,
+              photoUrl: currentFriend?.photoUrl,
+              frame: currentFriend?.frame,
+              role: currentFriend?.role,
+              uid: currentFriend!.uid!,
             ),
-          );
-        }
-    )
-        .toList();
+            const SizedBox(height: 4),
+            Text(
+              currentFriend.fullName ?? currentFriend.displayName ?? '',
+              style: TextStyleHelper.instance.title13Regular.copyWith(
+                color: appThemeColors.backgroundLightGrey,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      );
+    }).toList();
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(children: friendWidgets),
     );
+  }
+
+  void _shareEvent(EventModel event) async {
+    final String textToShare =
+        'Приєднуйся до події "${event.name}"!\nДата: ${DateFormat('dd.MM.yyyy о HH:mm').format(event.date)}\nЛокація: ${event.locationText}\nОпис: ${event.description}\n\nПереглянути подію у додатку HelpHub';
+    Share.share(textToShare);
   }
 }

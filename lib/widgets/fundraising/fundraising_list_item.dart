@@ -6,6 +6,9 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
 
+import '../../core/utils/image_constant.dart';
+import '../../routes/app_router.dart';
+
 class FundraisingListItem extends StatefulWidget {
   final FundraisingModel fundraising;
   final FundraisingViewModel viewModel;
@@ -32,7 +35,9 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
 
   Future<void> _checkSavedStatus() async {
     if (widget.fundraising.id != null) {
-      final saved = await widget.viewModel.isFundraisingSaved(widget.fundraising.id!);
+      final saved = await widget.viewModel.isFundraisingSaved(
+        widget.fundraising.id!,
+      );
       if (mounted) {
         setState(() {
           _isSaved = saved;
@@ -62,9 +67,9 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
       });
 
       if (error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
       }
     }
   }
@@ -72,7 +77,8 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
   @override
   Widget build(BuildContext context) {
     final fundraising = widget.fundraising;
-    final progress = fundraising.targetAmount != null && fundraising.targetAmount! > 0
+    final progress =
+        fundraising.targetAmount != null && fundraising.targetAmount! > 0
         ? (fundraising.currentAmount ?? 0) / fundraising.targetAmount!
         : 0.0;
 
@@ -97,38 +103,40 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
                 child: AspectRatio(
                   aspectRatio: 16 / 9,
                   child: fundraising.photoUrl != null
                       ? CachedNetworkImage(
-                    imageUrl: fundraising.photoUrl!,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => Container(
-                      color: appThemeColors.textMediumGrey.withAlpha(77),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: appThemeColors.blueAccent,
-                        ),
-                      ),
-                    ),
-                    errorWidget: (context, url, error) => Container(
-                      color: appThemeColors.textMediumGrey.withAlpha(77),
-                      child: Icon(
-                        Icons.image_not_supported,
-                        color: appThemeColors.textMediumGrey,
-                        size: 48,
-                      ),
-                    ),
-                  )
+                          imageUrl: fundraising.photoUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: appThemeColors.textMediumGrey.withAlpha(77),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: appThemeColors.blueAccent,
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            color: appThemeColors.textMediumGrey.withAlpha(77),
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: appThemeColors.textMediumGrey,
+                              size: 48,
+                            ),
+                          ),
+                        )
                       : Container(
-                    color: appThemeColors.textMediumGrey.withAlpha(77),
-                    child: Icon(
-                      Icons.volunteer_activism,
-                      color: appThemeColors.textMediumGrey,
-                      size: 48,
-                    ),
-                  ),
+                          color: appThemeColors.textMediumGrey.withAlpha(77),
+                          child: Icon(
+                            Icons.volunteer_activism,
+                            color: appThemeColors.textMediumGrey,
+                            size: 48,
+                          ),
+                        ),
                 ),
               ),
               // Urgent badge
@@ -137,13 +145,38 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
                   top: 12,
                   left: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: appThemeColors.errorRed,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       'ТЕРМІНОВО',
+                      style: TextStyleHelper.instance.title13Regular.copyWith(
+                        color: appThemeColors.primaryWhite,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              if (fundraising.hasRaffle == true)
+                Positioned(
+                  bottom: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: appThemeColors.cyanAccent,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Є РОЗІГРАШ',
                       style: TextStyleHelper.instance.title13Regular.copyWith(
                         color: appThemeColors.primaryWhite,
                         fontWeight: FontWeight.w700,
@@ -172,20 +205,20 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
                     ),
                     child: _isLoadingSave
                         ? SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: appThemeColors.blueAccent,
-                      ),
-                    )
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: appThemeColors.blueAccent,
+                            ),
+                          )
                         : Icon(
-                      _isSaved ? Icons.bookmark : Icons.bookmark_border,
-                      color: _isSaved
-                          ? appThemeColors.blueAccent
-                          : appThemeColors.textMediumGrey,
-                      size: 20,
-                    ),
+                            _isSaved ? Icons.bookmark : Icons.bookmark_border,
+                            color: _isSaved
+                                ? appThemeColors.blueAccent
+                                : appThemeColors.textMediumGrey,
+                            size: 20,
+                          ),
                   ),
                 ),
               ),
@@ -208,26 +241,39 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
                         children: [
                           Text(
                             fundraising.title ?? 'Без назви',
-                            style: TextStyleHelper.instance.title16Bold.copyWith(
-                              color: appThemeColors.primaryBlack,
-                            ),
+                            style: TextStyleHelper.instance.title16Bold
+                                .copyWith(color: appThemeColors.primaryBlack),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            fundraising.organizationName ?? 'Невідома організація',
-                            style: TextStyleHelper.instance.title14Regular.copyWith(
-                              color: appThemeColors.blueAccent,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            fundraising.organizationName ??
+                                'Невідома організація',
+                            style: TextStyleHelper.instance.title14Regular
+                                .copyWith(
+                                  color: appThemeColors.blueAccent,
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
-
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    if (fundraising.privatBankCard?.isNotEmpty ?? false) ...[
+                      Image.asset(ImageConstant.privatLogo, height: 20),
+                      const SizedBox(width: 8),
+                    ],
+                    if (fundraising.monoBankCard?.isNotEmpty ?? false) ...[
+                      Image.asset(ImageConstant.monoLogo, height: 20),
+                      const SizedBox(width: 8),
+                    ],
+                  ],
+                ),
                 const SizedBox(height: 12),
 
                 // Description
@@ -245,7 +291,8 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
                 ],
 
                 // Categories
-                if (fundraising.categories != null && fundraising.categories!.isNotEmpty) ...[
+                if (fundraising.categories != null &&
+                    fundraising.categories!.isNotEmpty) ...[
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
@@ -265,24 +312,28 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
                       children: [
                         Text(
                           'Зібрано: ${_formatAmount(fundraising.currentAmount ?? 0)} грн',
-                          style: TextStyleHelper.instance.title14Regular.copyWith(
-                            color: appThemeColors.primaryBlack,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: TextStyleHelper.instance.title14Regular
+                              .copyWith(
+                                color: appThemeColors.primaryBlack,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                         Text(
                           '${(progress * 100).toStringAsFixed(1)}%',
-                          style: TextStyleHelper.instance.title14Regular.copyWith(
-                            color: appThemeColors.blueAccent,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: TextStyleHelper.instance.title14Regular
+                              .copyWith(
+                                color: appThemeColors.blueAccent,
+                                fontWeight: FontWeight.w700,
+                              ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
                     LinearProgressIndicator(
                       value: progress.clamp(0.0, 1.0),
-                      backgroundColor: appThemeColors.textMediumGrey.withAlpha(77),
+                      backgroundColor: appThemeColors.textMediumGrey.withAlpha(
+                        77,
+                      ),
                       valueColor: AlwaysStoppedAnimation<Color>(
                         progress >= 1.0
                             ? appThemeColors.successGreen
@@ -296,9 +347,8 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
                       children: [
                         Text(
                           'Ціль: ${_formatAmount(fundraising.targetAmount ?? 0)} грн',
-                          style: TextStyleHelper.instance.title14Regular.copyWith(
-                            color: appThemeColors.textMediumGrey,
-                          ),
+                          style: TextStyleHelper.instance.title14Regular
+                              .copyWith(color: appThemeColors.textMediumGrey),
                         ),
                         if (daysRemaining != null)
                           Row(
@@ -313,12 +363,13 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
                               const SizedBox(width: 4),
                               Text(
                                 _formatDaysRemaining(daysRemaining),
-                                style: TextStyleHelper.instance.title13Regular.copyWith(
-                                  color: daysRemaining > 7
-                                      ? appThemeColors.textMediumGrey
-                                      : appThemeColors.errorRed,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: TextStyleHelper.instance.title13Regular
+                                    .copyWith(
+                                      color: daysRemaining > 7
+                                          ? appThemeColors.textMediumGrey
+                                          : appThemeColors.errorRed,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                               ),
                             ],
                           ),
@@ -335,11 +386,10 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          // Navigate to fundraising details
-                          // Navigator.of(context).pushNamed(
-                          //   AppRoutes.fundraisingDetailScreen,
-                          //   arguments: fundraising.id,
-                          // );
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.fundraisingDetailScreen,
+                            arguments: fundraising.id,
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: appThemeColors.blueAccent,
@@ -352,10 +402,11 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
                         ),
                         child: Text(
                           'Переглянути',
-                          style: TextStyleHelper.instance.title14Regular.copyWith(
-                            color: appThemeColors.primaryWhite,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: TextStyleHelper.instance.title14Regular
+                              .copyWith(
+                                color: appThemeColors.primaryWhite,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
                     ),
@@ -363,8 +414,8 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () {
-                          // Donate functionality
-                          _showDonateDialog();
+                          Navigator.of(context).pushNamed(
+                              AppRoutes.donationScreen, arguments: fundraising);
                         },
                         style: OutlinedButton.styleFrom(
                           foregroundColor: appThemeColors.blueAccent,
@@ -388,10 +439,11 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
                             const SizedBox(width: 4),
                             Text(
                               'Допомогти',
-                              style: TextStyleHelper.instance.title14Regular.copyWith(
-                                color: appThemeColors.blueAccent,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: TextStyleHelper.instance.title14Regular
+                                  .copyWith(
+                                    color: appThemeColors.blueAccent,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                             ),
                           ],
                         ),
@@ -430,94 +482,5 @@ class _FundraisingListItemState extends State<FundraisingListItem> {
       return '${(amount / 1000).toStringAsFixed(1)}К';
     }
     return amount.toStringAsFixed(0);
-  }
-
-  void _showDonateDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            'Допомогти збору',
-            style: TextStyleHelper.instance.title18Bold.copyWith(
-              color: appThemeColors.primaryBlack,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.fundraising.title ?? 'Збір коштів',
-                style: TextStyleHelper.instance.title16Regular.copyWith(
-                  color: appThemeColors.textMediumGrey,
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (widget.fundraising.bankLink != null && widget.fundraising.bankLink!.isNotEmpty) ...[
-                Text(
-                  'Посилання на банку:',
-                  style: TextStyleHelper.instance.title14Regular.copyWith(
-                    color: appThemeColors.primaryBlack,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SelectableText(
-                  widget.fundraising.bankLink!,
-                  style: TextStyleHelper.instance.title14Regular.copyWith(
-                    color: appThemeColors.blueAccent,
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-              if (widget.fundraising.bankAccountIban != null && widget.fundraising.bankAccountIban!.isNotEmpty) ...[
-                Text(
-                  'IBAN рахунку:',
-                  style: TextStyleHelper.instance.title14Regular.copyWith(
-                    color: appThemeColors.primaryBlack,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SelectableText(
-                  widget.fundraising.bankAccountIban!,
-                  style: TextStyleHelper.instance.title14Regular.copyWith(
-                    color: appThemeColors.primaryBlack,
-                  ),
-                ),
-              ],
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
-                'Закрити',
-                style: TextStyleHelper.instance.title14Regular.copyWith(
-                  color: appThemeColors.textMediumGrey,
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // TODO: Copy to clipboard or open external link
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: appThemeColors.blueAccent,
-                foregroundColor: appThemeColors.primaryWhite,
-              ),
-              child: Text(
-                'Скопіювати',
-                style: TextStyleHelper.instance.title14Regular.copyWith(
-                  color: appThemeColors.primaryWhite,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 }

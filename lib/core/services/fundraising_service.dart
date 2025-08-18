@@ -255,32 +255,6 @@ class FundraisingService {
         });
   }
 
-  Future<void> updateCurrentAmount(
-    String fundraisingId,
-    double newAmount,
-  ) async {
-    try {
-      await _firestore.collection('fundraisings').doc(fundraisingId).update({
-        'currentAmount': newAmount,
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-
-  Future<void> addDonorToFundraising(
-    String fundraisingId,
-    String donorId,
-  ) async {
-    try {
-      await _firestore.collection('fundraisings').doc(fundraisingId).update({
-        'donorIds': FieldValue.arrayUnion([donorId]),
-      });
-    } catch (e) {
-      rethrow;
-    }
-  }
-
   Future<bool> isFundraisingSaved(String uid, String fundraisingId) async {
     try {
       final doc = await _firestore

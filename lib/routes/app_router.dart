@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:helphub/models/fundraising_model.dart';
 import 'package:helphub/views/auth/forgot_password_screen.dart';
 import 'package:helphub/views/auth/register_organization_step1_screen.dart';
 import 'package:helphub/views/auth/register_type_screen.dart';
@@ -9,9 +10,12 @@ import 'package:helphub/views/chat/chat_project_screen.dart';
 import 'package:helphub/views/event/create_event_screen.dart';
 import 'package:helphub/views/event/event_detail_screen.dart';
 import 'package:helphub/views/event/event_list_screen.dart' hide DisplayMode;
+import 'package:helphub/views/fundraising/donation_screen.dart';
+import 'package:helphub/views/fundraising/fundraising_details_screen.dart';
 import 'package:helphub/views/fundraising/fundraising_list_screen.dart';
 import 'package:helphub/views/profile/all_applications_screen.dart';
 import 'package:helphub/views/profile/all_followed_organizations_screen.dart';
+import 'package:helphub/views/profile/all_saved_fundraisers_screen.dart';
 import 'package:helphub/views/profile/edit_user_profile_screen.dart';
 import 'package:helphub/views/profile/find_friends_screen.dart';
 import 'package:helphub/views/profile/friends_list_screen.dart';
@@ -48,18 +52,21 @@ class AppRoutes {
   static const String friendsListScreen = '/friends_list';
   static const String allFollowedOrganizationsScreen =
       '/all_followed_organizations';
-  static const String eventListScreen = 'event_list';
-  static const String eventDetailScreen = 'event_detail';
-  static const String createEventScreen = 'create_event';
-  static const String createProjectScreen = 'create_project';
-  static const String projectListScreen = 'project_list';
-  static const String applyToProjectScreen = 'apply_to_project';
-  static const String chatProjectScreen = 'chat_project';
+  static const String eventListScreen = '/event_list';
+  static const String eventDetailScreen = '/event_detail';
+  static const String createEventScreen = '/create_event';
+  static const String createProjectScreen = '/create_project';
+  static const String projectListScreen = '/project_list';
+  static const String applyToProjectScreen = '/apply_to_project';
+  static const String chatProjectScreen = '/chat_project';
   static const String createFundraisingScreen = '/create_fundraising';
   static const String fundraisingListScreen = '/fundraising_list';
   static const String createFundraisingApplicationScreen = '/create_fundraising_application';
   static const String allApplicationsScreen = '/all_applications';
   static const String allFundraiserApplicationsScreen = '/all_fundraiser_applications';
+  static const String fundraisingDetailScreen = '/fundraising_detail';
+  static const String donationScreen = '/donation';
+  static const String allSavedFundraisersScreen = '/all_saved_fundraisers';
 
 
   static Map<String, WidgetBuilder> routes = {
@@ -84,7 +91,9 @@ class AppRoutes {
     fundraisingListScreen: (context) => FundraisingListScreen(),
     allApplicationsScreen: (context) => AllApplicationsScreen(),
     allFundraiserApplicationsScreen: (context) => AllFundraiserApplicationsScreen(),
+    allSavedFundraisersScreen: (context) => AllSavedFundraisersScreen(),
   };
+
 
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -137,6 +146,16 @@ class AppRoutes {
         final String organizationId = settings.arguments as String;
         return MaterialPageRoute(
           builder: (context) => CreateFundraisingApplicationScreen(organizationId: organizationId),
+        );
+      case fundraisingDetailScreen:
+        final String fundraisingId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (context) => FundraisingDetailScreen(fundraisingId: fundraisingId),
+        );
+      case donationScreen:
+        final fundraising = settings.arguments as FundraisingModel;
+        return MaterialPageRoute(
+          builder: (context) => DonationScreen(fundraising: fundraising),
         );
       default:
         if (routes.containsKey(settings.name)) {

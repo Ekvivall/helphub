@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:helphub/models/volunteer_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../routes/app_router.dart';
@@ -204,6 +206,7 @@ class Constants {
   static String formatDate(DateTime date) {
     return '${date.day.toString().padLeft(2, '0')}.${date.month.toString().padLeft(2, '0')}.${date.year}';
   }
+
   static String formatTime(TimeOfDay time) {
     return '${time.hour}:${time.minute}';
   }
@@ -243,8 +246,10 @@ class Constants {
     return null;
   }
 
-
-  static String calculateDistance(GeoPoint? eventLocation, GeoPoint? userLocation) {
+  static String calculateDistance(
+    GeoPoint? eventLocation,
+    GeoPoint? userLocation,
+  ) {
     if (eventLocation == null || userLocation == null) {
       return '';
     }
@@ -260,7 +265,6 @@ class Constants {
       return '${(distanceInMeters / 1000).toStringAsFixed(1)} км';
     }
   }
-
 
   static DateTime? parseDate(String dateString) {
     if (dateString.length != 10) return null;
@@ -284,6 +288,7 @@ class Constants {
       return null;
     }
   }
+
   static TimeOfDay? parseTime(String timeString) {
     if (timeString.length != 5) return null;
 
@@ -294,7 +299,7 @@ class Constants {
       final hour = int.parse(parts[0]);
       final minute = int.parse(parts[1]);
 
-      final time = TimeOfDay(hour: hour, minute:minute);
+      final time = TimeOfDay(hour: hour, minute: minute);
 
       if (time.hour != hour || time.minute != minute) {
         return null;
@@ -305,4 +310,79 @@ class Constants {
       return null;
     }
   }
+
+  static int? calculateDaysRemaining(DateTime? endDate) {
+    if (endDate == null) return null;
+    final now = DateTime.now();
+    final difference = endDate.difference(now);
+    return difference.inDays;
+  }
+
+  static String formatDaysRemaining(int days) {
+    if (days < 0) return 'Завершено';
+    if (days == 0) return 'Останній день';
+    if (days == 1) return '1 день';
+    if (days < 5) return '$days дні';
+    return '$days днів';
+  }
+
+  static String formatAmount(double amount) {
+    return amount
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]} ',
+        );
+  }
+
+  static String getFileNameFromUrl(String url) {
+    return url.split('/').last.split('?').first;
+  }
+
+  static IconData getDocumentIcon(String fileName) {
+    final extension = fileName.split('.').last.toLowerCase();
+    switch (extension) {
+      case 'pdf':
+        return Icons.picture_as_pdf;
+      case 'doc':
+      case 'docx':
+        return Icons.description;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+        return Icons.image;
+      default:
+        return Icons.insert_drive_file;
+    }
+  }
+  static void copyToClipboard(BuildContext context, String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    Constants.showSuccessMessage(context, 'Скопійовано до буфера обміну');
+  }
+  static void openDocument(BuildContext context, String url) async {
+    try {
+      final Uri uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        Constants.showErrorMessage(context, 'Не вдалося відкрити документ');
+      }
+    } catch (e) {
+      Constants.showErrorMessage(context, 'Помилка при відкритті документа');
+    }
+  }
+
+  static void openBankLink(BuildContext context, String url) async {
+    try {
+      final Uri uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        Constants.showErrorMessage(context, 'Не вдалося відкрити посилання');
+      }
+    } catch (e) {
+      Constants.showErrorMessage(context, 'Некоректне посилання');
+    }
+  }
+
 }

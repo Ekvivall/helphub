@@ -25,6 +25,7 @@ class _FundraisingFiltersBottomSheetState
   double? _tempMinTargetAmount;
   double? _tempMaxTargetAmount;
   Key _datePickerKey = UniqueKey();
+  String? _tempSelectedBank;
 
   final TextEditingController _minAmountController = TextEditingController();
   final TextEditingController _maxAmountController = TextEditingController();
@@ -39,6 +40,7 @@ class _FundraisingFiltersBottomSheetState
     _tempIsUrgentOnly = viewModel.isUrgentOnly;
     _tempMinTargetAmount = viewModel.minTargetAmount;
     _tempMaxTargetAmount = viewModel.maxTargetAmount;
+    _tempSelectedBank = viewModel.selectedBank;
 
     if (_tempMinTargetAmount != null) {
       _minAmountController.text = _tempMinTargetAmount!.toStringAsFixed(0);
@@ -221,6 +223,27 @@ class _FundraisingFiltersBottomSheetState
                   ),
                 ),
               ],
+            ),const SizedBox(height: 20),
+            Text('Банк', style: TextStyleHelper.instance.title16Bold.copyWith(color: appThemeColors.primaryBlack)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                FilterChip(
+                  label: Text('PrivatBank'),
+                  selected: _tempSelectedBank == 'privat',
+                  onSelected: (selected) => setState(() => _tempSelectedBank = selected ? 'privat' : null),
+                  selectedColor: appThemeColors.blueMixedColor,
+                  disabledColor: appThemeColors.blueMixedColor,
+                ),
+                const SizedBox(width: 12),
+                FilterChip(
+                  label: Text('Monobank'),
+                  selected: _tempSelectedBank == 'mono',
+                  onSelected: (selected) => setState(() => _tempSelectedBank = selected ? 'mono' : null),
+                  selectedColor: appThemeColors.blueMixedColor,
+                  disabledColor: appThemeColors.blueMixedColor,
+                ),
+              ],
             ),
             const SizedBox(height: 20),
 
@@ -327,6 +350,7 @@ class _FundraisingFiltersBottomSheetState
       _tempIsUrgentOnly,
       _tempMinTargetAmount,
       _tempMaxTargetAmount,
+      _tempSelectedBank
     );
   }
 }

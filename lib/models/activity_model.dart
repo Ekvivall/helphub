@@ -7,7 +7,7 @@ enum ActivityType {
   projectOrganization, // Користувач був організатором проєкту
   projectParticipation, // Став учасником проєкту
   fundraiserCreation, // Створено новий збір коштів
-  fundraiserDonation, fundraiserCompletion, // Користувач задонатив
+  fundraiserDonation, // Користувач задонатив
 }
 
 class ActivityModel {
