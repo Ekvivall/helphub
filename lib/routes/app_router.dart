@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:helphub/models/fundraising_model.dart';
 import 'package:helphub/views/auth/forgot_password_screen.dart';
@@ -12,7 +11,9 @@ import 'package:helphub/views/event/event_detail_screen.dart';
 import 'package:helphub/views/event/event_list_screen.dart' hide DisplayMode;
 import 'package:helphub/views/fundraising/donation_screen.dart';
 import 'package:helphub/views/fundraising/fundraising_details_screen.dart';
+import 'package:helphub/views/fundraising/fundraising_donations_screen.dart';
 import 'package:helphub/views/fundraising/fundraising_list_screen.dart';
+import 'package:helphub/views/fundraising/fundraising_raffle_screen.dart';
 import 'package:helphub/views/profile/all_applications_screen.dart';
 import 'package:helphub/views/profile/all_followed_organizations_screen.dart';
 import 'package:helphub/views/profile/all_saved_fundraisers_screen.dart';
@@ -67,6 +68,10 @@ class AppRoutes {
   static const String fundraisingDetailScreen = '/fundraising_detail';
   static const String donationScreen = '/donation';
   static const String allSavedFundraisersScreen = '/all_saved_fundraisers';
+  static const String fundraisingDonationsScreen = '/fundraising_donations';
+  static const String fundraisingRaffleScreen = '/fundraising_raffle';
+  static const String createReportScreen = '';
+
 
 
   static Map<String, WidgetBuilder> routes = {
@@ -93,7 +98,6 @@ class AppRoutes {
     allFundraiserApplicationsScreen: (context) => AllFundraiserApplicationsScreen(),
     allSavedFundraisersScreen: (context) => AllSavedFundraisersScreen(),
   };
-
 
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -156,6 +160,16 @@ class AppRoutes {
         final fundraising = settings.arguments as FundraisingModel;
         return MaterialPageRoute(
           builder: (context) => DonationScreen(fundraising: fundraising),
+        );
+      case fundraisingDonationsScreen:
+        final fundraisingId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (context) => FundraisingDonationsScreen(fundraisingId: fundraisingId),
+        );
+      case fundraisingRaffleScreen:
+        final fundraisingId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (context) => FundraisingRaffleScreen(fundraisingId: fundraisingId),
         );
       default:
         if (routes.containsKey(settings.name)) {

@@ -695,7 +695,7 @@ class VolunteerProfileScreen extends StatelessWidget {
                   color: appThemeColors.backgroundLightGrey,
                 ),
               ),
-              if (savedFundraisers.length > 0)
+              if (savedFundraisers.length > 3)
                 GestureDetector(
                 onTap: () {
                   Navigator.of(context).pushNamed(AppRoutes.allSavedFundraisersScreen);
@@ -731,7 +731,6 @@ class VolunteerProfileScreen extends StatelessWidget {
             itemCount: displayItems.length,
             itemBuilder: (context, index) {
               final fundraising = displayItems[index];
-              // Використовуємо існуючий віджет, він добре підходить
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12.0),
                 child: SavedFundraisingItem(
@@ -926,7 +925,7 @@ class VolunteerProfileScreen extends StatelessWidget {
                           ),
                           if (friend.city != null && friend.city!.isNotEmpty)
                             Text(
-                              'м. ${friend.city!}',
+                              'м. ${friend.city}',
                               style: TextStyleHelper.instance.title13Regular
                                   .copyWith(
                                 color: appThemeColors.textMediumGrey,
@@ -1199,7 +1198,7 @@ class VolunteerProfileScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Підписані фонди',
+                'Фонди, на які підписані',
                 style: TextStyleHelper.instance.title16Bold.copyWith(
                   color: appThemeColors.backgroundLightGrey,
                 ),

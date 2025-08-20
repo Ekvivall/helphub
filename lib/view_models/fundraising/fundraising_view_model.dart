@@ -81,6 +81,10 @@ class FundraisingViewModel extends ChangeNotifier {
 
   BaseProfileModel? get user => _user;
 
+  FundraisingModel? _currentFundraising;
+
+  FundraisingModel? get currentFundraising => _currentFundraising;
+
   FundraisingViewModel() {
     _auth.authStateChanges().listen((user) async {
       _currentAuthUserId = user?.uid;
@@ -412,7 +416,7 @@ class FundraisingViewModel extends ChangeNotifier {
         relatedApplicationIds: relatedApplicationIds ?? [],
         hasRaffle: hasRaffle,
         ticketPrice: ticketPrice,
-        prizes: prizes
+        prizes: prizes,
       );
 
       await newFundraisingRef.set(newFundraising.toMap());
@@ -516,9 +520,118 @@ class FundraisingViewModel extends ChangeNotifier {
         );
   }
 
+  // fundraising_view_model.dart
+
+  Future<String?> updateFundraising({
+    required String fundraisingId,
+    required String title,
+    required String description,
+    required double targetAmount,
+    required List<CategoryChipModel> categories,
+    required DateTime startDate,
+    required DateTime endDate,
+    String? privatBankCard,
+    String? monoBankCard,
+    required bool isUrgent,
+    required bool hasRaffle,
+    double? ticketPrice,
+    List<String>? prizes,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      // Перевірка наявності хоча б однієї картки
+      if ((privatBankCard == null || privatBankCard.isEmpty) &&
+          (monoBankCard == null || monoBankCard.isEmpty)) {
+        return 'Будь ласка, вкажіть картку хоча б одного банку.';
+      }
+
+      // Логіка завантаження нових файлів, якщо вони були змінені
+      String? imageUrl = _currentFundraising?.photoUrl;
+      if (_pickedImageFile != null) {
+        imageUrl = await uploadFundraisingImage();
+        if (imageUrl == null) {
+          _isLoading = false;
+          notifyListeners();
+          return 'Не вдалося завантажити нове зображення.';
+        }
+      }
+
+      List<String> documentUrls = _currentFundraising?.documentUrls ?? [];
+      if (_pickedDocuments.isNotEmpty) {
+        final newUrls = await uploadFundraisingDocuments();
+        if (newUrls.isEmpty && _pickedDocuments.isNotEmpty) {
+          _isLoading = false;
+          notifyListeners();
+          return 'Не вдалося завантажити нові документи.';
+        }
+        documentUrls.addAll(newUrls);
+      }
+
+      final updatedFundraising = FundraisingModel(
+        id: fundraisingId,
+        title: title,
+        description: description,
+        targetAmount: targetAmount,
+        currentAmount: _currentFundraising!.currentAmount,
+        donorIds: _currentFundraising!.donorIds,
+        organizationId: _currentFundraising!.organizationId,
+        organizationName: _currentFundraising!.organizationName,
+        timestamp: _currentFundraising!.timestamp,
+        // Оновлювані поля
+        categories: categories,
+        startDate: startDate,
+        endDate: endDate,
+        privatBankCard: privatBankCard,
+        monoBankCard: monoBankCard,
+        isUrgent: isUrgent,
+        relatedApplicationIds: _currentFundraising!.relatedApplicationIds,
+        photoUrl: imageUrl,
+        documentUrls: documentUrls,
+        hasRaffle: hasRaffle,
+        ticketPrice: ticketPrice,
+        prizes: prizes,
+      );
+
+      await _fundraisingService.updateFundraising(updatedFundraising);
+
+      clearPickedFiles();
+      _isLoading = false;
+      notifyListeners();
+      return null; // Успіх
+    } catch (e) {
+      _errorMessage = 'Помилка при оновленні збору: $e';
+      _isLoading = false;
+      notifyListeners();
+      return _errorMessage;
+    }
+  }
+
+  Future<void> loadFundraisingDetails(String fundraisingId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+    try {
+      _currentFundraising = await _fundraisingService.getFundraisingById(
+        fundraisingId,
+      );
+      if (_currentFundraising == null) {
+        _errorMessage = 'Збір не знайдено.';
+      }
+    } catch (e) {
+      _errorMessage = 'Помилка завантаження збору: $e';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   @override
   void dispose() {
     _fundraisingsSubscription?.cancel();
+    _currentFundraising = null;
     super.dispose();
   }
 }

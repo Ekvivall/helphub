@@ -20,6 +20,7 @@ import '../../view_models/profile/profile_view_model.dart';
 import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_image_view.dart';
 import '../../widgets/custom_text_field.dart';
+import '../../widgets/profile/active_fundraising_item.dart';
 import '../../widgets/profile/statistic_item_widget.dart';
 import '../../widgets/profile/latest_activities.dart';
 
@@ -172,7 +173,10 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
                           if (organization.isVerification != null &&
                               !organization.isVerification!)
                             _buildVerificationStatus(viewModel),
-                          if (viewModel.isFollowing != null && !isOwner)
+                          if (viewModel.currentUserRole !=
+                                  UserRole.organization &&
+                              viewModel.isFollowing != null &&
+                              !isOwner)
                             _buildFollowSection(
                               context,
                               viewModel,
@@ -189,7 +193,7 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
                             _buildBadge(organization),
                           if (isOwner && organization.isVerification == true)
                             _buildCreateNewCollectionButton(viewModel),
-                          _buildActiveCollectionsSection(viewModel),
+                          _buildActiveCollectionsSection(viewModel, isOwner),
                           _buildRecentActivityScreen(viewModel),
                           if (viewModel.latestActivities.isEmpty)
                             Padding(
@@ -695,7 +699,11 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
       margin: EdgeInsets.symmetric(horizontal: 20, vertical: 7),
       child: CustomElevatedButton(
         text: 'Створити новий збір',
-        onPressed: () {},
+        onPressed: () {
+          Navigator.of(
+            context,
+          ).pushNamed(AppRoutes.createFundraisingScreen, arguments: '');
+        },
         width: double.infinity,
         height: 50,
         borderRadius: 28,
@@ -707,31 +715,74 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
     );
   }
 
-  Widget _buildActiveCollectionsSection(ProfileViewModel viewModel) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Активні збори',
-            style: TextStyleHelper.instance.title16Bold.copyWith(
-              color: appThemeColors.backgroundLightGrey,
-            ),
+  Widget _buildActiveCollectionsSection(
+    ProfileViewModel viewModel,
+    bool isOwner,
+  ) {
+    final savedFundraisers = viewModel.activeFundraisings;
+    final displayItems = savedFundraisers.take(3).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Активні збори',
+                style: TextStyleHelper.instance.title16Bold.copyWith(
+                  color: appThemeColors.backgroundLightGrey,
+                ),
+              ),
+              if (savedFundraisers.length > 3)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(
+                      context,
+                    ).pushNamed(AppRoutes.allSavedFundraisersScreen);
+                  },
+                  child: Text(
+                    'Переглянути всі',
+                    style: TextStyleHelper.instance.title16Regular.copyWith(
+                      color: appThemeColors.lightGreenColor,
+                      decoration: TextDecoration.underline,
+                      decorationColor: appThemeColors.lightGreenColor,
+                    ),
+                  ),
+                ),
+            ],
           ),
-          GestureDetector(
-            onTap: () {},
+        ),
+        // Відображення списку або повідомлення, якщо список порожній
+        if (savedFundraisers.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
-              'Переглянути всі',
-              style: TextStyleHelper.instance.title16Regular.copyWith(
-                color: appThemeColors.lightGreenColor,
-                decoration: TextDecoration.underline,
-                decorationColor: appThemeColors.lightGreenColor,
+              'У вас немає активних зборів.',
+              style: TextStyleHelper.instance.title14Regular.copyWith(
+                color: appThemeColors.backgroundLightGrey.withAlpha(150),
               ),
             ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: displayItems.length,
+            itemBuilder: (context, index) {
+              final fundraising = displayItems[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: ActiveFundraisingItem(
+                  fundraising: fundraising,
+                  isOwner: isOwner,
+                ),
+              );
+            },
           ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -784,10 +835,12 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
                   color: appThemeColors.backgroundLightGrey,
                 ),
               ),
-              if (viewModel.organizationFundraiserApplications.length > 0)
+              if (viewModel.organizationFundraiserApplications.length > 3)
                 GestureDetector(
                   onTap: () {
-                    Navigator.of(context).pushNamed(AppRoutes.allFundraiserApplicationsScreen);
+                    Navigator.of(
+                      context,
+                    ).pushNamed(AppRoutes.allFundraiserApplicationsScreen);
                   },
                   child: Text(
                     'Переглянути всі',
@@ -902,7 +955,8 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
                       );
                     },
                   );
-                }, applicantUser: viewModel.fetchUser(app.volunteerId),
+                },
+                applicantUser: viewModel.fetchUser(app.volunteerId),
               ),
             );
           }),

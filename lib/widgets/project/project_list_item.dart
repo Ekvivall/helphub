@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/utils/constants.dart';
 import '../../models/project_model.dart';
+import '../../models/project_task_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/project/project_view_model.dart';
@@ -27,8 +28,15 @@ class ProjectListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUserId = viewModel.user?.uid;
     final isOrganizer = currentUserId == project.organizerId;
+    final totalTasks = project.tasks?.length;
+    final completedTasks = project.tasks
+        ?.where((t) => t.status == TaskStatus.confirmed)
+        .length;
+    final double progress = totalTasks! > 0
+        ? completedTasks! / totalTasks
+        : 0.0;
     final bool isProjectFinished =
-        (project.endDate?.isBefore(DateTime.now()) ?? false);
+        (project.endDate?.isBefore(DateTime.now()) ??false || progress == 1);
     final totalNeededPeople = project.tasks
         ?.map((task) => task.neededPeople ?? 0)
         .fold<int>(0, (sum, count) => sum + count);

@@ -169,6 +169,10 @@ class ProfileViewModel extends ChangeNotifier {
   Map<String, ProjectModel> _projectsData = {};
 
   Map<String, ProjectModel> get projectsData => _projectsData;
+  List<FundraisingModel> _activeFundraisings = [];
+  StreamSubscription<List<FundraisingModel>>? _activeFundraisingsSubscription;
+
+  List<FundraisingModel> get activeFundraisings => _activeFundraisings;
 
   ProfileViewModel({String? viewingUserId}) : _viewingUserId = viewingUserId {
     fullNameController = TextEditingController();
@@ -211,6 +215,7 @@ class ProfileViewModel extends ChangeNotifier {
     _followersCountSubscription?.cancel();
     _isFollowingSubscription?.cancel();
     _followingOrganizationsSubscription?.cancel();
+    _listenToActiveFundraisings(_user!.uid!);
     super.dispose();
   }
 
@@ -248,21 +253,9 @@ class ProfileViewModel extends ChangeNotifier {
               viewingUserId == _auth.currentUser!.uid) {
             _listenToFundraiserApplicationsForOrganization(_user!.uid!);
             _listenToFollowersCount(_user!.uid!);
+            _listenToActiveFundraisings(_user!.uid!);
           } else {
-            if (_auth.currentUser?.uid != null &&
-                _auth.currentUser?.uid != _user!.uid) {
-              final doc = await _firestore
-                  .collection('users')
-                  .doc(_auth.currentUser?.uid)
-                  .get();
-              if (doc.data()?['role'] == UserRole.volunteer.name) {
-                _listenToIsFollowing(_auth.currentUser!.uid, _user!.uid!);
-              } else {
-                _isFollowing = null;
-              }
-            } else {
-              _isFollowing = null;
-            }
+            _listenToIsFollowing(_auth.currentUser!.uid, uidToFetch);
             _listenToFollowersCount(_user!.uid!);
           }
         }
@@ -976,5 +969,33 @@ class ProfileViewModel extends ChangeNotifier {
       print('Error fetching user profile: $e');
       return null;
     }
+  }
+
+  void _listenToActiveFundraisings(String organizationId) {
+    _activeFundraisingsSubscription?.cancel();
+    _activeFundraisingsSubscription = _fundraiserService
+        .getOrganizationActiveFundraisingsStream(organizationId)
+        .listen((fundraisings) {
+          _activeFundraisings = fundraisings
+            ..sort((a, b) {
+              // Пріоритет для термінових зборів
+              final isAUrgent = a.isUrgent ?? false;
+              final isBUrgent = b.isUrgent ?? false;
+
+              if (isAUrgent && !isBUrgent) {
+                return -1;
+              }
+              if (!isAUrgent && isBUrgent) {
+                return 1;
+              }
+
+              // Сортуємо за часом (новіші перші)
+              final aTimestamp = a.timestamp ?? DateTime(1970);
+              final bTimestamp = b.timestamp ?? DateTime(1970);
+
+              return bTimestamp.compareTo(aTimestamp);
+            });
+          notifyListeners();
+        });
   }
 }

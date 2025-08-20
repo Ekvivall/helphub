@@ -289,7 +289,10 @@ class ProjectTaskCard extends StatelessWidget {
               const SizedBox(width: 26),
             ],
             if ((task.assignedVolunteerIds == null ||
-                    task.assignedVolunteerIds!.length < task.neededPeople!) &&
+                    task.assignedVolunteerIds!.length < task.neededPeople! &&
+                        !task.assignedVolunteerIds!.contains(
+                          viewModel.currentUserId,
+                        )) &&
                 (task.status == TaskStatus.pending ||
                     task.status == TaskStatus.inProgress))
               Expanded(
@@ -428,7 +431,7 @@ class ProjectTaskCard extends StatelessWidget {
                                 .copyWith(color: appThemeColors.primaryBlack),
                           ),
                           Text(
-                            'м. ${volunteerProfile?.city}, ${volunteerProfile is VolunteerModel ? "${(volunteerProfile).levelProgress} рівень" : ""}',
+                            'м. ${volunteerProfile?.city ?? 'Невідомо'}, ${volunteerProfile is VolunteerModel ? "${(volunteerProfile).levelProgress} рівень" : ""}',
                             style: TextStyleHelper.instance.title13Regular
                                 .copyWith(color: appThemeColors.textMediumGrey),
                           ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
+import 'package:helphub/widgets/profile/fundraising_creation_activity_item.dart';
 import 'package:helphub/widgets/profile/project_participation_activity_item.dart';
 
 import '../../models/activity_model.dart';
@@ -54,11 +55,9 @@ class LatestActivities extends StatelessWidget {
               isOwner: isOwner,
             );
           case ActivityType.fundraiserCreation:
-            return Text(
-              'Створено збір коштів: ${activity.title}',
-              style: TextStyleHelper.instance.title16Regular.copyWith(
-                color: appThemeColors.backgroundLightGrey,
-              ),
+            return FundraisingCreationActivityItem(
+              activity: activity,
+              isOwner: isOwner,
             );
           case ActivityType.projectParticipation:
             return ProjectParticipationActivityItem(

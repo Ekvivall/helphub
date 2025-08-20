@@ -168,7 +168,7 @@ class _FriendsListScreenState extends State<FriendsListScreen> {
                                       if (friend.city != null &&
                                           friend.city!.isNotEmpty)
                                         Text(
-                                          'м. ${friend.city!}',
+                                          'м. ${friend.city??'Невідомо'}',
                                           style: TextStyleHelper
                                               .instance
                                               .title14Regular

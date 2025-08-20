@@ -17,7 +17,6 @@ class EventModel {
   final String city;
   final List<String> participantIds;
   final String? reportId;
-  final String? organizerCommentForParticipant;
 
   EventModel({
     this.id,
@@ -35,7 +34,6 @@ class EventModel {
     required this.city,
     this.participantIds = const [],
     this.reportId,
-    this.organizerCommentForParticipant,
   });
 
   Map<String, dynamic> toMap() {
@@ -54,7 +52,6 @@ class EventModel {
       'city': city,
       'participantIds': participantIds,
       'reportId': reportId,
-      'organizerCommentForParticipant': organizerCommentForParticipant,
     };
   }
 
@@ -77,8 +74,6 @@ class EventModel {
       city: map['city'] as String,
       participantIds: List<String>.from(map['participantIds'] as List<dynamic>),
       reportId: map['reportId'] as String?,
-      organizerCommentForParticipant:
-          map['organizerCommentForParticipant'] as String?,
     );
   }
 
@@ -98,7 +93,6 @@ class EventModel {
     String? city,
     List<String>? participantIds,
     String? reportId,
-    String? organizerCommentForParticipant,
   }) {
     return EventModel(
       id: id ?? this.id,
@@ -116,8 +110,6 @@ class EventModel {
       city: city ?? this.city,
       participantIds: participantIds ?? this.participantIds,
       reportId: reportId ?? this.reportId,
-      organizerCommentForParticipant:
-          organizerCommentForParticipant ?? this.organizerCommentForParticipant,
     );
   }
 }

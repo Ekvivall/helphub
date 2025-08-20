@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/models/fundraiser_application_model.dart';
-import 'package:helphub/models/organization_model.dart';
-import 'package:helphub/widgets/custom_checkbox.dart';
 import 'package:helphub/widgets/custom_document_upload_field.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/constants.dart';
-import '../../routes/app_router.dart';
+import '../../models/fundraising_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/fundraiser_application/fundraiser_application_view_model.dart';
@@ -39,7 +37,7 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
   final TextEditingController _monoBankCardController = TextEditingController();
   DateTime? _selectedStartDate;
   DateTime? _selectedEndDate;
-  final List<CategoryChipModel> _selectedCategories = [];
+  List<CategoryChipModel> _selectedCategories = [];
   final List<FundraiserApplicationModel> _selectedApplications = [];
   bool _isUrgent = false;
   bool _showApplicationsSection = false;
@@ -52,6 +50,7 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
   bool hasRaffle = false;
   final TextEditingController ticketPriceController = TextEditingController();
   final TextEditingController prizesController = TextEditingController();
+  bool _isFormPopulated = false;
 
   @override
   void initState() {
@@ -61,16 +60,6 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
         context,
         listen: false,
       );
-      // Перевірка ролі користувача
-      if (fundraisingViewModel.user == null ||
-          fundraisingViewModel.user is! OrganizationModel) {
-        Constants.showErrorMessage(
-          context,
-          'Тільки зареєстровані фонди можуть створювати збори коштів.',
-        );
-        Navigator.of(context).pop();
-        return;
-      }
       final applicationViewModel = Provider.of<FundraiserApplicationViewModel>(
         context,
         listen: false,
@@ -78,6 +67,29 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
       applicationViewModel.loadApprovedApplicationsForOrganization(
         fundraisingViewModel.currentAuthUserId!,
       );
+      if (widget.fundraisingId.isNotEmpty) {
+        fundraisingViewModel.loadFundraisingDetails(widget.fundraisingId);
+      }
+    });
+  }
+
+  void _populateFormFields(FundraisingModel fundraising) {
+    _titleController.text = fundraising.title ?? '';
+    _descriptionController.text = fundraising.description ?? '';
+    _targetAmountController.text =
+        fundraising.targetAmount?.toStringAsFixed(0) ?? '';
+    _privatBankCardController.text = fundraising.privatBankCard ?? '';
+    _monoBankCardController.text = fundraising.monoBankCard ?? '';
+
+    setState(() {
+      _selectedStartDate = fundraising.startDate;
+      _selectedEndDate = fundraising.endDate;
+      _selectedCategories = List.from(fundraising.categories ?? []);
+      _isUrgent = fundraising.isUrgent ?? false;
+      hasRaffle = fundraising.hasRaffle;
+      ticketPriceController.text =
+          fundraising.ticketPrice?.toStringAsFixed(0) ?? '';
+      prizesController.text = fundraising.prizes?.join(';') ?? '';
     });
   }
 
@@ -158,6 +170,7 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.fundraisingId.isNotEmpty;
     return Scaffold(
       backgroundColor: appThemeColors.blueAccent,
       appBar: AppBar(
@@ -173,7 +186,7 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
           ),
         ),
         title: Text(
-          'Створити збір',
+          isEditing ? 'Редагувати збір' : 'Створити збір',
           style: TextStyleHelper.instance.headline24SemiBold.copyWith(
             color: appThemeColors.backgroundLightGrey,
           ),
@@ -191,6 +204,17 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
         ),
         child: Consumer2<FundraisingViewModel, FundraiserApplicationViewModel>(
           builder: (context, fundraisingViewModel, applicationViewModel, child) {
+            final isEditing = widget.fundraisingId.isNotEmpty;
+            if (isEditing &&
+                fundraisingViewModel.currentFundraising != null &&
+                !_isFormPopulated) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  _populateFormFields(fundraisingViewModel.currentFundraising!);
+                  _isFormPopulated = true;
+                }
+              });
+            }
             if (fundraisingViewModel.isLoading &&
                 fundraisingViewModel.user == null) {
               return Center(
@@ -223,7 +247,7 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Секція вибору заявок
-                    if (approvedApplications.isNotEmpty) ...[
+                    if (approvedApplications.isNotEmpty && !isEditing) ...[
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
@@ -488,7 +512,12 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                       ),
                     ),
                     CustomDatePicker(
-                      firstDate: DateTime.now(),
+                      key: _selectedStartDate != null
+                          ? ValueKey(_selectedStartDate)
+                          : null,
+                      firstDate:
+                          fundraisingViewModel.currentFundraising?.startDate ??
+                          DateTime.now(),
                       lastDate: DateTime.now().add(
                         const Duration(days: 365 * 2),
                       ),
@@ -497,6 +526,7 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                           _selectedStartDate = date;
                         });
                       },
+                      date: _selectedStartDate,
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -506,6 +536,9 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                       ),
                     ),
                     CustomDatePicker(
+                      key: _selectedEndDate != null
+                          ? ValueKey(_selectedEndDate)
+                          : null,
                       firstDate: _selectedStartDate ?? DateTime.now(),
                       lastDate: DateTime.now().add(
                         const Duration(days: 365 * 2),
@@ -628,21 +661,32 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                    CustomCheckboxWithText(
-                      text: 'Додати розіграш',
-                      initialValue: hasRaffle,
-                      onChanged: (val) {
-                        setState(() {
-                          hasRaffle = val ?? false;
-                        });
-                      },
-                      textStyle: TextStyleHelper.instance.title16Bold.copyWith(
-                        color: appThemeColors.backgroundLightGrey,
-                      ),
-                      checkColor: appThemeColors.backgroundLightGrey,
-                      borderSideColor: appThemeColors.backgroundLightGrey,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    const SizedBox(height: 15),
+                    Row(
+                      children: [
+                        Text(
+                          'Додати розіграш',
+                          style: TextStyleHelper.instance.title16Bold.copyWith(
+                            color: appThemeColors.backgroundLightGrey,
+                          ),
+                        ),
+                        const Spacer(),
+                        Switch(
+                          value: hasRaffle,
+                          onChanged: (value) {
+                            setState(() {
+                              hasRaffle = value;
+                            });
+                          },
+                          activeColor: appThemeColors.backgroundLightGrey,
+                          inactiveTrackColor:
+                              appThemeColors.backgroundLightGrey,
+                          inactiveThumbColor: appThemeColors.appBarBg,
+                          trackOutlineColor: WidgetStateProperty.all(
+                            Colors.transparent,
+                          ),
+                        ),
+                      ],
                     ),
                     if (hasRaffle) ...[
                       const SizedBox(height: 12),
@@ -663,7 +707,7 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 16,),
+                      const SizedBox(height: 16),
                       CustomTextField(
                         controller: prizesController,
                         label: 'Назви призів, розділяючи \';\'',
@@ -686,11 +730,16 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                         fundraisingViewModel.setPickedImageFile(file);
                       },
                       validator: (file) {
-                        if (file == null) {
+                        if (file == null &&
+                            fundraisingViewModel.currentFundraising?.photoUrl ==
+                                null) {
                           return 'Будь ласка, завантажте фото.';
                         }
                         return null;
                       },
+                      initialImageUrl: isEditing
+                          ? fundraisingViewModel.currentFundraising?.photoUrl
+                          : null,
                     ),
 
                     const SizedBox(height: 16),
@@ -699,6 +748,8 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                       onChanged: (files) {
                         fundraisingViewModel.setPickedDocuments(files);
                       },
+                      initialDocumentUrls:
+                          fundraisingViewModel.currentFundraising?.documentUrls,
                     ),
 
                     const SizedBox(height: 32),
@@ -747,23 +798,71 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                                   _selectedApplications
                                       .map((app) => app.id)
                                       .toList();
-                              errorMessage = await viewModel.createFundraising(
-                                title: _titleController.text.trim(),
-                                description: _descriptionController.text.trim(),
-                                targetAmount: targetAmount,
-                                categories: _selectedCategories,
-                                startDate: _selectedStartDate!,
-                                endDate: _selectedEndDate!,
-                                privatBankCard: _privatBankCardController.text
-                                    .trim(),
-                                monoBankCard: _monoBankCardController.text
-                                    .trim(),
-                                isUrgent: _isUrgent,
-                                relatedApplicationIds: selectedApplicationIds,
-                                hasRaffle: hasRaffle,
-                                ticketPrice: hasRaffle ? double.tryParse(ticketPriceController.text) ?? 1 : null,
-                                prizes: hasRaffle?prizesController.text.trim().split(';').toList(): null
-                              );
+                              final isEditing = widget.fundraisingId.isNotEmpty;
+                              if (isEditing) {
+                                errorMessage = await viewModel
+                                    .updateFundraising(
+                                      fundraisingId: widget.fundraisingId,
+                                      title: _titleController.text.trim(),
+                                      description: _descriptionController.text
+                                          .trim(),
+                                      targetAmount: targetAmount,
+                                      categories: _selectedCategories,
+                                      startDate: _selectedStartDate!,
+                                      endDate: _selectedEndDate!,
+                                      privatBankCard: _privatBankCardController
+                                          .text
+                                          .trim(),
+                                      monoBankCard: _monoBankCardController.text
+                                          .trim(),
+                                      isUrgent: _isUrgent,
+                                      hasRaffle: hasRaffle,
+                                      ticketPrice: hasRaffle
+                                          ? double.tryParse(
+                                                  ticketPriceController.text,
+                                                ) ??
+                                                1
+                                          : null,
+                                      prizes: hasRaffle
+                                          ? prizesController.text
+                                                .trim()
+                                                .split(';')
+                                                .toList()
+                                          : null,
+                                    );
+                              } else {
+                                errorMessage = await viewModel
+                                    .createFundraising(
+                                      title: _titleController.text.trim(),
+                                      description: _descriptionController.text
+                                          .trim(),
+                                      targetAmount: targetAmount,
+                                      categories: _selectedCategories,
+                                      startDate: _selectedStartDate!,
+                                      endDate: _selectedEndDate!,
+                                      privatBankCard: _privatBankCardController
+                                          .text
+                                          .trim(),
+                                      monoBankCard: _monoBankCardController.text
+                                          .trim(),
+                                      isUrgent: _isUrgent,
+                                      relatedApplicationIds:
+                                          selectedApplicationIds,
+                                      hasRaffle: hasRaffle,
+                                      ticketPrice: hasRaffle
+                                          ? double.tryParse(
+                                                  ticketPriceController.text,
+                                                ) ??
+                                                1
+                                          : null,
+                                      prizes: hasRaffle
+                                          ? prizesController.text
+                                                .trim()
+                                                .split(';')
+                                                .toList()
+                                          : null,
+                                    );
+                              }
 
                               if (errorMessage == null) {
                                 if (_selectedApplications.isNotEmpty) {
@@ -780,9 +879,7 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                                   context,
                                   'Збір "${_titleController.text}" успішно створено!',
                                 );
-                                Navigator.of(context).pushReplacementNamed(
-                                  AppRoutes.fundraisingListScreen,
-                                );
+                                Navigator.of(context).pop();
                               } else {
                                 Constants.showErrorMessage(
                                   context,
@@ -791,7 +888,7 @@ class _CreateFundraisingScreenState extends State<CreateFundraisingScreen> {
                               }
                             }
                           },
-                          text: 'Створити збір',
+                          text: isEditing ? 'Зберегти зміни' : 'Створити збір',
                           backgroundColor: appThemeColors.blueAccent,
                           textStyle: TextStyleHelper.instance.title16Bold
                               .copyWith(color: appThemeColors.primaryWhite),

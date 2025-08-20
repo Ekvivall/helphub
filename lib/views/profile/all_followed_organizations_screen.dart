@@ -166,7 +166,7 @@ class _AllFollowedOrganizationsScreenState extends State<AllFollowedOrganization
                                 if (organization.city != null &&
                                     organization.city!.isNotEmpty)
                                   Text(
-                                    'м. ${organization.city!}',
+                                    'м. ${organization.city??'Невідомо'}',
                                     style: TextStyleHelper
                                         .instance
                                         .title14Regular

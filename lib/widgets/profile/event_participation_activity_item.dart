@@ -169,7 +169,7 @@ class EventParticipationActivityItem extends StatelessWidget {
                   ),
                 // Сіра рамка для коментаря організатора (placeholder)
                 // TODO: Реалізувати отримання коментаря організатора для конкретного учасника
-                if ( event.organizerCommentForParticipant != null) // Заглушка, поки немає поля в моделі
+                if (false) // Заглушка, поки немає поля в моделі
                   Padding(
                     padding: const EdgeInsets.only(top: 16),
                     child: Container(

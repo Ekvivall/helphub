@@ -79,6 +79,8 @@ class VolunteerRegisterViewModel extends ChangeNotifier {
           fullName: fullNameController.text.trim(),
           city: _selectedCity,
           levelProgress: 1,
+          projectsCount: 0,
+          eventsCount: 0,
 
           displayName: Constants.generateUniqueDisplayName(
             emailController.text.trim(),

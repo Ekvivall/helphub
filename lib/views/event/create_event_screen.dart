@@ -202,11 +202,15 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                         viewModel.setPickedImageFile(file);
                       },
                       validator: (file) {
-                        if (file == null) {
+                        if (file == null &&
+                            viewModel.currentEvent?.photoUrl == null) {
                           return 'Будь ласка, завантажте фото.';
                         }
                         return null;
                       },
+                      initialImageUrl: isEditing
+                          ? viewModel.currentEvent?.photoUrl
+                          : null,
                     ),
                     if (viewModel.user!.city == null) ...[
                       const SizedBox(height: 16),
@@ -276,7 +280,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     ),
                     SizedBox(height: 8),
                     CustomDatePicker(
-                      firstDate: DateTime.now(),
+                      key: ValueKey(_selectedDate),
+                      firstDate: viewModel.currentEvent?.date ?? DateTime.now(),
                       lastDate: DateTime.now().add(Duration(days: 365)),
                       date: _selectedDate,
                       onDateChanged: (date) {
@@ -294,6 +299,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                     ),
                     SizedBox(height: 8),
                     CustomTimePicker(
+                      key: _selectedTime != null ? ValueKey(_selectedTime) : null,
                       time: _selectedTime,
                       onTimeChanged: (time) {
                         setState(() {

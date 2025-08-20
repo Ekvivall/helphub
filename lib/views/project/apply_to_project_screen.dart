@@ -289,7 +289,7 @@ class _ApplyToProjectScreenState extends State<ApplyToProjectScreen> {
         final int assigned = task.assignedVolunteerIds?.length ?? 0;
         final bool isFull = assigned >= needed;
         final int res = needed - assigned;
-        return Card(
+        return !isFull? Card(
           margin: const EdgeInsets.only(bottom: 12),
           elevation: 2,
           shape: RoundedRectangleBorder(
@@ -377,7 +377,7 @@ class _ApplyToProjectScreenState extends State<ApplyToProjectScreen> {
               ],
             ),
           ),
-        );
+        ) : SizedBox.shrink();
       },
     );
   }

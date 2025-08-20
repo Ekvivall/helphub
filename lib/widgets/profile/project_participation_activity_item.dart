@@ -8,6 +8,7 @@ import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
 import 'package:intl/intl.dart';
 
+import '../../models/project_task_model.dart';
 import '../custom_elevated_button.dart';
 import '../../views/chat/chat_project_screen.dart';
 
@@ -62,8 +63,15 @@ class ProjectParticipationActivityItem extends StatelessWidget {
         }
 
         final ProjectModel project = snapshot.data!;
+        final totalTasks = project.tasks?.length;
+        final completedTasks = project.tasks
+            ?.where((t) => t.status == TaskStatus.confirmed)
+            .length;
+        final double progress = totalTasks! > 0
+            ? completedTasks! / totalTasks
+            : 0.0;
         final bool isProjectFinished =
-            project.endDate?.isBefore(DateTime.now()) ?? false;
+        (project.endDate?.isBefore(DateTime.now()) ??false || progress == 1);
 
         return Card(
           margin: const EdgeInsets.only(bottom: 12),

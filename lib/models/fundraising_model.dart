@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:helphub/models/category_chip_model.dart';
+import 'package:helphub/models/raffle_winner_model.dart';
 
 class FundraisingModel {
   final String? id;
@@ -24,6 +25,9 @@ class FundraisingModel {
   final bool hasRaffle;
   double? ticketPrice;
   List<String>? prizes;
+  final String? status;
+  final List<RaffleWinnerModel>? raffleWinners;
+
 
   FundraisingModel({
     this.id,
@@ -47,6 +51,9 @@ class FundraisingModel {
     this.hasRaffle = false,
     this.ticketPrice,
     this.prizes,
+    this.status,
+    this.raffleWinners,
+
   });
 
   Map<String, dynamic> toMap() {
@@ -72,6 +79,9 @@ class FundraisingModel {
       'hasRaffle': hasRaffle,
       'ticketPrice': ticketPrice,
       'prizes': prizes ?? [],
+      'status': status,
+      'raffleWinners': raffleWinners?.map((e) => e.toMap()).toList(),
+
     };
   }
 
@@ -117,6 +127,10 @@ class FundraisingModel {
           ?.map((e) => e as String)
           .toList() ??
           [],
+      status: map['status'] as String?,
+      raffleWinners: (map['raffleWinners'] as List<dynamic>?)
+          ?.map((e) => RaffleWinnerModel.fromMap(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -143,6 +157,8 @@ class FundraisingModel {
     bool? hasRaffle,
     double? ticketPrice,
     List<String>? prizes,
+    String? status,
+    List<RaffleWinnerModel>? raffleWinners
   }) {
     return FundraisingModel(
       id: id ?? this.id,
@@ -167,6 +183,9 @@ class FundraisingModel {
       hasRaffle: hasRaffle ?? this.hasRaffle,
       ticketPrice: ticketPrice ?? this.ticketPrice,
       prizes: prizes ?? this.prizes,
+      status: status ?? this.status,
+      raffleWinners: raffleWinners ?? this.raffleWinners,
     );
+
   }
 }

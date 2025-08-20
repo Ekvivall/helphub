@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:helphub/models/fundraising_model.dart';
 
 import '../../models/fundraiser_application_model.dart';
+import '../../models/raffle_winner_model.dart';
 
 class FundraisingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -76,10 +77,7 @@ class FundraisingService {
 
       final fundraising = FundraisingModel.fromMap(fundraisingSnapshot.data()!);
 
-      batch.update(fundraisingRef, {
-        'status': 'completed',
-        'endDate': DateTime.now().toIso8601String(),
-      });
+      batch.update(fundraisingRef, {'status': 'completed'});
 
       if (fundraising.relatedApplicationIds != null &&
           fundraising.relatedApplicationIds!.isNotEmpty) {
@@ -138,7 +136,6 @@ class FundraisingService {
   }
 
   Stream<List<FundraisingModel>> getFundraisingsStream() {
-
     return _firestore
         .collection('fundraisings')
         .where('startDate', isLessThanOrEqualTo: DateTime.now())
@@ -147,6 +144,9 @@ class FundraisingService {
         .map((snapshot) {
           return snapshot.docs
               .map((doc) => FundraisingModel.fromMap(doc.data()))
+              .where((fundraising) {
+                return fundraising.status != 'completed';
+              })
               .toList();
         });
   }
@@ -266,6 +266,42 @@ class FundraisingService {
       return doc.exists;
     } catch (e) {
       return false;
+    }
+  }
+
+  Stream<List<FundraisingModel>> getOrganizationActiveFundraisingsStream(
+    String organizationId,
+  ) {
+    return _firestore
+        .collection('fundraisings')
+        .where('organizationId', isEqualTo: organizationId)
+        .where('endDate', isGreaterThanOrEqualTo: DateTime.now())
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs
+              .map((doc) => FundraisingModel.fromMap(doc.data()))
+              .where((fundraising) {
+                final now = DateTime.now();
+                return fundraising.startDate != null &&
+                    fundraising.endDate != null &&
+                    now.isAfter(fundraising.startDate!) &&
+                    now.isBefore(fundraising.endDate!) &&
+                    fundraising.status != 'completed';
+              })
+              .toList();
+        });
+  }
+
+  Future<void> saveRaffleWinners(
+    String fundraisingId,
+    List<RaffleWinnerModel> winners,
+  ) async {
+    try {
+      await _firestore.collection('fundraisings').doc(fundraisingId).update({
+        'raffleWinners': winners.map((winner) => winner.toMap()).toList(),
+      });
+    } catch (e) {
+      rethrow;
     }
   }
 }
