@@ -437,7 +437,7 @@ class CustomMultiDocumentUploadField extends FormField<List<File>> {
                          ),
                          const SizedBox(height: 4),
                          Text(
-                           'PDF, DOC, DOCX, PNG, JPG до 10 МБ',
+                           'PDF, DOC, DOCX до 10 МБ',
                            style: TextStyleHelper.instance.title13Regular
                                .copyWith(
                                  color: appThemeColors.backgroundLightGrey

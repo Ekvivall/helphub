@@ -29,7 +29,8 @@ class ProjectViewModel extends ChangeNotifier {
   final SkillService _skillService = SkillService();
   final ActivityService _activityService = ActivityService();
   final FriendService _friendService = FriendService();
-  final ProjectApplicationService _projectApplicationService = ProjectApplicationService();
+  final ProjectApplicationService _projectApplicationService =
+      ProjectApplicationService();
 
   StreamSubscription<List<ProjectModel>>? _projectsSubscription;
   List<ProjectModel> _allProjects = [];
@@ -167,19 +168,37 @@ class ProjectViewModel extends ChangeNotifier {
     notifyListeners();
     _projectsSubscription?.cancel();
     _projectsSubscription = _projectService.fetchProjectsStream().listen(
-          (projects) {
+      (projects) {
         _allProjects =
-        projects.where((project) {
-          return _user == null ||
-              _user!.city == null ||
-              project.city == _user!.city;
-        }).toList()
-          ..sort(
-                (a, b) =>
-                (a.startDate ?? DateTime(9999)).compareTo(
-                  b.startDate ?? DateTime(9999),
-                ),
-          );
+            projects.where((project) {
+              final totalTasks = project.tasks?.length ?? 0;
+              if (totalTasks == 0) return false;
+              final completedTasks =
+                  project.tasks
+                      ?.where((t) => t.status == TaskStatus.confirmed)
+                      .length ??
+                  0;
+              final totalNeededPeople = project.tasks
+                  ?.map((task) => task.neededPeople ?? 0)
+                  .fold<int>(0, (int sum, int count) => sum + count);
+              final totalVolunteers = project.tasks
+                  ?.map((task) => task.assignedVolunteerIds?.length ?? 0)
+                  .fold<int>(0, (int sum, int count) => sum + count);
+              final bool isFull =
+                  totalVolunteers != null &&
+                      totalNeededPeople != null &&
+                      totalVolunteers >= totalNeededPeople;
+              return (_user == null ||
+                      _user!.city == null ||
+                      project.city == _user!.city) &&
+                  (project.endDate == null ||
+                  project.endDate!.isAfter(DateTime.now())) &&
+                  completedTasks != totalTasks && !isFull;
+            }).toList()..sort(
+              (a, b) => (a.startDate ?? DateTime(9999)).compareTo(
+                b.startDate ?? DateTime(9999),
+              ),
+            );
         _isLoading = false;
         _applyFilters();
       },
@@ -198,13 +217,15 @@ class ProjectViewModel extends ChangeNotifier {
     _applyFilters();
   }
 
-  void setFilters(List<CategoryChipModel> categories,
-      List<String> skills,
-      double? radius,
-      DateTime? startDate,
-      DateTime? endDate,
-      bool isOnlyFriends,
-      bool isOnlyOpen,) {
+  void setFilters(
+    List<CategoryChipModel> categories,
+    List<String> skills,
+    double? radius,
+    DateTime? startDate,
+    DateTime? endDate,
+    bool isOnlyFriends,
+    bool isOnlyOpen,
+  ) {
     _selectedCategories = categories;
     _selectedSkills = skills;
     _searchRadius = radius;
@@ -245,12 +266,11 @@ class ProjectViewModel extends ChangeNotifier {
     if (_selectedCategories.isNotEmpty) {
       tempProjects = tempProjects.where((project) {
         return project.categories?.any(
-              (projectCategory) =>
-              _selectedCategories.any(
-                    (selectedCategory) =>
-                selectedCategory.title == projectCategory.title,
+              (projectCategory) => _selectedCategories.any(
+                (selectedCategory) =>
+                    selectedCategory.title == projectCategory.title,
               ),
-        ) ??
+            ) ??
             false;
       }).toList();
     }
@@ -260,7 +280,7 @@ class ProjectViewModel extends ChangeNotifier {
       tempProjects = tempProjects.where((project) {
         return project.skills?.any(
               (projectSkill) => _selectedSkills.contains(projectSkill),
-        ) ??
+            ) ??
             false;
       }).toList();
     }
@@ -275,12 +295,12 @@ class ProjectViewModel extends ChangeNotifier {
         final endDate = _selectedEndDate;
         bool matchesStartDate =
             startDate == null ||
-                projectStartDate.isAtSameMomentAs(startDate) ||
-                projectStartDate.isAfter(startDate);
+            projectStartDate.isAtSameMomentAs(startDate) ||
+            projectStartDate.isAfter(startDate);
         bool matchesEndtDate =
             endDate == null ||
-                projectEndDate.isAtSameMomentAs(endDate) ||
-                projectEndDate.isBefore(endDate);
+            projectEndDate.isAtSameMomentAs(endDate) ||
+            projectEndDate.isBefore(endDate);
         return matchesStartDate && matchesEndtDate;
       }).toList();
     }
@@ -331,8 +351,9 @@ class ProjectViewModel extends ChangeNotifier {
         _errorMessage = 'Проект не знайдено.';
       } else {
         _projectCoordinates = _currentProject!.locationGeo;
-        _organizer =
-        await _fetchCurrentUserProfile(_currentProject!.organizerId!);
+        _organizer = await _fetchCurrentUserProfile(
+          _currentProject!.organizerId!,
+        );
       }
     } catch (e) {
       _errorMessage = 'Помилка завантаження проекту: $e';
@@ -377,8 +398,8 @@ class ProjectViewModel extends ChangeNotifier {
         organizerId: _currentAuthUserId!,
         organizerName: _user is VolunteerModel
             ? (_user as VolunteerModel).fullName ??
-            (_user as VolunteerModel).displayName ??
-            'Волонтер'
+                  (_user as VolunteerModel).displayName ??
+                  'Волонтер'
             : _user is OrganizationModel
             ? (_user as OrganizationModel).organizationName ?? 'Фонд'
             : 'Невідомий користувач',
@@ -511,8 +532,9 @@ class ProjectViewModel extends ChangeNotifier {
           status: 'pending',
           timestamp: Timestamp.now(),
         );
-        await _projectApplicationService.submitProjectApplication(newApplication);
-
+        await _projectApplicationService.submitProjectApplication(
+          newApplication,
+        );
       }
 
       _isSubmitting = false;

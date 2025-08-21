@@ -25,6 +25,7 @@ class ColorSchemes {
 }
 
 class LightCodeColors {
+
   Color get transparent => Colors.transparent;
   Color get primaryBlack => const Color(0xFF1E1E1E);
 
@@ -69,4 +70,7 @@ class LightCodeColors {
   Color get blueMixedColor => const Color(0xFFCDDAEE);
 
   Color get lightGreenColor => const Color(0xFFCDDC39);
+
+  Color get yellowColor => const Color(0xFFc2d32e);
+
 }

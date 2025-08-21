@@ -8,13 +8,20 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
+import 'package:helphub/widgets/profile/participant_report_section_widget.dart';
 import 'package:intl/intl.dart';
 
 class EventParticipationActivityItem extends StatelessWidget {
   final ActivityModel activity;
   final bool isOwner;
+  final String currentAuthId;
 
-  const EventParticipationActivityItem({super.key, required this.activity, required this.isOwner});
+  const EventParticipationActivityItem({
+    super.key,
+    required this.activity,
+    required this.isOwner,
+    required this.currentAuthId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -93,23 +100,23 @@ class EventParticipationActivityItem extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     // TODO: Реалізувати логіку переходу до чату події
-                    if(isOwner)
+                    if (isOwner)
                       IconButton(
-                      icon: Icon(
-                        Icons.chat_bubble_outline,
-                        color: appThemeColors.blueAccent,
-                      ),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Перехід до чату події "${event.name}" (не реалізовано)',
+                        icon: Icon(
+                          Icons.chat_bubble_outline,
+                          color: appThemeColors.blueAccent,
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Перехід до чату події "${event.name}" (не реалізовано)',
+                              ),
                             ),
-                          ),
-                        );
-                        // Navigator.of(context).pushNamed(AppRoutes.eventChatScreen, arguments: event.id);
-                      },
-                    ),
+                          );
+                          // Navigator.of(context).pushNamed(AppRoutes.eventChatScreen, arguments: event.id);
+                        },
+                      ),
                   ],
                 ),
                 // Категорії
@@ -141,8 +148,14 @@ class EventParticipationActivityItem extends StatelessWidget {
                   color: appThemeColors.textMediumGrey,
                 ),
                 const SizedBox(height: 8),
-                // Кнопка "Деталі" або "Посилання на звіт"
-                if (!isEventFinished)
+                if (isEventFinished) ...[
+                  buildParticipantReportSection(
+                    event.reportId,
+                    currentAuthId,
+                    isOwner,
+                    context,
+                  ),
+                ] else ...[
                   CustomElevatedButton(
                     onPressed: () {
                       Navigator.of(context).pushNamed(
@@ -158,45 +171,8 @@ class EventParticipationActivityItem extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       color: appThemeColors.primaryWhite,
                     ),
-                  )
-                else // Подія завершена
-                  // TODO: Додати логіку для посилання на звіт, коли вона буде реалізована
-                  Text(
-                    'Подія завершена${event.reportId != null ? ' (Є звіт)' : ''}', // Заглушка для звіту
-                    style: TextStyleHelper.instance.title14Regular.copyWith(
-                      color: appThemeColors.textMediumGrey,
-                    ),
                   ),
-                // Сіра рамка для коментаря організатора (placeholder)
-                // TODO: Реалізувати отримання коментаря організатора для конкретного учасника
-                if (false) // Заглушка, поки немає поля в моделі
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: appThemeColors.grey100, // Світло-сірий фон
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: appThemeColors.grey400),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Коментар організатора:',
-                            style: TextStyleHelper.instance.title14Regular
-                                .copyWith(color: appThemeColors.primaryBlack),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Тут буде коментар організатора до цього учасника про його участь.',
-                            style: TextStyleHelper.instance.title14Regular
-                                .copyWith(color: appThemeColors.textMediumGrey),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                ],
               ],
             ),
           ),

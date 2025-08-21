@@ -6,6 +6,7 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
+import 'package:helphub/widgets/profile/report_section_widget.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/utils/constants.dart';
@@ -99,23 +100,23 @@ class EventOrganizationActivityItem extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     // TODO: Реалізувати логіку переходу до чату події
-                    if(isOwner)
-                    IconButton(
-                      icon: Icon(
-                        Icons.chat_bubble_outline,
-                        color: appThemeColors.blueAccent,
-                      ),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Перехід до чату події "${event.name}" (не реалізовано)',
+                    if (isOwner)
+                      IconButton(
+                        icon: Icon(
+                          Icons.chat_bubble_outline,
+                          color: appThemeColors.blueAccent,
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                'Перехід до чату події "${event.name}" (не реалізовано)',
+                              ),
                             ),
-                          ),
-                        );
-                        // Navigator.of(context).pushNamed(AppRoutes.eventChatScreen, arguments: event.id);
-                      },
-                    ),
+                          );
+                          // Navigator.of(context).pushNamed(AppRoutes.eventChatScreen, arguments: event.id);
+                        },
+                      ),
                   ],
                 ),
                 // Категорії
@@ -170,53 +171,11 @@ class EventOrganizationActivityItem extends StatelessWidget {
                           ),
                     )
                   else // Подія завершена
-                    event.reportId == null
-                        ? CustomElevatedButton(
-                            onPressed: () {
-                              // TODO: Реалізувати логіку переходу на екран додавання звіту
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Перехід до додавання звіту для "${event.name}" (не реалізовано)',
-                                  ),
-                                ),
-                              );
-                              // Navigator.of(context).pushNamed(AppRoutes.createReportScreen, arguments: event.id);
-                            },
-                            backgroundColor: appThemeColors.successGreen,
-                            // Зелена кнопка для додавання звіту
-                            borderRadius: 8,
-                            height: 34,
-                            text: 'Додати звіт',
-                            textStyle: TextStyleHelper.instance.title14Regular
-                                .copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: appThemeColors.primaryWhite,
-                                ),
-                          )
-                        : CustomElevatedButton(
-                            onPressed: () {
-                              // TODO: Реалізувати логіку переходу на екран перегляду звіту
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Перехід до перегляду звіту для "${event.name}" (не реалізовано)',
-                                  ),
-                                ),
-                              );
-                              // Navigator.of(context).pushNamed(AppRoutes.viewReportScreen, arguments: event.reportId);
-                            },
-                            backgroundColor: appThemeColors.textMediumGrey,
-                            // Сіра кнопка, якщо звіт є
-                            borderRadius: 8,
-                            height: 34,
-                            text: 'Переглянути звіт',
-                            textStyle: TextStyleHelper.instance.title14Regular
-                                .copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: appThemeColors.primaryWhite,
-                                ),
-                          ),
+                    buildReportSection(
+                      event.reportId,
+                      activity,
+                      context,
+                    ),
                 ],
               ],
             ),

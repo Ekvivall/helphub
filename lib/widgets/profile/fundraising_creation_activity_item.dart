@@ -4,6 +4,7 @@ import 'package:helphub/models/activity_model.dart';
 import 'package:helphub/models/fundraising_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
+import 'package:helphub/widgets/profile/report_section_widget.dart';
 import 'package:intl/intl.dart';
 
 import '../../routes/app_router.dart';
@@ -472,50 +473,35 @@ class _FundraisingCreationActivityItemState
                             ),
                       ),
                   ] else if (status == 'Завершений') ...[
-                    // Завершений збір - показуємо кнопки для перегляду та звіту
                     Row(
                       children: [
-                        Expanded(
-                          child: CustomElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).pushNamed(
-                                AppRoutes.fundraisingDonationsScreen,
-                                arguments: fundraising.id,
-                              );
-                            },
-                            backgroundColor: appThemeColors.successGreen,
-                            borderRadius: 8,
-                            height: 34,
-                            text: 'Список донатів',
-                            textStyle: TextStyleHelper.instance.title14Regular
-                                .copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: appThemeColors.primaryWhite,
-                                ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: CustomElevatedButton(
-                            onPressed: () {
-                              // TODO: Реалізувати логіку переходу на екран додавання звіту
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Перехід до додавання звіту для "${fundraising.title}" (не реалізовано)',
+                        if (fundraising.reportId == null) ...[
+                          Expanded(
+                            child: CustomElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pushNamed(
+                                  AppRoutes.fundraisingDonationsScreen,
+                                  arguments: fundraising.id,
+                                );
+                              },
+                              backgroundColor: appThemeColors.blueAccent,
+                              borderRadius: 8,
+                              height: 34,
+                              text: 'Список донатів',
+                              textStyle: TextStyleHelper.instance.title14Regular
+                                  .copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: appThemeColors.primaryWhite,
                                   ),
-                                ),
-                              );
-                            },
-                            backgroundColor: appThemeColors.lightGreenColor,
-                            borderRadius: 8,
-                            height: 34,
-                            text: 'Додати звіт',
-                            textStyle: TextStyleHelper.instance.title14Regular
-                                .copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: appThemeColors.primaryWhite,
-                                ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Expanded(
+                          child: buildReportSection(
+                            fundraising.reportId,
+                            widget.activity,
+                            context,
                           ),
                         ),
                       ],

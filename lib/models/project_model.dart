@@ -21,7 +21,6 @@ class ProjectModel {
   final bool? isOnlyFriends;
   final String? reportId;
 
-  final String? organizerCommentForVolunteer;
 
   ProjectModel({
     this.id,
@@ -40,7 +39,6 @@ class ProjectModel {
     this.skills,
     this.isOnlyFriends,
     this.reportId,
-    this.organizerCommentForVolunteer
   });
 
   Map<String, dynamic> toMap() {
@@ -63,7 +61,6 @@ class ProjectModel {
       'skills': skills,
       'isOnlyFriends': isOnlyFriends,
       'reportId': reportId,
-      'organizerCommentForVolunteer':organizerCommentForVolunteer
     };
   }
 
@@ -102,7 +99,6 @@ class ProjectModel {
           .toList(),
       isOnlyFriends: map['isOnlyFriends'] as bool?,
       reportId: map['reportId'] as String?,
-      organizerCommentForVolunteer: map['organizerCommentForVolunteer'] as String?,
     );
   }
 
@@ -143,7 +139,6 @@ class ProjectModel {
       skills: skills ?? this.skills,
       isOnlyFriends: isOnlyFriends ?? this.isOnlyFriends,
       reportId: reportId ?? this.reportId,
-      organizerCommentForVolunteer: organizerCommentForVolunteer ?? this.organizerCommentForVolunteer,
     );
   }
 }

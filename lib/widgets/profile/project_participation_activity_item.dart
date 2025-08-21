@@ -6,6 +6,7 @@ import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
+import 'package:helphub/widgets/profile/participant_report_section_widget.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/project_task_model.dart';
@@ -16,10 +17,12 @@ class ProjectParticipationActivityItem extends StatelessWidget {
   final ActivityModel activity;
   final bool isOwner;
 
+  final String currentAuthId;
+
   const ProjectParticipationActivityItem({
     super.key,
     required this.activity,
-    required this.isOwner,
+    required this.isOwner, required this.currentAuthId,
   });
 
   @override
@@ -67,11 +70,9 @@ class ProjectParticipationActivityItem extends StatelessWidget {
         final completedTasks = project.tasks
             ?.where((t) => t.status == TaskStatus.confirmed)
             .length;
-        final double progress = totalTasks! > 0
-            ? completedTasks! / totalTasks
-            : 0.0;
         final bool isProjectFinished =
-        (project.endDate?.isBefore(DateTime.now()) ??false || progress == 1);
+            project.endDate!.isBefore(DateTime.now()) ||
+            totalTasks == completedTasks;
 
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
@@ -130,13 +131,13 @@ class ProjectParticipationActivityItem extends StatelessWidget {
                   color: appThemeColors.textMediumGrey,
                 ),
                 const SizedBox(height: 4),
-                if(isOwner)
-                Text(
-                  'Завдання: ${activity.description}',
-                  style: TextStyleHelper.instance.title14Regular.copyWith(
-                    color: appThemeColors.primaryBlack,
+                if (isOwner)
+                  Text(
+                    'Завдання: ${activity.description}',
+                    style: TextStyleHelper.instance.title14Regular.copyWith(
+                      color: appThemeColors.primaryBlack,
+                    ),
                   ),
-                ),
                 const SizedBox(height: 4),
                 _buildInfoRow(
                   icon: Icons.calendar_today,
@@ -172,42 +173,14 @@ class ProjectParticipationActivityItem extends StatelessWidget {
                       color: appThemeColors.primaryWhite,
                     ),
                   )
-                else if(isProjectFinished)
-                  Text(
-                    'Проєкт завершено${project.reportId != null ? ' (Є звіт)' : ''}',
-                    style: TextStyleHelper.instance.title14Regular.copyWith(
-                      color: appThemeColors.textMediumGrey,
-                    ),
+                else if (isProjectFinished) ...[
+                  buildParticipantReportSection(
+                    project.reportId,
+                    currentAuthId,
+                    isOwner,
+                    context,
                   ),
-                // TODO: Реалізувати отримання коментаря організатора для конкретного учасника, коли буде поле в моделі
-                if (project.organizerCommentForVolunteer != null) // Заглушка
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: appThemeColors.grey100,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: appThemeColors.grey400),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Коментар організатора:',
-                            style: TextStyleHelper.instance.title14Regular
-                                .copyWith(color: appThemeColors.primaryBlack),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Тут буде коментар організатора про участь волонтера.',
-                            style: TextStyleHelper.instance.title14Regular
-                                .copyWith(color: appThemeColors.textMediumGrey),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                ]
               ],
             ),
           ),

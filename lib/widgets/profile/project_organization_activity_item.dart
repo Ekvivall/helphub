@@ -6,6 +6,7 @@ import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
+import 'package:helphub/widgets/profile/report_section_widget.dart';
 import 'package:intl/intl.dart';
 
 import '../../models/project_task_model.dart';
@@ -68,11 +69,9 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
         final completedTasks = project.tasks
             ?.where((t) => t.status == TaskStatus.confirmed)
             .length;
-        final double progress = totalTasks! > 0
-            ? completedTasks! / totalTasks
-            : 0.0;
         final bool isProjectFinished =
-        (project.endDate?.isBefore(DateTime.now()) ??false || progress == 1);
+            project.endDate!.isBefore(DateTime.now()) ||
+            totalTasks == completedTasks;
 
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
@@ -199,51 +198,11 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                       ],
                     ),
                   ] else // Проєкт завершений
-                    project.reportId == null
-                        ? CustomElevatedButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Перехід до додавання звіту для "${project.title}" (не реалізовано)',
-                                  ),
-                                ),
-                              );
-                              // TODO: Реалізувати логіку переходу на екран додавання звіту
-                              // Navigator.of(context).pushNamed(AppRoutes.createReportScreen, arguments: project.id);
-                            },
-                            backgroundColor: appThemeColors.successGreen,
-                            borderRadius: 8,
-                            height: 34,
-                            text: 'Додати звіт',
-                            textStyle: TextStyleHelper.instance.title14Regular
-                                .copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: appThemeColors.primaryWhite,
-                                ),
-                          )
-                        : CustomElevatedButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Перехід до перегляду звіту для "${project.title}" (не реалізовано)',
-                                  ),
-                                ),
-                              );
-                              // TODO: Реалізувати логіку переходу на екран перегляду звіту
-                              // Navigator.of(context).pushNamed(AppRoutes.viewReportScreen, arguments: project.reportId);
-                            },
-                            backgroundColor: appThemeColors.textMediumGrey,
-                            borderRadius: 8,
-                            height: 34,
-                            text: 'Переглянути звіт',
-                            textStyle: TextStyleHelper.instance.title14Regular
-                                .copyWith(
-                                  fontWeight: FontWeight.w700,
-                                  color: appThemeColors.primaryWhite,
-                                ),
-                          ),
+                    buildReportSection(
+                      project.reportId,
+                      activity,
+                      context,
+                    ),
                 ],
               ],
             ),

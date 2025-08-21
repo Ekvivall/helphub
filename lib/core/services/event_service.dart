@@ -16,8 +16,10 @@ class EventService {
   }
 
   Stream<EventModel> getEventStream(String eventId) {
-    return _firestore.collection(_collectionName).doc(eventId).snapshots().map((snapshot){
-      if(snapshot.exists && snapshot.data() != null){
+    return _firestore.collection(_collectionName).doc(eventId).snapshots().map((
+      snapshot,
+    ) {
+      if (snapshot.exists && snapshot.data() != null) {
         return EventModel.fromMap(snapshot.data()!, snapshot.id);
       } else {
         throw Exception('Event not found or data is empty.');
@@ -86,7 +88,10 @@ class EventService {
 
   Future<EventModel?> getEventById(String eventId) async {
     try {
-      final docSnapshot = await _firestore.collection(_collectionName).doc(eventId).get();
+      final docSnapshot = await _firestore
+          .collection(_collectionName)
+          .doc(eventId)
+          .get();
       if (docSnapshot.exists) {
         return EventModel.fromMap(docSnapshot.data()!, docSnapshot.id);
       }
@@ -95,5 +100,18 @@ class EventService {
       print('Error getting event by ID: $e');
       return null;
     }
+  }
+
+  Future<Map<String, EventModel>> getEventsByIds(List<String> ids) async {
+    if (ids.isEmpty) return {};
+    final Map<String, EventModel> eventsMap = {};
+    final querySnapshot = await _firestore
+        .collection(_collectionName)
+        .where(FieldPath.documentId, whereIn: ids)
+        .get();
+    for (var doc in querySnapshot.docs) {
+      eventsMap[doc.id] = EventModel.fromMap(doc.data(), doc.id);
+    }
+    return eventsMap;
   }
 }

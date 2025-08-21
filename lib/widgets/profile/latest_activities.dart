@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:helphub/widgets/profile/fundraising_creation_activity_item.dart';
 import 'package:helphub/widgets/profile/project_participation_activity_item.dart';
 
 import '../../models/activity_model.dart';
-import '../../theme/text_style_helper.dart';
-import '../../theme/theme_helper.dart';
 import 'event_organization_activity_item.dart';
 import 'event_participation_activity_item.dart';
 import 'fundraising_donation_activity_item.dart';
@@ -15,39 +12,34 @@ class LatestActivities extends StatelessWidget {
   const LatestActivities({
     super.key,
     required this.isOwner,
-    required this.viewModel,
+    required this.displayItems,
+    required this.currentAuthId,
   });
 
   final bool isOwner;
-  final ProfileViewModel viewModel;
+  final List<ActivityModel> displayItems;
+  final String currentAuthId;
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: viewModel.latestActivities.length,
+      itemCount: displayItems.length,
       padding: const EdgeInsets.all(12),
       itemBuilder: (context, index) {
-        final activity = viewModel.latestActivities[index];
+        final activity = displayItems[index];
         switch (activity.type) {
           case ActivityType.eventParticipation:
             return EventParticipationActivityItem(
               activity: activity,
               isOwner: isOwner,
+              currentAuthId: currentAuthId,
             );
-          // TODO: Додати інші типи активностей тут
           case ActivityType.eventOrganization:
             return EventOrganizationActivityItem(
               activity: activity,
               isOwner: isOwner,
-            );
-          case ActivityType.projectTaskCompletion:
-            return Text(
-              'Виконано завдання в проекті: ${activity.title}',
-              style: TextStyleHelper.instance.title16Regular.copyWith(
-                color: appThemeColors.backgroundLightGrey,
-              ),
             );
           case ActivityType.projectOrganization:
             return ProjectOrganizationActivityItem(
@@ -63,11 +55,13 @@ class LatestActivities extends StatelessWidget {
             return ProjectParticipationActivityItem(
               activity: activity,
               isOwner: isOwner,
+              currentAuthId: currentAuthId,
             );
           case ActivityType.fundraiserDonation:
             return FundraisingDonationActivityItem(
               activity: activity,
               isOwner: isOwner,
+              currentAuthId: currentAuthId,
             );
         }
       },

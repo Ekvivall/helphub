@@ -81,21 +81,32 @@ class Constants {
           .signInWithCredential(credential);
       User? user = userCredential.user;
       if (user != null) {
-        VolunteerModel googleUser = VolunteerModel(
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoUrl: user.photoURL,
-          lastSignInAt: DateTime.now(),
-          levelProgress: 1,
-          createdAt: userCredential.additionalUserInfo?.isNewUser == true
-              ? DateTime.now()
-              : null,
-        );
-        await FirebaseFirestore.instance
+        final userDocRef = FirebaseFirestore.instance
             .collection('users')
-            .doc(user.uid)
-            .set(googleUser.toMap(), SetOptions(merge: true));
+            .doc(user.uid);
+        final isNewUser = userCredential.additionalUserInfo?.isNewUser ?? false;
+
+        if (isNewUser) {
+          VolunteerModel newUserProfile = VolunteerModel(
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName,
+            photoUrl: user.photoURL,
+            lastSignInAt: DateTime.now(),
+            createdAt: DateTime.now(),
+            levelProgress: 1,
+            projectsCount: 0,
+            eventsCount: 0,
+          );
+          await userDocRef.set(newUserProfile.toMap());
+        } else {
+          await userDocRef.update({
+            'lastSignInAt': Timestamp.now(),
+            'photoUrl': user.photoURL,
+            'displayName': user.displayName,
+          });
+        }
+
         Constants.showSuccessMessage(
           context,
           'Вхід через Google успішно завершено!',
@@ -355,10 +366,12 @@ class Constants {
         return Icons.insert_drive_file;
     }
   }
+
   static void copyToClipboard(BuildContext context, String text) {
     Clipboard.setData(ClipboardData(text: text));
     Constants.showSuccessMessage(context, 'Скопійовано до буфера обміну');
   }
+
   static void openDocument(BuildContext context, String url) async {
     try {
       final Uri uri = Uri.parse(url);
@@ -384,5 +397,4 @@ class Constants {
       Constants.showErrorMessage(context, 'Некоректне посилання');
     }
   }
-
 }

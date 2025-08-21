@@ -6,16 +6,19 @@ import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
-import 'package:intl/intl.dart';
+import 'package:helphub/widgets/profile/participant_report_section_widget.dart';
 
 class FundraisingDonationActivityItem extends StatelessWidget {
   final ActivityModel activity;
   final bool isOwner;
 
+  final String currentAuthId;
+
   const FundraisingDonationActivityItem({
     super.key,
     required this.activity,
     required this.isOwner,
+    required this.currentAuthId,
   });
 
   @override
@@ -55,6 +58,7 @@ class FundraisingDonationActivityItem extends StatelessWidget {
             fundraising.targetAmount != null && fundraising.targetAmount! > 0
             ? (fundraising.currentAmount ?? 0) / fundraising.targetAmount!
             : 0.0;
+        final bool isFundraiserCompleted = fundraising.status == 'completed';
 
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
@@ -122,38 +126,31 @@ class FundraisingDonationActivityItem extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                // Дата донату
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      DateFormat('dd.MM.yyyy').format(activity.timestamp),
-                      style: TextStyleHelper.instance.title13Regular.copyWith(
-                        color: appThemeColors.textMediumGrey,
-                      ),
+                if (isFundraiserCompleted) ...[
+                  buildParticipantReportSection(
+                    fundraising.reportId,
+                    currentAuthId,
+                    isOwner,
+                    context,
+                  ),
+                ] else ...[
+                  CustomElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(
+                        AppRoutes.fundraisingDetailScreen,
+                        arguments: fundraising.id,
+                      );
+                    },
+                    backgroundColor: appThemeColors.blueAccent,
+                    borderRadius: 8,
+                    height: 34,
+                    text: 'Деталі',
+                    textStyle: TextStyleHelper.instance.title14Regular.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: appThemeColors.primaryWhite,
                     ),
-                    const SizedBox(width: 15,),
-                    Expanded(
-                      child: CustomElevatedButton(
-                        onPressed: () {
-                          Navigator.of(context).pushNamed(
-                            AppRoutes.fundraisingDetailScreen,
-                            arguments: fundraising.id,
-                          );
-                        },
-                        backgroundColor: appThemeColors.blueAccent,
-                        borderRadius: 8,
-                        height: 34,
-                        text: 'Переглянути збір',
-                        textStyle: TextStyleHelper.instance.title14Regular
-                            .copyWith(
-                              fontWeight: FontWeight.w700,
-                              color: appThemeColors.primaryWhite,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ],
             ),
           ),

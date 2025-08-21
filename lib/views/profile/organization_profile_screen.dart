@@ -211,7 +211,10 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
                           else
                             LatestActivities(
                               isOwner: isOwner,
-                              viewModel: viewModel,
+                              displayItems: viewModel.latestActivities
+                                  .take(3)
+                                  .toList(),
+                              currentAuthId: viewModel.currentAuthUserId!,
                             ),
                           if (isOwner)
                             _buildApplicationsSection(viewModel, context),
@@ -799,7 +802,9 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
             ),
           ),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.allActivitiesScreen);
+            },
             child: Text(
               'Всі дії',
               style: TextStyleHelper.instance.title16Regular.copyWith(

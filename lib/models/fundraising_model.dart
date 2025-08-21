@@ -27,6 +27,7 @@ class FundraisingModel {
   List<String>? prizes;
   final String? status;
   final List<RaffleWinnerModel>? raffleWinners;
+  final String? reportId;
 
 
   FundraisingModel({
@@ -53,7 +54,7 @@ class FundraisingModel {
     this.prizes,
     this.status,
     this.raffleWinners,
-
+    this.reportId,
   });
 
   Map<String, dynamic> toMap() {
@@ -81,7 +82,7 @@ class FundraisingModel {
       'prizes': prizes ?? [],
       'status': status,
       'raffleWinners': raffleWinners?.map((e) => e.toMap()).toList(),
-
+      'reportId': reportId,
     };
   }
 
@@ -131,6 +132,7 @@ class FundraisingModel {
       raffleWinners: (map['raffleWinners'] as List<dynamic>?)
           ?.map((e) => RaffleWinnerModel.fromMap(e as Map<String, dynamic>))
           .toList(),
+      reportId: map['reportId'] as String?,
     );
   }
 
@@ -158,7 +160,9 @@ class FundraisingModel {
     double? ticketPrice,
     List<String>? prizes,
     String? status,
-    List<RaffleWinnerModel>? raffleWinners
+    List<RaffleWinnerModel>? raffleWinners,
+    String? reportId,
+
   }) {
     return FundraisingModel(
       id: id ?? this.id,
@@ -185,6 +189,7 @@ class FundraisingModel {
       prizes: prizes ?? this.prizes,
       status: status ?? this.status,
       raffleWinners: raffleWinners ?? this.raffleWinners,
+      reportId: reportId ?? this.reportId,
     );
 
   }

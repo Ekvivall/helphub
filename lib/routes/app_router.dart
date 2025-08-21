@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:helphub/models/activity_model.dart';
 import 'package:helphub/models/fundraising_model.dart';
 import 'package:helphub/views/auth/forgot_password_screen.dart';
 import 'package:helphub/views/auth/register_organization_step1_screen.dart';
@@ -24,12 +25,15 @@ import 'package:helphub/views/profile/organization_profile_screen.dart';
 import 'package:helphub/views/profile/volunteer_profile_screen.dart';
 import 'package:helphub/views/project/apply_to_project_screen.dart';
 import 'package:helphub/views/project/project_list_screen.dart';
+import 'package:helphub/views/report/create_report_screen.dart';
+import 'package:helphub/views/report/view_report_screen.dart';
 import 'package:helphub/views/splash/splash_screen.dart';
 
 import '../views/auth/register_organization_step2_screen.dart';
 import '../views/event/event_map_screen.dart';
 import '../views/fundraising/create_fundraising_application_screen.dart';
 import '../views/fundraising/create_fundraising_screen.dart';
+import '../views/profile/all_activities_screen.dart';
 import '../views/profile/all_fundraiser_applications_screen.dart';
 import '../views/profile/friend_requests_screen.dart';
 import '../views/project/create_project_screen.dart';
@@ -62,17 +66,19 @@ class AppRoutes {
   static const String chatProjectScreen = '/chat_project';
   static const String createFundraisingScreen = '/create_fundraising';
   static const String fundraisingListScreen = '/fundraising_list';
-  static const String createFundraisingApplicationScreen = '/create_fundraising_application';
+  static const String createFundraisingApplicationScreen =
+      '/create_fundraising_application';
   static const String allApplicationsScreen = '/all_applications';
-  static const String allFundraiserApplicationsScreen = '/all_fundraiser_applications';
+  static const String allFundraiserApplicationsScreen =
+      '/all_fundraiser_applications';
   static const String fundraisingDetailScreen = '/fundraising_detail';
   static const String donationScreen = '/donation';
   static const String allSavedFundraisersScreen = '/all_saved_fundraisers';
   static const String fundraisingDonationsScreen = '/fundraising_donations';
   static const String fundraisingRaffleScreen = '/fundraising_raffle';
-  static const String createReportScreen = '';
-
-
+  static const String createReportScreen = '/create_report';
+  static const String allActivitiesScreen = '/all_activities';
+  static const String viewReportScreen = '/view_report';
 
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
@@ -95,10 +101,11 @@ class AppRoutes {
     projectListScreen: (context) => ProjectListScreen(),
     fundraisingListScreen: (context) => FundraisingListScreen(),
     allApplicationsScreen: (context) => AllApplicationsScreen(),
-    allFundraiserApplicationsScreen: (context) => AllFundraiserApplicationsScreen(),
+    allFundraiserApplicationsScreen: (context) =>
+        AllFundraiserApplicationsScreen(),
     allSavedFundraisersScreen: (context) => AllSavedFundraisersScreen(),
+    allActivitiesScreen: (context) => AllActivitiesScreen(),
   };
-
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -144,17 +151,21 @@ class AppRoutes {
       case createFundraisingScreen:
         final String fundraisingId = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (context) => CreateFundraisingScreen(fundraisingId: fundraisingId),
+          builder: (context) =>
+              CreateFundraisingScreen(fundraisingId: fundraisingId),
         );
       case createFundraisingApplicationScreen:
         final String organizationId = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (context) => CreateFundraisingApplicationScreen(organizationId: organizationId),
+          builder: (context) => CreateFundraisingApplicationScreen(
+            organizationId: organizationId,
+          ),
         );
       case fundraisingDetailScreen:
         final String fundraisingId = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (context) => FundraisingDetailScreen(fundraisingId: fundraisingId),
+          builder: (context) =>
+              FundraisingDetailScreen(fundraisingId: fundraisingId),
         );
       case donationScreen:
         final fundraising = settings.arguments as FundraisingModel;
@@ -164,12 +175,30 @@ class AppRoutes {
       case fundraisingDonationsScreen:
         final fundraisingId = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (context) => FundraisingDonationsScreen(fundraisingId: fundraisingId),
+          builder: (context) =>
+              FundraisingDonationsScreen(fundraisingId: fundraisingId),
         );
       case fundraisingRaffleScreen:
         final fundraisingId = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (context) => FundraisingRaffleScreen(fundraisingId: fundraisingId),
+          builder: (context) =>
+              FundraisingRaffleScreen(fundraisingId: fundraisingId),
+        );
+      case createReportScreen:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (context) => CreateReportScreen(
+            reportId: args?['reportId'] as String?,
+            activity: args?['activity'] as ActivityModel?,
+          ),
+        );
+      case viewReportScreen:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (context) => ViewReportScreen(
+            reportId: args?['reportId'] as String,
+            canLeaveFeedback: args?['canLeaveFeedback'] as bool,
+          ),
         );
       default:
         if (routes.containsKey(settings.name)) {

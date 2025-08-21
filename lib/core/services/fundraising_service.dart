@@ -304,4 +304,19 @@ class FundraisingService {
       rethrow;
     }
   }
+
+  Future<Map<String, FundraisingModel>> getFundraisingsByIds(
+    List<String> ids,
+  ) async {
+    if (ids.isEmpty) return {};
+    final Map<String, FundraisingModel> fundraisingsMap = {};
+    final querySnapshot = await _firestore
+        .collection('fundraisings')
+        .where(FieldPath.documentId, whereIn: ids)
+        .get();
+    for (var doc in querySnapshot.docs) {
+      fundraisingsMap[doc.id] = FundraisingModel.fromMap(doc.data());
+    }
+    return fundraisingsMap;
+  }
 }

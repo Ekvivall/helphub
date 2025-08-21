@@ -23,6 +23,8 @@ import 'package:helphub/models/organization_model.dart';
 import 'package:helphub/models/project_application_model.dart';
 import 'package:helphub/models/volunteer_model.dart';
 
+import '../../core/services/event_service.dart';
+import '../../models/event_model.dart';
 import '../../models/project_model.dart';
 
 class ProfileViewModel extends ChangeNotifier {
@@ -169,6 +171,15 @@ class ProfileViewModel extends ChangeNotifier {
   Map<String, ProjectModel> _projectsData = {};
 
   Map<String, ProjectModel> get projectsData => _projectsData;
+  Map<String, ProjectModel> _projectsDataActivities = {};
+
+  Map<String, ProjectModel> get projectsDataActivities => _projectsDataActivities;
+  Map<String, EventModel> _eventsData = {};
+  Map<String, FundraisingModel> _fundraisingsData = {};
+
+  Map<String, EventModel> get eventsData => _eventsData;
+
+  Map<String, FundraisingModel> get fundraisingsData => _fundraisingsData;
   List<FundraisingModel> _activeFundraisings = [];
   StreamSubscription<List<FundraisingModel>>? _activeFundraisingsSubscription;
 
@@ -236,7 +247,7 @@ class ProfileViewModel extends ChangeNotifier {
       if (doc.exists && doc.data() != null) {
         final data = doc.data();
         final roleString = data?['role'] as String?;
-        await fetchLatestActivities(uidToFetch);
+        await fetchAllActivities(uidToFetch);
         if (roleString == UserRole.volunteer.name) {
           _user = VolunteerModel.fromMap(doc.data()!);
           if (viewingUserId == null ||
@@ -922,34 +933,67 @@ class ProfileViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchLatestActivities(String userId) async {
+  Future<void> fetchAllActivities(String userId) async {
     _isActivitiesLoading = true;
     _activitiesError = null;
     notifyListeners();
 
     try {
-      final QuerySnapshot querySnapshot = await _firestore
+      final querySnapshot = await _firestore
           .collection('users')
           .doc(userId)
           .collection('activities')
           .orderBy('timestamp', descending: true)
-          .limit(3)
           .get();
 
       _latestActivities = querySnapshot.docs
-          .map(
-            (doc) => ActivityModel.fromMap(doc.data() as Map<String, dynamic>),
-          )
+          .map((doc) => ActivityModel.fromMap(doc.data()))
           .toList();
+
+      await _fetchRelatedDataForActivities();
+
     } catch (e) {
-      _activitiesError = 'Помилка завантаження останньої активності: $e';
-      print('Error fetching latest activities: $e');
+      _activitiesError = 'Помилка завантаження активностей: $e';
     } finally {
       _isActivitiesLoading = false;
       notifyListeners();
     }
   }
 
+  Future<void> _fetchRelatedDataForActivities() async {
+    final eventIds = <String>{};
+    final projectIds = <String>{};
+    final fundraisingIds = <String>{};
+
+    for (var activity in _latestActivities) {
+      switch (activity.type) {
+        case ActivityType.eventParticipation:
+        case ActivityType.eventOrganization:
+          eventIds.add(activity.entityId);
+          break;
+        case ActivityType.projectParticipation:
+        case ActivityType.projectOrganization:
+          projectIds.add(activity.entityId);
+          break;
+        case ActivityType.fundraiserDonation:
+        case ActivityType.fundraiserCreation:
+          fundraisingIds.add(activity.entityId);
+          break;
+      }
+    }
+
+    final eventService = EventService();
+
+    if (eventIds.isNotEmpty) {
+      _eventsData = await eventService.getEventsByIds(eventIds.toList());
+    }
+    if (projectIds.isNotEmpty) {
+      _projectsDataActivities = await _projectService.getProjectByIds(projectIds.toList());
+    }
+    if (fundraisingIds.isNotEmpty) {
+      _fundraisingsData = await _fundraiserService.getFundraisingsByIds(fundraisingIds.toList());
+    }
+  }
   Future<BaseProfileModel?> fetchUser(String? userId) async {
     try {
       if (userId == null) return null;
