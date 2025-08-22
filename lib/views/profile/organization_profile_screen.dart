@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/services/friend_service.dart';
 import '../../core/utils/constants.dart';
 import '../../core/utils/image_constant.dart';
 import '../../models/base_profile_model.dart';
@@ -669,7 +670,29 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
         ),
       );
     }
-    return SizedBox.shrink();
+    return  Container(
+      margin: EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+      child: CustomElevatedButton(
+        text: 'Написати',
+        onPressed: () async {
+          final friendHelper = FriendService();
+          String? chatId = await friendHelper.getOrCreateFriendChat(
+            viewModel.currentAuthUserId!,
+            viewModel.user!.uid!,
+          );
+          Navigator.of(context).pushNamed(
+            AppRoutes.chatScreen,
+            arguments: chatId,
+          );
+        },
+        width: double.infinity,
+        height: 44,
+        borderRadius: 24,
+        textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+          color: appThemeColors.backgroundLightGrey,
+        ),
+      ),
+    );
   }
 
   Widget _buildBadge(OrganizationModel user) {

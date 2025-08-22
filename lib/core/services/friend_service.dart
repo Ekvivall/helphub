@@ -2,11 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:helphub/models/friend_request_model.dart';
 
+import '../../models/chat_model.dart';
+import 'chat_service.dart';
+
 class FriendService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   String? get currentUserId => _auth.currentUser?.uid;
+  final ChatService _chatService = ChatService();
+
 
   Future<void> sendFriendRequest(String receiverId) async {
     if (currentUserId == null) return;
@@ -227,6 +232,27 @@ class FriendService {
       return friendsSnapshot.docs.map((doc)=>doc.id).toList();
     } catch(e){
       return[];
+    }
+  }
+
+  Future<String?> getOrCreateFriendChat(String currentUserId, String friendUserId) async {
+    try {
+      final chatId = ChatModel.generateFriendChatId(currentUserId, friendUserId);
+
+      final existingChat = await FirebaseFirestore.instance
+          .collection('chats')
+          .doc(chatId)
+          .get();
+
+      if (existingChat.exists) {
+        return chatId;
+      }
+
+      // Create new friend chat
+      return await _chatService.createFriendChat(currentUserId, friendUserId);
+    } catch (e) {
+      print('Error getting or creating friend chat: $e');
+      return null;
     }
   }
 }

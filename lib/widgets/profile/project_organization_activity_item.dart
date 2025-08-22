@@ -104,14 +104,20 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                           Icons.chat_bubble_outline,
                           color: appThemeColors.blueAccent,
                         ),
-                        onPressed: () {
-                          Navigator.of(context).pushNamed(
-                            AppRoutes.chatProjectScreen,
-                            arguments: {
-                              'projectId': project.id,
-                              'displayMode': DisplayMode.chat,
-                            },
+                        onPressed: () async {
+                          final projectHelper = ProjectService();
+                          String? chatId = await projectHelper.getProjectChatId(
+                            project.id!,
                           );
+                          if (chatId != null) {
+                            Navigator.of(context).pushNamed(
+                              AppRoutes.chatProjectScreen,
+                              arguments: {
+                                'chatId': chatId,
+                                'displayMode': DisplayMode.chat,
+                              },
+                            );
+                          }
                         },
                       ),
                   ],
@@ -155,14 +161,20 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                       children: [
                         Expanded(
                           child: CustomElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).pushNamed(
-                                AppRoutes.chatProjectScreen,
-                                arguments: {
-                                  'projectId': project.id,
-                                  'displayMode': DisplayMode.tasks,
-                                },
+                            onPressed: () async {
+                              final projectHelper = ProjectService();
+                              String? chatId = await projectHelper.getProjectChatId(
+                                project.id!,
                               );
+                              if(chatId != null) {
+                                Navigator.of(context).pushNamed(
+                                  AppRoutes.chatProjectScreen,
+                                  arguments: {
+                                    'chatId': chatId,
+                                    'displayMode': DisplayMode.tasks,
+                                  },
+                                );
+                              }
                             },
                             backgroundColor: appThemeColors.successGreen,
                             borderRadius: 8,
@@ -198,11 +210,7 @@ class ProjectOrganizationActivityItem extends StatelessWidget {
                       ],
                     ),
                   ] else // Проєкт завершений
-                    buildReportSection(
-                      project.reportId,
-                      activity,
-                      context,
-                    ),
+                    buildReportSection(project.reportId, activity, context),
                 ],
               ],
             ),

@@ -380,6 +380,7 @@ class EventViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _eventsSubscription?.cancel();
+    _currentEvent = null;
     super.dispose();
   }
 
@@ -561,7 +562,7 @@ class EventViewModel extends ChangeNotifier {
         city: _user!.city ?? city,
         reportId: null,
       );
-      await newEventRef.set(newEvent.toMap());
+      _eventService.createEvent(newEvent);
       final userRef = _firestore.collection('users').doc(_currentAuthUserId!);
       await userRef.update({
         'eventsCount': FieldValue.increment(1),
@@ -632,8 +633,7 @@ class EventViewModel extends ChangeNotifier {
         reportId: _currentEvent!.reportId,
       );
 
-      await _firestore.collection('events').doc(eventId).update(updatedEvent.toMap());
-
+      _eventService.updateEvent(updatedEvent);
       clearEventCoordinates();
       _isLoading = false;
       notifyListeners();

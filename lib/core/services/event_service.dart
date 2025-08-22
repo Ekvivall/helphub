@@ -1,15 +1,24 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:helphub/models/event_model.dart';
 
+import 'chat_service.dart';
+
 class EventService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final String _collectionName = 'events';
+
+  final ChatService _chatService = ChatService();
+
 
   Future<void> createEvent(EventModel event) async {
     try {
       final docRef = _firestore.collection(_collectionName).doc();
       final eventWithId = event.copyWith(id: docRef.id);
       await docRef.set(eventWithId.toMap());
+      await _chatService.createEventChat(
+        eventWithId.id!,
+        [event.organizerId],
+      );
     } catch (e) {
       print('Error creating event: $e');
     }
@@ -45,6 +54,7 @@ class EventService {
           .collection(_collectionName)
           .doc(event.id)
           .update(event.toMap());
+
       return true;
     } catch (e) {
       print('Error updating event: $e');
@@ -67,10 +77,29 @@ class EventService {
       await _firestore.collection(_collectionName).doc(eventId).update({
         'participantIds': FieldValue.arrayUnion([userId]),
       });
+      await addParticipantToEventChat(eventId, userId);
       return true;
     } catch (e) {
       print('Error adding participant: $e');
       return false;
+    }
+  }
+
+  Future<void> addParticipantToEventChat(String eventId, String userId) async {
+    try {
+      final chatQuery = await FirebaseFirestore.instance
+          .collection('chats')
+          .where('type', isEqualTo: 'event')
+          .where('entityId', isEqualTo: eventId)
+          .limit(1)
+          .get();
+
+      if (chatQuery.docs.isNotEmpty) {
+        final chatId = chatQuery.docs.first.id;
+        await _chatService.addParticipant(chatId, userId);
+      }
+    } catch (e) {
+      print('Error adding participant to event chat: $e');
     }
   }
 
@@ -113,5 +142,24 @@ class EventService {
       eventsMap[doc.id] = EventModel.fromMap(doc.data(), doc.id);
     }
     return eventsMap;
+  }
+
+
+  Future<String?> getEventChatId(String eventId) async {
+    try {
+      final chatQuery = await FirebaseFirestore.instance
+          .collection('chats')
+          .where('type', isEqualTo: 'event')
+          .where('entityId', isEqualTo: eventId)
+          .limit(1)
+          .get();
+
+      if (chatQuery.docs.isNotEmpty) {
+        return chatQuery.docs.first.id;
+      }
+    } catch (e) {
+      print('Error getting event chat ID: $e');
+    }
+    return null;
   }
 }

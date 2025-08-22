@@ -10,6 +10,7 @@ import 'package:helphub/core/services/project_application_service.dart';
 
 import '../../core/services/activity_service.dart';
 import '../../core/services/category_service.dart';
+import '../../core/services/chat_service.dart';
 import '../../core/services/project_service.dart';
 import '../../core/services/skill_service.dart';
 import '../../models/activity_model.dart';
@@ -31,6 +32,7 @@ class ProjectViewModel extends ChangeNotifier {
   final FriendService _friendService = FriendService();
   final ProjectApplicationService _projectApplicationService =
       ProjectApplicationService();
+  final ChatService _chatService = ChatService();
 
   StreamSubscription<List<ProjectModel>>? _projectsSubscription;
   List<ProjectModel> _allProjects = [];
@@ -101,6 +103,9 @@ class ProjectViewModel extends ChangeNotifier {
 
   List<CategoryChipModel> get availableSkills => _availableSkills;
 
+  String? _projectChatId;
+
+  String? get projectChatId => _projectChatId;
   ProjectViewModel() {
     _init();
   }
@@ -441,6 +446,15 @@ class ProjectViewModel extends ChangeNotifier {
       await _activityService.logActivity(_currentAuthUserId!, activity);
 
       _isSubmitting = false;
+
+      final chatId = await _chatService.createProjectChat(
+        newProject.id!,
+        [_currentAuthUserId!],
+      );
+
+      if (chatId != null) {
+        _projectChatId = chatId;
+      }
       notifyListeners();
       return null;
     } catch (e) {

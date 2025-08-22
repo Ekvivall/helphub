@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/models/project_task_model.dart';
+import 'package:helphub/view_models/chat/chat_view_model.dart';
 import 'package:provider/provider.dart';
 
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
-import '../../view_models/chat/chat_view_model.dart';
+import '../../view_models/chat/chat_task_view_model.dart';
 import '../../widgets/chat/task_list_tab_view.dart';
 
 enum DisplayMode { chat, tasks }
 
 class ChatProjectScreen extends StatefulWidget {
-  final String projectId;
+  final String chatId;
   final DisplayMode initialDisplayMode;
 
   const ChatProjectScreen({
     super.key,
-    required this.projectId,
+    required this.chatId,
     required this.initialDisplayMode,
   });
 
@@ -31,13 +32,16 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
   void initState() {
     super.initState();
     _viewModel = Provider.of<ChatViewModel>(context, listen: false);
-    _viewModel.listenToProjectTasks(widget.projectId);
+    _viewModel.openChat(widget.chatId);
+    _displayMode = widget.initialDisplayMode;
+    ChatTaskViewModel chatTaskViewModel = Provider.of<ChatTaskViewModel>(context, listen: false);
+    chatTaskViewModel.listenToProjectTasks(_viewModel.currentChat!.entityId!);
     _displayMode = widget.initialDisplayMode;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChatViewModel>(
+    return Consumer<ChatTaskViewModel>(
       builder: (context, viewModel, child) {
         if (viewModel.isLoading && viewModel.project == null) {
           return Center(
@@ -194,7 +198,7 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
     );
   }
 
-  Widget _buildStatusInfoBar(BuildContext context, ChatViewModel viewModel) {
+  Widget _buildStatusInfoBar(BuildContext context, ChatTaskViewModel viewModel) {
     final project = viewModel.project;
     if (project == null) return const SizedBox.shrink();
 

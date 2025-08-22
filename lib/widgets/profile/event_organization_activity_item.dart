@@ -99,22 +99,22 @@ class EventOrganizationActivityItem extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    // TODO: Реалізувати логіку переходу до чату події
                     if (isOwner)
                       IconButton(
                         icon: Icon(
                           Icons.chat_bubble_outline,
                           color: appThemeColors.blueAccent,
                         ),
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                'Перехід до чату події "${event.name}" (не реалізовано)',
-                              ),
-                            ),
+                        onPressed: () async {
+                          final eventService = EventService();
+                          String? chatId = await eventService.getEventChatId(event.id!);
+
+                          if(chatId != null) {
+                            Navigator.of(context).pushNamed(
+                            AppRoutes.chatScreen,
+                            arguments: chatId,
                           );
-                          // Navigator.of(context).pushNamed(AppRoutes.eventChatScreen, arguments: event.id);
+                          }
                         },
                       ),
                   ],

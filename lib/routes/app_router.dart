@@ -79,6 +79,8 @@ class AppRoutes {
   static const String createReportScreen = '/create_report';
   static const String allActivitiesScreen = '/all_activities';
   static const String viewReportScreen = '/view_report';
+  static const String chatScreen = '/chat';
+
 
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
@@ -106,6 +108,7 @@ class AppRoutes {
     allSavedFundraisersScreen: (context) => AllSavedFundraisersScreen(),
     allActivitiesScreen: (context) => AllActivitiesScreen(),
   };
+
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -143,7 +146,7 @@ class AppRoutes {
         final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
           builder: (context) => ChatProjectScreen(
-            projectId: args?['projectId'] as String,
+            chatId: args?['chatId'] as String,
             initialDisplayMode:
                 args?['displayMode'] as DisplayMode? ?? DisplayMode.chat,
           ),

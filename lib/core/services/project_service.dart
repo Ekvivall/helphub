@@ -137,4 +137,23 @@ class ProjectService {
     }
     return eventsMap;
   }
+
+  Future<String?> getProjectChatId(String projectId) async {
+    try {
+      final chatQuery = await FirebaseFirestore.instance
+          .collection('chats')
+          .where('type', isEqualTo: 'project')
+          .where('entityId', isEqualTo: projectId)
+          .limit(1)
+          .get();
+
+      if (chatQuery.docs.isNotEmpty) {
+        return chatQuery.docs.first.id;
+      }
+    } catch (e) {
+      print('Error getting project chat ID: $e');
+    }
+    return null;
+  }
+
 }

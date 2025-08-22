@@ -22,7 +22,8 @@ class ProjectParticipationActivityItem extends StatelessWidget {
   const ProjectParticipationActivityItem({
     super.key,
     required this.activity,
-    required this.isOwner, required this.currentAuthId,
+    required this.isOwner,
+    required this.currentAuthId,
   });
 
   @override
@@ -105,14 +106,20 @@ class ProjectParticipationActivityItem extends StatelessWidget {
                           Icons.chat_bubble_outline,
                           color: appThemeColors.blueAccent,
                         ),
-                        onPressed: () {
-                          Navigator.of(context).pushNamed(
+                        onPressed: () async {
+                          final projectHelper = ProjectService();
+                          String? chatId = await projectHelper.getProjectChatId(
+                            project.id!,
+                          );
+                          if(chatId != null) {
+                            Navigator.of(context).pushNamed(
                             AppRoutes.chatProjectScreen,
                             arguments: {
-                              'projectId': project.id,
+                              'chatId': chatId,
                               'displayMode': DisplayMode.chat,
                             },
                           );
+                          }
                         },
                       ),
                   ],
@@ -155,14 +162,20 @@ class ProjectParticipationActivityItem extends StatelessWidget {
                 const SizedBox(height: 8),
                 if (!isProjectFinished && isOwner)
                   CustomElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushNamed(
-                        AppRoutes.chatProjectScreen,
-                        arguments: {
-                          'projectId': project.id,
-                          'displayMode': DisplayMode.tasks,
-                        },
+                    onPressed: () async {
+                      final projectHelper = ProjectService();
+                      String? chatId = await projectHelper.getProjectChatId(
+                        project.id!,
                       );
+                      if(chatId != null) {
+                        Navigator.of(context).pushNamed(
+                          AppRoutes.chatProjectScreen,
+                          arguments: {
+                            'chatId': chatId,
+                            'displayMode': DisplayMode.tasks,
+                          },
+                        );
+                      }
                     },
                     backgroundColor: appThemeColors.blueAccent,
                     borderRadius: 8,
@@ -180,7 +193,7 @@ class ProjectParticipationActivityItem extends StatelessWidget {
                     isOwner,
                     context,
                   ),
-                ]
+                ],
               ],
             ),
           ),

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:helphub/core/services/friend_service.dart';
 import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/models/achievement_item_model.dart';
 import 'package:helphub/models/medal_item_model.dart';
@@ -494,8 +495,16 @@ class VolunteerProfileScreen extends StatelessWidget {
                 Expanded(
                   child: CustomElevatedButton(
                     text: 'Написати',
-                    onPressed: () {
-                      // TODO: Implement navigation to chat screen
+                    onPressed: () async {
+                      final friendHelper = FriendService();
+                      String? chatId = await friendHelper.getOrCreateFriendChat(
+                        viewModel.currentAuthUserId!,
+                        viewModel.user!.uid!,
+                      );
+                      Navigator.of(context).pushNamed(
+                        AppRoutes.chatScreen,
+                        arguments: chatId,
+                      );
                     },
                     height: 44,
                     borderRadius: 24,

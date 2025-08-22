@@ -3,6 +3,7 @@ import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/services/friend_service.dart';
 import '../../models/base_profile_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
@@ -181,8 +182,16 @@ class _FriendsListScreenState extends State<FriendsListScreen> {
                                   ),
                                 ),
                                 ElevatedButton(
-                                  onPressed: () {
-                                    // TODO: Implement navigation to chat screen
+                                  onPressed: () async {
+                                    final friendHelper = FriendService();
+                                    String? chatId = await friendHelper.getOrCreateFriendChat(
+                                      viewModel.currentAuthUserId!,
+                                      viewModel.user!.uid!,
+                                    );
+                                    Navigator.of(context).pushNamed(
+                                      AppRoutes.chatScreen,
+                                      arguments: chatId,
+                                    );
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor:

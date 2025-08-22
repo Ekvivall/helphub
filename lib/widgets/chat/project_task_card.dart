@@ -9,7 +9,7 @@ import '../../models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
-import '../../view_models/chat/chat_view_model.dart';
+import '../../view_models/chat/chat_task_view_model.dart';
 import '../user_avatar_with_frame.dart';
 
 class ProjectTaskCard extends StatelessWidget {
@@ -30,7 +30,7 @@ class ProjectTaskCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChatViewModel>(
+    return Consumer<ChatTaskViewModel>(
       builder: (context, viewModel, child) {
         // Відображаємо різні картки для виконаних та не виконаних завдань
         if (task.status == TaskStatus.confirmed) {
@@ -60,7 +60,7 @@ class ProjectTaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCompletedTaskCard(ChatViewModel viewModel) {
+  Widget _buildCompletedTaskCard(ChatTaskViewModel viewModel) {
     final assignedVolunteers = task.assignedVolunteerIds!
         .map((id) => viewModel.getVolunteerProfile(id))
         .where((profile) => profile != null)
@@ -132,7 +132,7 @@ class ProjectTaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildTaskInfo(ChatViewModel viewModel) {
+  Widget _buildTaskInfo(ChatTaskViewModel viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -178,7 +178,7 @@ class ProjectTaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildResponsibleInfo(ChatViewModel viewModel) {
+  Widget _buildResponsibleInfo(ChatTaskViewModel viewModel) {
     if (task.status == TaskStatus.inProgress &&
         task.assignedVolunteerIds?.isNotEmpty == true) {
       final assignedVolunteers = task.assignedVolunteerIds!
@@ -254,7 +254,7 @@ class ProjectTaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildOrganizerActions(BuildContext context, ChatViewModel viewModel) {
+  Widget _buildOrganizerActions(BuildContext context, ChatTaskViewModel viewModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -314,7 +314,7 @@ class ProjectTaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildVolunteerActions(BuildContext context, ChatViewModel viewModel) {
+  Widget _buildVolunteerActions(BuildContext context, ChatTaskViewModel viewModel) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -375,7 +375,7 @@ class ProjectTaskCard extends StatelessWidget {
 
   Widget _buildOrganizerApplications(
     BuildContext context,
-    ChatViewModel viewModel,
+    ChatTaskViewModel viewModel,
   ) {
     if (applications.isEmpty) return const SizedBox();
 
@@ -524,7 +524,7 @@ class ProjectTaskCard extends StatelessWidget {
 
   Widget _buildOrganizerConfirmationBlock(
     BuildContext context,
-    ChatViewModel viewModel,
+    ChatTaskViewModel viewModel,
   ) {
     final volunteerProfile = viewModel.getVolunteerProfile(
       task.completedByVolunteerId!,

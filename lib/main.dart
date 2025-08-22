@@ -6,6 +6,7 @@ import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/auth/auth_view_model.dart';
 import 'package:helphub/view_models/auth/organization_register_view_model.dart';
+import 'package:helphub/view_models/chat/chat_task_view_model.dart';
 import 'package:helphub/view_models/chat/chat_view_model.dart';
 import 'package:helphub/view_models/donation/donation_view_model.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';
@@ -42,11 +43,12 @@ class HelpHubApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ProfileViewModel()),
         ChangeNotifierProvider(create: (_) => EventViewModel()),
         ChangeNotifierProvider(create: (_) => ProjectViewModel()),
-        ChangeNotifierProvider(create: (_) => ChatViewModel()),
+        ChangeNotifierProvider(create: (_) => ChatTaskViewModel()),
         ChangeNotifierProvider(create: (_) => FundraisingViewModel()),
         ChangeNotifierProvider(create: (_) => FundraiserApplicationViewModel()),
         ChangeNotifierProvider(create: (_) => DonationViewModel()),
         ChangeNotifierProvider(create: (_) => ReportViewModel()),
+        ChangeNotifierProvider(create: (_) => ChatViewModel()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

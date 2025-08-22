@@ -285,7 +285,8 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    if (viewModel.projectCoordinates != null)
+                    if (viewModel.projectCoordinates != null &&
+                        widget.projectId != '')
                       LocationCoordinatesWidget(
                         coordinates: viewModel.projectCoordinates,
                         errorMessage: viewModel.geocodingError,
@@ -307,7 +308,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                       lastDate:
                           _selectedEndDate ??
                           DateTime.now().add(const Duration(days: 365 * 2)),
-                      date: viewModel.currentProject?.startDate,
+                      date: widget.projectId != ''
+                          ? viewModel.currentProject?.startDate
+                          : null,
                       onDateChanged: (date) {
                         setState(() {
                           _selectedStartDate = date;
@@ -327,7 +330,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                       lastDate: DateTime.now().add(
                         const Duration(days: 365 * 2),
                       ),
-                      date: viewModel.currentProject?.endDate,
+                      date: widget.projectId != ''
+                          ? viewModel.currentProject?.endDate
+                          : null,
                       onDateChanged: (date) {
                         setState(() {
                           _selectedEndDate = date;

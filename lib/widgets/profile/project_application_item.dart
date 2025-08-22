@@ -6,6 +6,7 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/services/project_service.dart';
 import '../../routes/app_router.dart';
 import '../../views/chat/chat_project_screen.dart';
 import '../custom_elevated_button.dart';
@@ -103,14 +104,20 @@ class ProjectApplicationItem extends StatelessWidget {
           ),
           if (application.status == 'approved')
             CustomElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pushNamed(
-                  AppRoutes.chatProjectScreen,
-                  arguments: {
-                    'projectId': project?.id,
-                    'displayMode': DisplayMode.tasks,
-                  },
+              onPressed: () async {
+                final projectHelper = ProjectService();
+                String? chatId = await projectHelper.getProjectChatId(
+                  application.projectId,
                 );
+                if(chatId != null) {
+                  Navigator.of(context).pushNamed(
+                    AppRoutes.chatProjectScreen,
+                    arguments: {
+                      'chatId': chatId,
+                      'displayMode': DisplayMode.tasks,
+                    },
+                  );
+                }
               },
               backgroundColor: appThemeColors.blueAccent,
               borderRadius: 8,

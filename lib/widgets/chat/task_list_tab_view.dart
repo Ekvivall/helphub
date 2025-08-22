@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
-import 'package:helphub/view_models/chat/chat_view_model.dart';
+import 'package:helphub/view_models/chat/chat_task_view_model.dart';
 import 'package:helphub/widgets/chat/project_task_card.dart';
 import 'package:provider/provider.dart';
 
@@ -10,7 +10,7 @@ import '../../models/project_task_model.dart';
 enum TaskDisplayFilter { all, my, completed }
 
 class TaskListTabView extends StatefulWidget {
-  final ChatViewModel viewModel;
+  final ChatTaskViewModel viewModel;
 
   const TaskListTabView({super.key, required this.viewModel});
 
@@ -30,7 +30,7 @@ class _TaskListTabViewState extends State<TaskListTabView> {
         const SizedBox(height: 6),
         // Основний контент (список завдань)
         Expanded(
-          child: Consumer<ChatViewModel>(
+          child: Consumer<ChatTaskViewModel>(
             builder: (context, viewModel, child) {
               if (viewModel.isLoading) {
                 return Center(
@@ -64,7 +64,7 @@ class _TaskListTabViewState extends State<TaskListTabView> {
 
   Widget _buildTaskListWithHeaders(
     List<ProjectTaskModel> tasks,
-    ChatViewModel viewModel,
+    ChatTaskViewModel viewModel,
   ) {
     final groupedTasks = _groupTasksByStatus(tasks);
 
@@ -123,7 +123,7 @@ class _TaskListTabViewState extends State<TaskListTabView> {
   Widget _buildItemAtIndex(
     int index,
     Map<String, List<ProjectTaskModel>> groupedTasks,
-    ChatViewModel viewModel,
+    ChatTaskViewModel viewModel,
   ) {
     int currentIndex = 0;
 
@@ -169,7 +169,7 @@ class _TaskListTabViewState extends State<TaskListTabView> {
     );
   }
 
-  Widget _buildTaskCard(ProjectTaskModel task, ChatViewModel viewModel) {
+  Widget _buildTaskCard(ProjectTaskModel task, ChatTaskViewModel viewModel) {
     final applications = viewModel.getApplicationsForTask(task.id!);
     final bool isAssignedToCurrentUser =
         task.assignedVolunteerIds?.contains(viewModel.currentUserId) ?? false;
@@ -184,7 +184,7 @@ class _TaskListTabViewState extends State<TaskListTabView> {
   }
 
   // Helper-метод для отримання відфільтрованого списку
-  List<ProjectTaskModel> _getFilteredTaskList(ChatViewModel viewModel) {
+  List<ProjectTaskModel> _getFilteredTaskList(ChatTaskViewModel viewModel) {
     switch (_displayFilter) {
       case TaskDisplayFilter.all:
         return viewModel.allTasks;

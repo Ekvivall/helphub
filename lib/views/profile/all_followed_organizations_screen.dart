@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/services/friend_service.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
@@ -178,8 +179,16 @@ class _AllFollowedOrganizationsScreenState extends State<AllFollowedOrganization
                             ),
                           ),
                           ElevatedButton(
-                            onPressed: () {
-                              // TODO: Implement navigation to chat screen
+                            onPressed: () async {
+                              final friendHelper = FriendService();
+                              String? chatId = await friendHelper.getOrCreateFriendChat(
+                                viewModel.currentAuthUserId!,
+                                viewModel.user!.uid!,
+                              );
+                              Navigator.of(context).pushNamed(
+                                AppRoutes.chatScreen,
+                                arguments: chatId,
+                              );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: appThemeColors.blueTransparent,
