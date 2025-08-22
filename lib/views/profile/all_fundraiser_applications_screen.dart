@@ -3,6 +3,7 @@ import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:helphub/widgets/profile/fundraiser_application_item_org_widget.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/services/user_service.dart';
 import '../../core/utils/constants.dart';
 import '../../models/fundraiser_application_model.dart';
 import '../../theme/text_style_helper.dart';
@@ -264,10 +265,8 @@ class _AllFundraiserApplicationsScreenState
       );
     }
 
-    final viewModel = Provider.of<FundraiserApplicationViewModel>(
-      context,
-      listen: false,
-    );
+    UserService userService = UserService();
+
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: applications.length,
@@ -277,7 +276,7 @@ class _AllFundraiserApplicationsScreenState
           application: application,
           onApprove: (id) => _approveApplication(id),
           onReject: (id) => _showRejectDialog(id),
-          applicantUser: viewModel.fetchUserProfile(application.volunteerId),
+          applicantUser: userService.fetchUserProfile(application.volunteerId),
         );
       },
     );

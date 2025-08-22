@@ -28,7 +28,10 @@ Widget buildBottomNavigationBar(BuildContext context, int currentIndex) {
           break;
         case 4:
           // Екран "Чати"
-          //Navigator.pushReplacementNamed(context, AppRoutes.chatListScreen);
+          Navigator.pushReplacementNamed(
+            context,
+            AppRoutes.chatListScreen,
+          );
           break;
       }
     },

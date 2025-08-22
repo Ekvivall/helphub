@@ -10,6 +10,7 @@ import 'package:helphub/core/services/fundraiser_application_service.dart';
 import 'package:helphub/models/volunteer_model.dart';
 import 'package:path/path.dart' as p;
 
+import '../../core/services/user_service.dart';
 import '../../models/base_profile_model.dart';
 import '../../models/category_chip_model.dart';
 import '../../models/fundraiser_application_model.dart';
@@ -21,6 +22,8 @@ class FundraiserApplicationViewModel extends ChangeNotifier {
       FundraiserApplicationService();
   final CategoryService _categoryService = CategoryService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final UserService _userService = UserService();
+
 
   StreamSubscription<List<FundraiserApplicationModel>>?
   _applicationsSubscription;
@@ -73,30 +76,9 @@ class FundraiserApplicationViewModel extends ChangeNotifier {
   FundraiserApplicationViewModel() {
     _auth.authStateChanges().listen((user) async {
       _currentAuthUserId = user?.uid;
-      _user = await fetchUserProfile(_currentAuthUserId);
+      _user = await _userService.fetchUserProfile(_currentAuthUserId);
       _loadInitialData();
     });
-  }
-
-  Future<BaseProfileModel?> fetchUserProfile(String? userId) async {
-    try {
-      if (userId == null) return null;
-      final doc = await _firestore.collection('users').doc(userId).get();
-      if (doc.exists && doc.data() != null) {
-        final data = doc.data();
-        final roleString = data?['role'] as String?;
-        if (roleString == UserRole.volunteer.name) {
-          return VolunteerModel.fromMap(doc.data()!);
-        } else {
-          return OrganizationModel.fromMap(doc.data()!);
-        }
-      } else {
-        return null;
-      }
-    } catch (e) {
-      print('Error fetching user profile: $e');
-      return null;
-    }
   }
 
   Future<void> _loadInitialData() async {

@@ -4,6 +4,7 @@ import 'package:helphub/theme/theme_helper.dart';
 class TextStyleHelper {
   static TextStyleHelper? _instance;
 
+
   TextStyleHelper._();
 
   static TextStyleHelper get instance {
@@ -54,6 +55,13 @@ class TextStyleHelper {
     fontSize: 13,
     fontWeight: FontWeight.w400,
     color: appThemeColors.blueAccent,
+    fontFamily: 'Roboto',
+  );
+
+  TextStyle get title10Regular => TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.w400,
+    color: appThemeColors.backgroundLightGrey,
     fontFamily: 'Roboto',
   );
 

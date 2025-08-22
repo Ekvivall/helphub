@@ -16,6 +16,7 @@ import 'package:helphub/models/category_chip_model.dart';
 import 'package:helphub/models/event_model.dart';
 import 'package:path/path.dart' as p;
 
+import '../../core/services/user_service.dart';
 import '../../core/utils/constants.dart';
 import '../../models/activity_model.dart';
 import '../../models/organization_model.dart';
@@ -28,6 +29,7 @@ class EventViewModel extends ChangeNotifier {
   final FriendService _friendService = FriendService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ActivityService _activityService = ActivityService();
+  final UserService _userService = UserService();
 
   StreamSubscription<List<EventModel>>? _eventsSubscription;
   List<EventModel> _allEvents = [];
@@ -109,31 +111,11 @@ class EventViewModel extends ChangeNotifier {
   EventViewModel() {
     _auth.authStateChanges().listen((user) async {
       _currentAuthUserId = user?.uid;
-      _user = await fetchUserProfile(currentAuthUserId);
+      _user = await _userService.fetchUserProfile(currentAuthUserId);
       _listenToEvents();
     });
     _loadAvailableCategories();
     _getCurrentUserLocation();
-  }
-
-  Future<BaseProfileModel?> fetchUserProfile(String? userId) async {
-    try {
-      final doc = await _firestore.collection('users').doc(userId).get();
-      if (doc.exists && doc.data() != null) {
-        final data = doc.data();
-        final roleString = data?['role'] as String?;
-        if (roleString == UserRole.volunteer.name) {
-          return VolunteerModel.fromMap(doc.data()!);
-        } else {
-          return OrganizationModel.fromMap(doc.data()!);
-        }
-      } else {
-        return null;
-      }
-    } catch (e) {
-      print('Error fetching user profile: $e');
-      return null;
-    }
   }
 
   Future<void> _loadAvailableCategories() async {
@@ -304,7 +286,7 @@ class EventViewModel extends ChangeNotifier {
           .listen(
             (event) async {
               _currentEvent = event;
-              _organizer = await fetchUserProfile(event.organizerId);
+              _organizer = await _userService.fetchUserProfile(event.organizerId);
               if (currentAuthUserId != null) {
                 _participatingFriends = await _fetchParticipatingFriends(
                   event.participantIds,
@@ -418,7 +400,7 @@ class EventViewModel extends ChangeNotifier {
     }).toList();
     List<BaseProfileModel?> temp = [];
     for (var uid in friendsInEventUids) {
-      temp.add(await fetchUserProfile(uid));
+      temp.add(await _userService.fetchUserProfile(uid));
     }
     return temp;
   }

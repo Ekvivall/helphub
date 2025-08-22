@@ -10,12 +10,12 @@ import 'package:path/path.dart' as p;
 import '../../core/services/activity_service.dart';
 import '../../core/services/category_service.dart';
 import '../../core/services/fundraising_service.dart';
+import '../../core/services/user_service.dart';
 import '../../models/activity_model.dart';
 import '../../models/base_profile_model.dart';
 import '../../models/category_chip_model.dart';
 import '../../models/fundraising_model.dart';
 import '../../models/organization_model.dart';
-import '../../models/volunteer_model.dart';
 
 class FundraisingViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -23,6 +23,7 @@ class FundraisingViewModel extends ChangeNotifier {
   final CategoryService _categoryService = CategoryService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final ActivityService _activityService = ActivityService();
+  final UserService _userService = UserService();
 
   StreamSubscription<List<FundraisingModel>>? _fundraisingsSubscription;
   List<FundraisingModel> _allFundraisings = [];
@@ -88,32 +89,12 @@ class FundraisingViewModel extends ChangeNotifier {
   FundraisingViewModel() {
     _auth.authStateChanges().listen((user) async {
       _currentAuthUserId = user?.uid;
-      _user = await fetchUserProfile(currentAuthUserId);
+      _user = await _userService.fetchUserProfile(currentAuthUserId);
       _listenToFundraisings();
     });
     _loadAvailableCategories();
   }
 
-  Future<BaseProfileModel?> fetchUserProfile(String? userId) async {
-    try {
-      if (userId == null) return null;
-      final doc = await _firestore.collection('users').doc(userId).get();
-      if (doc.exists && doc.data() != null) {
-        final data = doc.data();
-        final roleString = data?['role'] as String?;
-        if (roleString == UserRole.volunteer.name) {
-          return VolunteerModel.fromMap(doc.data()!);
-        } else {
-          return OrganizationModel.fromMap(doc.data()!);
-        }
-      } else {
-        return null;
-      }
-    } catch (e) {
-      print('Error fetching user profile: $e');
-      return null;
-    }
-  }
 
   Future<void> _loadAvailableCategories() async {
     try {

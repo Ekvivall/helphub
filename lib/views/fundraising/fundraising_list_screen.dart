@@ -3,16 +3,15 @@ import 'package:helphub/models/organization_model.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/image_constant.dart';
 import '../../models/base_profile_model.dart';
 import '../../models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../view_models/fundraising/fundraising_view_model.dart';
 import '../../widgets/custom_bottom_navigation_bar.dart';
-import '../../widgets/custom_image_view.dart';
 import '../../widgets/custom_input_field.dart';
 import '../../widgets/custom_notification_icon_button.dart';
+import '../../widgets/custom_tournament_icon_button.dart';
 import '../../widgets/fundraising/fundraising_list_item.dart';
 import '../../widgets/user_avatar_with_frame.dart';
 import 'fundraising_filters_bottom_sheet.dart';
@@ -37,7 +36,25 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
   Widget build(BuildContext context) {
     return Consumer<FundraisingViewModel>(
       builder: (context, viewModel, child) {
-        if (viewModel.user == null) return SizedBox.shrink();
+        if (viewModel.user == null) {
+          return Scaffold(
+            backgroundColor: appThemeColors.blueAccent,
+            body: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment(0.9, -0.4),
+                  end: Alignment(-0.9, 0.4),
+                  colors: [
+                    appThemeColors.blueAccent,
+                    appThemeColors.cyanAccent,
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
         final BaseProfileModel user = viewModel.user!;
         return Scaffold(
           backgroundColor: appThemeColors.blueAccent,
@@ -56,7 +73,7 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
                 _buildHeader(context, viewModel, user),
                 const SizedBox(height: 16),
                 Expanded(child: _buildFundraisingList(viewModel)),
-                const SizedBox(height: 14,)
+                const SizedBox(height: 14),
               ],
             ),
           ),
@@ -149,16 +166,7 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
               ),
             ),
           ),
-          IconButton(
-            onPressed: () {
-              //TODO
-            },
-            icon: CustomImageView(
-              imagePath: ImageConstant.tournamentIcon,
-              height: 24,
-              width: 24,
-            ),
-          ),
+          CustomTournamentIconButton(),
           CustomNotificationIconButton(),
         ],
       ),
@@ -201,7 +209,7 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
     }
     if (filteredFundraisings.isEmpty) {
       return Center(
-        child:Padding(
+        child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -235,7 +243,7 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: filteredFundraisings.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 16,),
+      separatorBuilder: (context, index) => const SizedBox(height: 16),
       itemBuilder: (context, index) {
         final fundraising = filteredFundraisings[index];
         return FundraisingListItem(

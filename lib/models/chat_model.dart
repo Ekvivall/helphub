@@ -10,6 +10,7 @@ class ChatModel {
   final String? lastMessage;
   final DateTime? lastMessageAt;
   final DateTime? createdAt;
+  final String? chatImageUrl;
 
   ChatModel({
     this.id,
@@ -19,6 +20,7 @@ class ChatModel {
     this.lastMessage,
     this.lastMessageAt,
     this.createdAt,
+    this.chatImageUrl,
   });
 
   Map<String, dynamic> toMap() {
@@ -33,6 +35,7 @@ class ChatModel {
       'createdAt': createdAt != null
           ? Timestamp.fromDate(createdAt!)
           : null,
+      'chatImageUrl': chatImageUrl,
     };
   }
 
@@ -52,6 +55,7 @@ class ChatModel {
       createdAt: map['createdAt'] != null
           ? (map['createdAt'] as Timestamp).toDate()
           : null,
+      chatImageUrl: map['chatImageUrl'],
     );
   }
 
@@ -63,6 +67,7 @@ class ChatModel {
     String? lastMessage,
     DateTime? lastMessageAt,
     DateTime? createdAt,
+    String? chatImageUrl,
   }) {
     return ChatModel(
       id: id ?? this.id,
@@ -72,6 +77,7 @@ class ChatModel {
       lastMessage: lastMessage ?? this.lastMessage,
       lastMessageAt: lastMessageAt ?? this.lastMessageAt,
       createdAt: createdAt ?? this.createdAt,
+      chatImageUrl: chatImageUrl ?? this.chatImageUrl,
     );
   }
 

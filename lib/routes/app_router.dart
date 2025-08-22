@@ -30,6 +30,7 @@ import 'package:helphub/views/report/view_report_screen.dart';
 import 'package:helphub/views/splash/splash_screen.dart';
 
 import '../views/auth/register_organization_step2_screen.dart';
+import '../views/chat/chat_list_screen.dart';
 import '../views/event/event_map_screen.dart';
 import '../views/fundraising/create_fundraising_application_screen.dart';
 import '../views/fundraising/create_fundraising_screen.dart';
@@ -80,6 +81,8 @@ class AppRoutes {
   static const String allActivitiesScreen = '/all_activities';
   static const String viewReportScreen = '/view_report';
   static const String chatScreen = '/chat';
+  static const String chatListScreen = '/chat_list';
+
 
 
   static Map<String, WidgetBuilder> routes = {
@@ -107,6 +110,7 @@ class AppRoutes {
         AllFundraiserApplicationsScreen(),
     allSavedFundraisersScreen: (context) => AllSavedFundraisersScreen(),
     allActivitiesScreen: (context) => AllActivitiesScreen(),
+    chatListScreen: (context) => ChatListScreen(),
   };
 
 

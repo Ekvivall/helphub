@@ -15,6 +15,7 @@ class ChatService {
     required ChatType type,
     String? entityId,
     required List<String> participants,
+    String? chatImageUrl,
   }) async {
     try {
       String chatId;
@@ -41,6 +42,7 @@ class ChatService {
         entityId: entityId,
         participants: participants,
         createdAt: DateTime.now(),
+        chatImageUrl: chatImageUrl,
       );
 
       await _firestore
@@ -185,19 +187,29 @@ class ChatService {
     }
   }
 
-  Future<String?> createEventChat(String eventId, List<String> participantIds) async {
+  Future<String?> createEventChat(
+      String eventId,
+      List<String> participantIds,
+      {String? chatImageUrl}
+      ) async {
     return await createChat(
       type: ChatType.event,
       entityId: eventId,
       participants: participantIds,
+      chatImageUrl: chatImageUrl,
     );
   }
 
-  Future<String?> createProjectChat(String projectId, List<String> participantIds) async {
+  Future<String?> createProjectChat(
+      String projectId,
+      List<String> participantIds,
+      {String? chatImageUrl}
+      ) async {
     return await createChat(
       type: ChatType.project,
       entityId: projectId,
       participants: participantIds,
+      chatImageUrl: chatImageUrl,
     );
   }
 
@@ -206,6 +218,18 @@ class ChatService {
       type: ChatType.friend,
       participants: [userId1, userId2],
     );
+  }
+
+  Future<bool> updateChatImage(String chatId, String? imageUrl) async {
+    try {
+      await _firestore.collection(_chatsCollection).doc(chatId).update({
+        'chatImageUrl': imageUrl,
+      });
+      return true;
+    } catch (e) {
+      print('Error updating chat image: $e');
+      return false;
+    }
   }
 
   Future<bool> markMessagesAsRead(String chatId, String userId) async {

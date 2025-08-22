@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';
 import 'package:helphub/views/event/event_filters_screen.dart';
 import 'package:helphub/views/event/event_map_screen.dart';
-import 'package:helphub/widgets/custom_image_view.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/base_profile_model.dart';
@@ -14,6 +12,7 @@ import '../../theme/theme_helper.dart';
 import '../../widgets/custom_bottom_navigation_bar.dart';
 import '../../widgets/custom_input_field.dart';
 import '../../widgets/custom_notification_icon_button.dart';
+import '../../widgets/custom_tournament_icon_button.dart';
 import '../../widgets/events/event_list_item.dart';
 import '../../widgets/user_avatar_with_frame.dart';
 
@@ -140,16 +139,7 @@ class _EventListScreenState extends State<EventListScreen> {
               ),
             ),
           ),
-          IconButton(
-            onPressed: () {
-              //TODO
-            },
-            icon: CustomImageView(
-              imagePath: ImageConstant.tournamentIcon,
-              height: 24,
-              width: 24,
-            ),
-          ),
+          CustomTournamentIconButton(),
           CustomNotificationIconButton(),
         ],
       ),

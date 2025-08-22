@@ -14,6 +14,7 @@ import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:helphub/widgets/custom_text_field.dart';
 import 'package:helphub/widgets/custom_multi_document_upload_field.dart';
 
+import '../../core/services/user_service.dart';
 import '../../models/organization_model.dart';
 import '../../models/participant_feedback_model.dart';
 import '../../models/volunteer_model.dart';
@@ -192,10 +193,11 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
 
   Future<void> _loadParticipantsFeedback(List<String> participantIds) async {
     final feedbackList = <ParticipantFeedbackModel>[];
+    UserService userService = UserService();
 
     for (final participantId in participantIds) {
       try {
-        final user = await _reportViewModel.fetchUserProfile(participantId);
+        final user = await userService.fetchUserProfile(participantId);
         final displayName = user is VolunteerModel
             ? user.fullName ?? user.displayName ?? 'Користувач'
             : user is OrganizationModel

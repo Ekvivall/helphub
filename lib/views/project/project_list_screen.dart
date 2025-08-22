@@ -3,16 +3,15 @@ import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/views/project/project_filters_screen.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/utils/image_constant.dart';
 import '../../models/base_profile_model.dart';
 import '../../models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../view_models/project/project_view_model.dart';
 import '../../widgets/custom_bottom_navigation_bar.dart';
-import '../../widgets/custom_image_view.dart';
 import '../../widgets/custom_input_field.dart';
 import '../../widgets/custom_notification_icon_button.dart';
+import '../../widgets/custom_tournament_icon_button.dart';
 import '../../widgets/project/project_list_item.dart';
 import '../../widgets/user_avatar_with_frame.dart';
 
@@ -126,16 +125,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
               ),
             ),
           ),
-          IconButton(
-            onPressed: () {
-              //TODO
-            },
-            icon: CustomImageView(
-              imagePath: ImageConstant.tournamentIcon,
-              height: 24,
-              width: 24,
-            ),
-          ),
+          CustomTournamentIconButton(),
           CustomNotificationIconButton(),
         ],
       ),

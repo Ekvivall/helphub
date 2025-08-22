@@ -1,13 +1,16 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:helphub/core/services/user_service.dart';
 
 import '../../core/services/chat_service.dart';
+import '../../models/base_profile_model.dart';
 import '../../models/chat_model.dart';
 import '../../models/message_model.dart';
 
 class ChatViewModel extends ChangeNotifier {
   final ChatService _chatService = ChatService();
+  final UserService _userService = UserService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   List<ChatModel> _userChats = [];
@@ -23,20 +26,30 @@ class ChatViewModel extends ChangeNotifier {
   StreamSubscription<ChatModel>? _currentChatSubscription;
 
   List<ChatModel> get userChats => _userChats;
+
   ChatModel? get currentChat => _currentChat;
+
   List<MessageModel> get currentMessages => _currentMessages;
+
   bool get isLoading => _isLoading;
+
   bool get isSendingMessage => _isSendingMessage;
+
   String? get errorMessage => _errorMessage;
+
   String? get currentUserId => _currentUserId;
+  BaseProfileModel? _user;
+
+  BaseProfileModel? get user => _user;
 
   ChatViewModel() {
     _init();
   }
 
-  void _init() {
+  Future<void> _init() async {
     _currentUserId = _auth.currentUser?.uid;
     if (_currentUserId != null) {
+      _user = await _userService.fetchUserProfile(_currentUserId);
       loadUserChats(_currentUserId!);
     }
   }
@@ -105,7 +118,6 @@ class ChatViewModel extends ChangeNotifier {
           notifyListeners();
         },
       );
-
     } catch (e) {
       _errorMessage = 'Помилка відкриття чату: $e';
       _isLoading = false;
@@ -114,7 +126,9 @@ class ChatViewModel extends ChangeNotifier {
   }
 
   Future<bool> sendMessage(String chatId, String text) async {
-    if (text.trim().isEmpty) return false;
+    if (text
+        .trim()
+        .isEmpty) return false;
 
     _isSendingMessage = true;
     notifyListeners();
@@ -165,12 +179,14 @@ class ChatViewModel extends ChangeNotifier {
     }
   }
 
-  Future<String?> createEventChat(String eventId, List<String> participantIds) async {
+  Future<String?> createEventChat(String eventId,
+      List<String> participantIds, {String? chatImageUrl}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final chatId = await _chatService.createEventChat(eventId, participantIds);
+      final chatId = await _chatService.createEventChat(
+          eventId, participantIds, chatImageUrl: chatImageUrl);
       _isLoading = false;
       notifyListeners();
       return chatId;
@@ -182,12 +198,14 @@ class ChatViewModel extends ChangeNotifier {
     }
   }
 
-  Future<String?> createProjectChat(String projectId, List<String> participantIds) async {
+  Future<String?> createProjectChat(String projectId,
+      List<String> participantIds, {String? chatImageUrl}) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final chatId = await _chatService.createProjectChat(projectId, participantIds);
+      final chatId = await _chatService.createProjectChat(
+          projectId, participantIds, chatImageUrl: chatImageUrl);
       _isLoading = false;
       notifyListeners();
       return chatId;
@@ -206,7 +224,8 @@ class ChatViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final chatId = await _chatService.createFriendChat(_currentUserId!, friendUserId);
+      final chatId = await _chatService.createFriendChat(
+          _currentUserId!, friendUserId);
       _isLoading = false;
       notifyListeners();
       return chatId;
@@ -215,6 +234,24 @@ class ChatViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return null;
+    }
+  }
+
+  Future<bool> updateChatImage(String chatId, String? imageUrl) async {
+    try {
+      final success = await _chatService.updateChatImage(chatId, imageUrl);
+      if (success) {
+        // Оновлюємо локальну модель чату
+        if (_currentChat?.id == chatId) {
+          _currentChat = _currentChat!.copyWith(chatImageUrl: imageUrl);
+          notifyListeners();
+        }
+      }
+      return success;
+    } catch (e) {
+      _errorMessage = 'Помилка оновлення фото чату: $e';
+      notifyListeners();
+      return false;
     }
   }
 
@@ -265,9 +302,12 @@ class ChatViewModel extends ChangeNotifier {
     ).firstOrNull;
   }
 
-  bool chatExistsForEntity(ChatType type, String? entityId, [String? friendUserId]) {
-    if (type == ChatType.friend && friendUserId != null && _currentUserId != null) {
-      final chatId = ChatModel.generateFriendChatId(_currentUserId!, friendUserId);
+  bool chatExistsForEntity(ChatType type, String? entityId,
+      [String? friendUserId]) {
+    if (type == ChatType.friend && friendUserId != null &&
+        _currentUserId != null) {
+      final chatId = ChatModel.generateFriendChatId(
+          _currentUserId!, friendUserId);
       return _userChats.any((chat) => chat.id == chatId);
     }
 
@@ -284,6 +324,4 @@ class ChatViewModel extends ChangeNotifier {
     _currentChatSubscription?.cancel();
     super.dispose();
   }
-
-
 }

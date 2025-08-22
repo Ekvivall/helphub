@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:helphub/models/base_profile_model.dart';
 import 'package:helphub/models/report_model.dart';
 import 'package:helphub/core/services/report_service.dart';
 
+import '../../core/services/user_service.dart';
 import '../../models/organization_model.dart';
 import '../../models/organizer_feedback_model.dart';
 import '../../models/participant_feedback_model.dart';
@@ -13,7 +13,7 @@ import '../../models/volunteer_model.dart';
 
 class ReportViewModel extends ChangeNotifier {
   final ReportService _reportService = ReportService();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final UserService _userService = UserService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   bool _isLoading = false;
@@ -46,31 +46,11 @@ class ReportViewModel extends ChangeNotifier {
   ReportViewModel() {
     _auth.authStateChanges().listen((user) async {
       _currentUserId = user?.uid;
-      _user = await fetchUserProfile(_currentUserId);
+      _user = await _userService.fetchUserProfile(_currentUserId);
       notifyListeners();
     });
   }
 
-  Future<BaseProfileModel?> fetchUserProfile(String? userId) async {
-    try {
-      if (userId == null) return null;
-      final doc = await _firestore.collection('users').doc(userId).get();
-      if (doc.exists && doc.data() != null) {
-        final data = doc.data();
-        final roleString = data?['role'] as String?;
-        if (roleString == UserRole.volunteer.name) {
-          return VolunteerModel.fromMap(doc.data()!);
-        } else {
-          return OrganizationModel.fromMap(doc.data()!);
-        }
-      } else {
-        return null;
-      }
-    } catch (e) {
-      print('Error fetching user profile: $e');
-      return null;
-    }
-  }
 
   void clearError() {
     _errorMessage = null;
