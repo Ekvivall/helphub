@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:helphub/core/services/event_service.dart';
 import 'package:helphub/core/services/user_service.dart';
+import 'package:helphub/models/event_model.dart';
 
 import '../../core/services/chat_service.dart';
 import '../../models/base_profile_model.dart';
@@ -11,6 +13,7 @@ import '../../models/message_model.dart';
 class ChatViewModel extends ChangeNotifier {
   final ChatService _chatService = ChatService();
   final UserService _userService = UserService();
+  final EventService _eventService = EventService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   List<ChatModel> _userChats = [];
@@ -42,6 +45,20 @@ class ChatViewModel extends ChangeNotifier {
 
   BaseProfileModel? get user => _user;
 
+  BaseProfileModel? _friendProfile;
+
+  BaseProfileModel? get friendProfile => _friendProfile;
+  int _totalUnreadCount = 0;
+  StreamSubscription<int>? _totalUnreadCountSubscription;
+
+  int get totalUnreadCount => _totalUnreadCount;
+
+  final Map<String, StreamSubscription<int>> _unreadSubscriptions = {};
+
+  EventModel? _currentEvent;
+
+  EventModel? get currentEvent => _currentEvent;
+
   ChatViewModel() {
     _init();
   }
@@ -60,18 +77,21 @@ class ChatViewModel extends ChangeNotifier {
     notifyListeners();
 
     _userChatsSubscription?.cancel();
-    _userChatsSubscription = _chatService.getUserChats(userId).listen(
-          (chats) {
-        _userChats = chats;
-        _isLoading = false;
-        notifyListeners();
-      },
-      onError: (error) {
-        _errorMessage = 'Помилка завантаження чатів: $error';
-        _isLoading = false;
-        notifyListeners();
-      },
-    );
+    _userChatsSubscription = _chatService
+        .getUserChats(userId)
+        .listen(
+          (chats) async {
+            _userChats = chats;
+            _isLoading = false;
+            notifyListeners();
+            _startUnreadCountListeners();
+          },
+          onError: (error) {
+            _errorMessage = 'Помилка завантаження чатів: $error';
+            _isLoading = false;
+            notifyListeners();
+          },
+        );
   }
 
   Future<void> openChat(String chatId) async {
@@ -92,43 +112,79 @@ class ChatViewModel extends ChangeNotifier {
         return;
       }
 
-      _currentChatSubscription = _chatService.getChatStream(chatId).listen(
+      _currentChatSubscription = _chatService
+          .getChatStream(chatId)
+          .listen(
             (chat) {
-          _currentChat = chat;
+              _currentChat = chat;
+              notifyListeners();
+            },
+            onError: (error) {
+              print('Error listening to chat updates: $error');
+            },
+          );
+      if (currentChat!.type == ChatType.friend) {
+        final friendId = _currentChat!.participants.firstWhere(
+          (id) => id != currentUserId,
+        );
+        try {
+          _friendProfile = await _userService.fetchUserProfile(friendId);
           notifyListeners();
-        },
-        onError: (error) {
-          print('Error listening to chat updates: $error');
-        },
-      );
-
-      _messagesSubscription = _chatService.listenMessages(chatId).listen(
+        } catch (e) {
+          print('Error loading friend profile: $e');
+        }
+      } else if (currentChat!.type == ChatType.event) {
+        if (currentChat?.entityId != null) {
+          _currentEvent = await _eventService.getEventById(
+            currentChat!.entityId!,
+          );
+          notifyListeners();
+        }
+      }
+      _messagesSubscription = _chatService
+          .listenMessages(chatId)
+          .listen(
             (messages) {
-          _currentMessages = messages;
-          _isLoading = false;
-          notifyListeners();
+              _currentMessages = messages;
+              _isLoading = false;
+              notifyListeners();
 
-          if (_currentUserId != null) {
-            _chatService.markMessagesAsRead(chatId, _currentUserId!);
-          }
-        },
-        onError: (error) {
-          _errorMessage = 'Помилка завантаження повідомлень: $error';
-          _isLoading = false;
-          notifyListeners();
-        },
-      );
+              if (_currentUserId != null) {
+                _chatService.markMessagesAsRead(chatId, _currentUserId!);
+              }
+            },
+            onError: (error) {
+              _errorMessage = 'Помилка завантаження повідомлень: $error';
+              _isLoading = false;
+              notifyListeners();
+            },
+          );
     } catch (e) {
       _errorMessage = 'Помилка відкриття чату: $e';
       _isLoading = false;
       notifyListeners();
     }
   }
+/*
+  void _startListeningToTotalUnreadCount(String userId) {
+    _totalUnreadCountSubscription?.cancel();
+    _totalUnreadCountSubscription = _chatService
+        .getTotalUnreadMessagesCount(userId)
+        .listen(
+          (totalCount) {
+            _totalUnreadCount = totalCount;
+            notifyListeners();
+          },
+          onError: (error) {
+            print('Error listening to total unread count: $error');
+          },
+        );
+  }*/
 
   Future<bool> sendMessage(String chatId, String text) async {
-    if (text
-        .trim()
-        .isEmpty) return false;
+    if (text.trim().isEmpty) {
+      return false;
+    }
 
     _isSendingMessage = true;
     notifyListeners();
@@ -179,14 +235,20 @@ class ChatViewModel extends ChangeNotifier {
     }
   }
 
-  Future<String?> createEventChat(String eventId,
-      List<String> participantIds, {String? chatImageUrl}) async {
+  Future<String?> createEventChat(
+    String eventId,
+    List<String> participantIds, {
+    String? chatImageUrl,
+  }) async {
     _isLoading = true;
     notifyListeners();
 
     try {
       final chatId = await _chatService.createEventChat(
-          eventId, participantIds, chatImageUrl: chatImageUrl);
+        eventId,
+        participantIds,
+        chatImageUrl: chatImageUrl,
+      );
       _isLoading = false;
       notifyListeners();
       return chatId;
@@ -198,14 +260,20 @@ class ChatViewModel extends ChangeNotifier {
     }
   }
 
-  Future<String?> createProjectChat(String projectId,
-      List<String> participantIds, {String? chatImageUrl}) async {
+  Future<String?> createProjectChat(
+    String projectId,
+    List<String> participantIds, {
+    String? chatImageUrl,
+  }) async {
     _isLoading = true;
     notifyListeners();
 
     try {
       final chatId = await _chatService.createProjectChat(
-          projectId, participantIds, chatImageUrl: chatImageUrl);
+        projectId,
+        participantIds,
+        chatImageUrl: chatImageUrl,
+      );
       _isLoading = false;
       notifyListeners();
       return chatId;
@@ -225,7 +293,9 @@ class ChatViewModel extends ChangeNotifier {
 
     try {
       final chatId = await _chatService.createFriendChat(
-          _currentUserId!, friendUserId);
+        _currentUserId!,
+        friendUserId,
+      );
       _isLoading = false;
       notifyListeners();
       return chatId;
@@ -290,30 +360,33 @@ class ChatViewModel extends ChangeNotifier {
 
   ChatModel? getChatByEntity(ChatType type, String? entityId) {
     if (type == ChatType.friend) {
-      return _userChats.where((chat) =>
-      chat.type == type &&
-          chat.participants.length == 2
-      ).firstOrNull;
+      return _userChats
+          .where((chat) => chat.type == type && chat.participants.length == 2)
+          .firstOrNull;
     }
 
-    return _userChats.where((chat) =>
-    chat.type == type &&
-        chat.entityId == entityId
-    ).firstOrNull;
+    return _userChats
+        .where((chat) => chat.type == type && chat.entityId == entityId)
+        .firstOrNull;
   }
 
-  bool chatExistsForEntity(ChatType type, String? entityId,
-      [String? friendUserId]) {
-    if (type == ChatType.friend && friendUserId != null &&
+  bool chatExistsForEntity(
+    ChatType type,
+    String? entityId, [
+    String? friendUserId,
+  ]) {
+    if (type == ChatType.friend &&
+        friendUserId != null &&
         _currentUserId != null) {
       final chatId = ChatModel.generateFriendChatId(
-          _currentUserId!, friendUserId);
+        _currentUserId!,
+        friendUserId,
+      );
       return _userChats.any((chat) => chat.id == chatId);
     }
 
-    return _userChats.any((chat) =>
-    chat.type == type &&
-        chat.entityId == entityId
+    return _userChats.any(
+      (chat) => chat.type == type && chat.entityId == entityId,
     );
   }
 
@@ -322,6 +395,42 @@ class ChatViewModel extends ChangeNotifier {
     _userChatsSubscription?.cancel();
     _messagesSubscription?.cancel();
     _currentChatSubscription?.cancel();
+    _totalUnreadCountSubscription?.cancel();
+    for (var sub in _unreadSubscriptions.values) {
+      sub.cancel();
+    }
     super.dispose();
+  }
+
+  void _startUnreadCountListeners() {
+    for (var sub in _unreadSubscriptions.values) {
+      sub.cancel();
+    }
+    _unreadSubscriptions.clear();
+
+    if (_currentUserId == null) return;
+
+    for (var chat in _userChats) {
+      if (chat.id == null) continue;
+      final subscription = _chatService
+          .getUnreadMessagesCountStream(chat.id!, _currentUserId!)
+          .listen((count) {
+            final index = _userChats.indexWhere((c) => c.id == chat.id);
+            if (index != -1) {
+              _userChats[index] = _userChats[index].copyWith(
+                unreadCount: count,
+              );
+              _calculateTotalUnreadCount();
+              notifyListeners();
+            }
+          });
+      _unreadSubscriptions[chat.id!] = subscription;
+    }
+  }
+  void _calculateTotalUnreadCount() {
+    _totalUnreadCount = _userChats.fold(
+      0,
+          (sum, chat) => sum + (chat.unreadCount),
+    );
   }
 }

@@ -111,7 +111,7 @@ class EventOrganizationActivityItem extends StatelessWidget {
 
                           if(chatId != null) {
                             Navigator.of(context).pushNamed(
-                            AppRoutes.chatScreen,
+                            AppRoutes.chatEventScreen,
                             arguments: chatId,
                           );
                           }

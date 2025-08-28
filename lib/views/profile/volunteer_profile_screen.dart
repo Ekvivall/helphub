@@ -502,7 +502,7 @@ class VolunteerProfileScreen extends StatelessWidget {
                         viewModel.user!.uid!,
                       );
                       Navigator.of(context).pushNamed(
-                        AppRoutes.chatScreen,
+                        AppRoutes.chatFriendScreen,
                         arguments: chatId,
                       );
                     },

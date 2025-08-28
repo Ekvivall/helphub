@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum ChatType { event, project, friend }
 
+
 class ChatModel {
   final String? id;
   final ChatType type;
@@ -11,6 +12,7 @@ class ChatModel {
   final DateTime? lastMessageAt;
   final DateTime? createdAt;
   final String? chatImageUrl;
+  final int unreadCount;
 
   ChatModel({
     this.id,
@@ -21,6 +23,7 @@ class ChatModel {
     this.lastMessageAt,
     this.createdAt,
     this.chatImageUrl,
+    this.unreadCount = 0,
   });
 
   Map<String, dynamic> toMap() {
@@ -56,6 +59,7 @@ class ChatModel {
           ? (map['createdAt'] as Timestamp).toDate()
           : null,
       chatImageUrl: map['chatImageUrl'],
+      unreadCount: map['unreadCount'] ?? 0,
     );
   }
 
@@ -68,6 +72,7 @@ class ChatModel {
     DateTime? lastMessageAt,
     DateTime? createdAt,
     String? chatImageUrl,
+    int? unreadCount,
   }) {
     return ChatModel(
       id: id ?? this.id,
@@ -78,6 +83,7 @@ class ChatModel {
       lastMessageAt: lastMessageAt ?? this.lastMessageAt,
       createdAt: createdAt ?? this.createdAt,
       chatImageUrl: chatImageUrl ?? this.chatImageUrl,
+      unreadCount: unreadCount ?? this.unreadCount,
     );
   }
 
@@ -89,4 +95,13 @@ class ChatModel {
   bool isParticipant(String userId) {
     return participants.contains(userId);
   }
+
+  bool get hasUnreadMessages => unreadCount > 0;
+
+  String get unreadCountText {
+    if (unreadCount == 0) return '';
+    if (unreadCount > 99) return '99+';
+    return unreadCount.toString();
+  }
+
 }

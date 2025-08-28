@@ -679,7 +679,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
                   width: 120,
                   height: 120,
                   child: GestureDetector(
-                    onTap: () => _showImageDialog(photoUrl),
+                    onTap: () => Constants.showImageDialog(context, photoUrl),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: Image.network(
@@ -1077,73 +1077,6 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
           ],
         ],
       ),
-    );
-  }
-
-  void _showImageDialog(String imageUrl) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Stack(
-            children: [
-              Center(
-                child: InteractiveViewer(
-                  child: Image.network(
-                    imageUrl,
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Container(
-                        width: 200,
-                        height: 200,
-                        color: appThemeColors.backgroundLightGrey,
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: appThemeColors.blueAccent,
-                          ),
-                        ),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        width: 200,
-                        height: 200,
-                        color: appThemeColors.errorRed.withAlpha(77),
-                        child: Icon(
-                          Icons.broken_image,
-                          color: appThemeColors.errorRed,
-                          size: 60,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 40,
-                right: 20,
-                child: GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: appThemeColors.primaryBlack.withAlpha(15),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Icon(
-                      Icons.close,
-                      color: appThemeColors.primaryWhite,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 

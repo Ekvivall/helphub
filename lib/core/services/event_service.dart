@@ -9,16 +9,12 @@ class EventService {
 
   final ChatService _chatService = ChatService();
 
-
   Future<void> createEvent(EventModel event) async {
     try {
       final docRef = _firestore.collection(_collectionName).doc();
       final eventWithId = event.copyWith(id: docRef.id);
       await docRef.set(eventWithId.toMap());
-      await _chatService.createEventChat(
-        eventWithId.id!,
-        [event.organizerId],
-      );
+      await _chatService.createEventChat(eventWithId.id!, [event.organizerId]);
     } catch (e) {
       print('Error creating event: $e');
     }
@@ -143,7 +139,6 @@ class EventService {
     }
     return eventsMap;
   }
-
 
   Future<String?> getEventChatId(String eventId) async {
     try {

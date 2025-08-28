@@ -681,7 +681,7 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
             viewModel.user!.uid!,
           );
           Navigator.of(context).pushNamed(
-            AppRoutes.chatScreen,
+            AppRoutes.chatFriendScreen,
             arguments: chatId,
           );
         },

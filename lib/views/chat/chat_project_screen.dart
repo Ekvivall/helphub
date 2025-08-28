@@ -1,15 +1,22 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:helphub/core/services/chat_service.dart';
+import 'package:helphub/core/services/user_service.dart';
+import 'package:helphub/models/base_profile_model.dart';
+import 'package:helphub/widgets/chat/message_input_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:helphub/models/project_task_model.dart';
 import 'package:helphub/view_models/chat/chat_view_model.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/utils/constants.dart';
+import '../../models/message_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/chat/chat_task_view_model.dart';
 import '../../widgets/chat/chat_participants_bottom_sheet.dart';
+import '../../widgets/chat/message_bubble_widget.dart';
 import '../../widgets/chat/project_info_bottom_sheet.dart';
 import '../../widgets/chat/task_list_tab_view.dart';
 
@@ -32,21 +39,53 @@ class ChatProjectScreen extends StatefulWidget {
 class _ChatProjectScreenState extends State<ChatProjectScreen> {
   late DisplayMode _displayMode;
   late ChatViewModel _viewModel;
+  late ChatTaskViewModel _taskViewModel;
+  final ScrollController _scrollController = ScrollController();
   final ImagePicker _imagePicker = ImagePicker();
   bool _isUploadingImage = false;
+  final Map<String, BaseProfileModel> _participantsCache = {};
 
   @override
   void initState() {
     super.initState();
     _viewModel = Provider.of<ChatViewModel>(context, listen: false);
-    _viewModel.openChat(widget.chatId);
+    _taskViewModel = Provider.of<ChatTaskViewModel>(context, listen: false);
     _displayMode = widget.initialDisplayMode;
-    ChatTaskViewModel chatTaskViewModel = Provider.of<ChatTaskViewModel>(
-      context,
-      listen: false,
+    _initializeChat();
+  }
+
+  Future<void> _initializeChat() async {
+    await _viewModel.openChat(widget.chatId);
+    if (_viewModel.currentChat?.entityId != null) {
+      _taskViewModel.listenToProjectTasks(_viewModel.currentChat!.entityId!);
+    }
+  }
+
+  Future<void> _scrollToFirstUnread() async {
+    if (_viewModel.currentUserId == null ||
+        _viewModel.currentChat?.id == null) {
+      return;
+    }
+
+    ChatService chatService = ChatService();
+    final firstUnread = await chatService.getFirstUnreadMessage(
+      _viewModel.currentChat!.id!,
+      _viewModel.currentUserId!,
     );
-    chatTaskViewModel.listenToProjectTasks(_viewModel.currentChat!.entityId!);
-    _displayMode = widget.initialDisplayMode;
+
+    if (firstUnread != null && _viewModel.currentMessages.isNotEmpty) {
+      final index = _viewModel.currentMessages.indexWhere(
+        (message) => message.id == firstUnread.id,
+      );
+
+      if (index != -1) {
+        await _scrollController.animateTo(
+          index * 80,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    }
   }
 
   void _showChatImageOptions(BuildContext context) {
@@ -93,7 +132,13 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                _pickImageFromCamera();
+                Constants.pickImageFromCamera(
+                  _imagePicker,
+                  context,
+                  _uploadAndSetChatImage,
+                  800,
+                  600,
+                );
               },
             ),
             ListTile(
@@ -112,7 +157,13 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                _pickImageFromGallery();
+                Constants.pickImageFromGallery(
+                  _imagePicker,
+                  context,
+                  _uploadAndSetChatImage,
+                  800,
+                  600,
+                );
               },
             ),
             if (_viewModel.currentChat?.chatImageUrl != null)
@@ -136,40 +187,6 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
         ),
       ),
     );
-  }
-
-  void _pickImageFromCamera() async {
-    try {
-      final XFile? image = await _imagePicker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 800,
-        maxHeight: 600,
-        imageQuality: 80,
-      );
-
-      if (image != null) {
-        await _uploadAndSetChatImage(File(image.path));
-      }
-    } catch (e) {
-      _showErrorSnackBar('Помилка при зйомці фото: $e');
-    }
-  }
-
-  void _pickImageFromGallery() async {
-    try {
-      final XFile? image = await _imagePicker.pickImage(
-        source: ImageSource.gallery,
-        maxWidth: 800,
-        maxHeight: 600,
-        imageQuality: 80,
-      );
-
-      if (image != null) {
-        await _uploadAndSetChatImage(File(image.path));
-      }
-    } catch (e) {
-      _showErrorSnackBar('Помилка при виборі фото: $e');
-    }
   }
 
   Future<void> _uploadAndSetChatImage(File imageFile) async {
@@ -203,12 +220,12 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
       );
 
       if (success) {
-        _showSuccessSnackBar('Фото чату успішно оновлено');
+        Constants.showSuccessMessage(context, 'Фото чату успішно оновлено');
       } else {
-        _showErrorSnackBar('Помилка при оновленні фото чату');
+        Constants.showErrorMessage(context, 'Помилка при оновленні фото чату');
       }
     } catch (e) {
-      _showErrorSnackBar('Помилка завантаження фото: $e');
+      Constants.showErrorMessage(context, 'Помилка завантаження фото: $e');
     } finally {
       setState(() {
         _isUploadingImage = false;
@@ -239,12 +256,12 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
       );
 
       if (success) {
-        _showSuccessSnackBar('Фото чату видалено');
+        Constants.showSuccessMessage(context, 'Фото чату видалено');
       } else {
-        _showErrorSnackBar('Помилка при видаленні фото чату');
+        Constants.showErrorMessage(context, 'Помилка при видаленні фото чату');
       }
     } catch (e) {
-      _showErrorSnackBar('Помилка видалення фото: $e');
+      Constants.showErrorMessage(context, 'Помилка видалення фото: $e');
     }
   }
 
@@ -358,9 +375,10 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChatTaskViewModel>(
-      builder: (context, viewModel, child) {
-        if (viewModel.isLoading && viewModel.project == null) {
+    return Consumer2<ChatViewModel, ChatTaskViewModel>(
+      builder: (context, chatViewModel, taskViewModel, child) {
+        if (chatViewModel.isLoading ||
+            taskViewModel.isLoading && taskViewModel.project == null) {
           return Scaffold(
             backgroundColor: appThemeColors.blueAccent,
             body: Container(
@@ -383,10 +401,10 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
           );
         }
 
-        final totalNeededPeople = viewModel.project?.tasks
+        final totalNeededPeople = taskViewModel.project?.tasks
             ?.map((task) => task.neededPeople ?? 0)
             .fold<int>(0, (sum, count) => sum + count);
-        final totalVolunteers = viewModel.project?.tasks
+        final totalVolunteers = taskViewModel.project?.tasks
             ?.map((task) => task.assignedVolunteerIds?.length ?? 0)
             .fold<int>(0, (sum, count) => sum + count);
 
@@ -407,14 +425,14 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
             ),
             title: Row(
               children: [
-                _buildChatAvatar(viewModel),
+                _buildChatAvatar(taskViewModel),
                 SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        viewModel.project?.title ?? '',
+                        taskViewModel.project?.title ?? 'Завантаження...',
                         style: TextStyleHelper.instance.title18Bold.copyWith(
                           color: appThemeColors.primaryWhite,
                         ),
@@ -435,7 +453,7 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
             actions: [
               IconButton(
                 onPressed: () {
-                  _showProjectOptions(context, viewModel);
+                  _showProjectOptions(context, taskViewModel);
                 },
                 icon: Icon(
                   Icons.more_vert,
@@ -457,21 +475,13 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
             ),
             child: Column(
               children: [
-                _buildStatusInfoBar(context, viewModel),
+                _buildStatusInfoBar(context, taskViewModel),
                 _buildDisplayModeToggle(context),
                 const SizedBox(height: 8),
                 Expanded(
                   child: _displayMode == DisplayMode.chat
-                      ? Center(
-                          child: Text(
-                            'Тут буде віджет чату',
-                            style: TextStyleHelper.instance.title16Regular
-                                .copyWith(
-                                  color: appThemeColors.backgroundLightGrey,
-                                ),
-                          ),
-                        )
-                      : TaskListTabView(viewModel: viewModel),
+                      ? _buildChatContent(chatViewModel)
+                      : TaskListTabView(viewModel: taskViewModel),
                 ),
               ],
             ),
@@ -479,6 +489,168 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
         );
       },
     );
+  }
+
+  Widget _buildChatContent(ChatViewModel chatViewModel) {
+    return Column(
+      children: [
+        if (_hasUnreadMessages(chatViewModel))
+          _buildUnreadMessagesIndicator(chatViewModel),
+        Expanded(child: _buildMessagesList(chatViewModel)),
+        MessageInput(
+          chatId: widget.chatId,
+          onSendText: (String chatId, String text){
+            chatViewModel.sendMessage(chatId, text);
+          },
+          onSendMessage: ({
+            List<String> attachments = const [],
+            required String chatId,
+            required String text,
+            required MessageType type,
+          }) {
+            return chatViewModel.sendMessageWithAttachments(
+              chatId: chatId,
+              text: text,
+              type: type,
+              attachments: attachments,
+            );
+          },
+          scrollController: _scrollController,
+        ),
+      ],
+    );
+  }
+
+  bool _hasUnreadMessages(ChatViewModel viewModel) {
+    if (viewModel.currentUserId == null) return false;
+    return viewModel.currentMessages.any(
+      (message) =>
+          message.senderId != viewModel.currentUserId &&
+          !message.isReadBy(viewModel.currentUserId!),
+    );
+  }
+
+  Widget _buildUnreadMessagesIndicator(ChatViewModel viewModel) {
+    final unreadCount = viewModel.currentMessages
+        .where(
+          (message) =>
+              message.senderId != viewModel.currentUserId &&
+              !message.isReadBy(viewModel.currentUserId!),
+        )
+        .length;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: GestureDetector(
+        onTap: _scrollToFirstUnread,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: appThemeColors.lightGreenColor,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.keyboard_arrow_down,
+                color: appThemeColors.primaryWhite,
+                size: 16,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '$unreadCount нових повідомлень',
+                style: TextStyleHelper.instance.title13Regular.copyWith(
+                  color: appThemeColors.primaryWhite,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMessagesList(ChatViewModel viewModel) {
+    if (viewModel.currentMessages.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.chat_bubble_outline,
+              size: 64,
+              color: appThemeColors.backgroundLightGrey,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Почніть розмову',
+              style: TextStyleHelper.instance.title16Regular.copyWith(
+                color: appThemeColors.backgroundLightGrey,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Відправте перше повідомлення в груповий чат проєкту',
+              textAlign: TextAlign.center,
+              style: TextStyleHelper.instance.title14Regular.copyWith(
+                color: appThemeColors.grey200,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      controller: _scrollController,
+      reverse: true,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemCount: viewModel.currentMessages.length,
+      itemBuilder: (context, index) {
+        final message = viewModel.currentMessages[index];
+        final isMine = message.senderId == viewModel.currentUserId;
+
+        bool showAvatar = true;
+        if (index > 0) {
+          final previousMessage = viewModel.currentMessages[index - 1];
+          showAvatar = previousMessage.senderId != message.senderId;
+        }
+
+        return FutureBuilder<BaseProfileModel?>(
+          future: _getParticipantProfile(message.senderId),
+          builder: (context, snapshot) {
+            return MessageBubble(
+              message: message,
+              isMine: isMine,
+              senderProfile: isMine ? null : snapshot.data,
+              showAvatar: showAvatar && !isMine,
+              showSenderName: !isMine,
+              isOrganizer:
+                  message.senderId == _taskViewModel.project?.organizerId,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<BaseProfileModel?> _getParticipantProfile(String userId) async {
+    if (_participantsCache.containsKey(userId)) {
+      return _participantsCache[userId];
+    }
+    UserService userService = UserService();
+    try {
+      final profile = await userService.fetchUserProfile(userId);
+      if (profile != null) {
+        _participantsCache[userId] = profile;
+      }
+      return profile;
+    } catch (e) {
+      print('Error fetching participant profile: $e');
+      return null;
+    }
   }
 
   Widget _buildDisplayModeToggle(BuildContext context) {
@@ -766,32 +938,7 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
       builder: (context) => ChatParticipantsBottomSheet(
         chat: _viewModel.currentChat!,
         currentUserId: _viewModel.currentUserId!,
-      ),
-    );
-  }
-
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: appThemeColors.errorRed,
-        duration: Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
-  }
-
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: appThemeColors.successGreen,
-        duration: Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        organizerId: _taskViewModel.project!.organizerId!,
       ),
     );
   }

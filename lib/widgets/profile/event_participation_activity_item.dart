@@ -110,7 +110,7 @@ class EventParticipationActivityItem extends StatelessWidget {
                           String? chatId = await eventService.getEventChatId(event.id!);
                           if(chatId != null) {
                             Navigator.of(context).pushNamed(
-                            AppRoutes.chatScreen,
+                            AppRoutes.chatEventScreen,
                             arguments: chatId,
                           );
                           }

@@ -11,11 +11,13 @@ import '../../theme/theme_helper.dart';
 class ChatParticipantsBottomSheet extends StatelessWidget {
   final ChatModel chat;
   final String currentUserId;
+  final String organizerId;
 
   const ChatParticipantsBottomSheet({
     super.key,
     required this.chat,
     required this.currentUserId,
+    required this.organizerId,
   });
 
   // Fetch all participants' profiles asynchronously
@@ -118,18 +120,28 @@ class ChatParticipantsBottomSheet extends StatelessWidget {
                                         color: appThemeColors.textMediumGrey,
                                       ),
                                 )
+                              : organizerId == user.uid
+                              ? Text(
+                                  'Організатор',
+                                  style: TextStyleHelper.instance.title13Regular
+                                      .copyWith(
+                                        color: appThemeColors.blueAccent,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                )
                               : null,
                         );
-                      }, separatorBuilder: (BuildContext context, int index) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Divider(
-                          color: appThemeColors.textMediumGrey.withAlpha(79),
-                          height: 1,
-                          thickness: 1,
-                        ),
-                      );
-                    },
+                      },
+                      separatorBuilder: (BuildContext context, int index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Divider(
+                            color: appThemeColors.textMediumGrey.withAlpha(79),
+                            height: 1,
+                            thickness: 1,
+                          ),
+                        );
+                      },
                     );
                   }
                   return const SizedBox.shrink();

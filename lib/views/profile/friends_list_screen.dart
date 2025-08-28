@@ -189,7 +189,7 @@ class _FriendsListScreenState extends State<FriendsListScreen> {
                                       viewModel.user!.uid!,
                                     );
                                     Navigator.of(context).pushNamed(
-                                      AppRoutes.chatScreen,
+                                      AppRoutes.chatFriendScreen,
                                       arguments: chatId,
                                     );
                                   },

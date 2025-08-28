@@ -210,12 +210,17 @@ class _ChatListScreenState extends State<ChatListScreen>
                   'chatId': chat.id,
                   'displayMode': DisplayMode.chat});
             }
+            else if(chat.type == ChatType.friend) {
+              Navigator.of(
+              context,
+            ).pushNamed(AppRoutes.chatFriendScreen, arguments: chat.id);
+            }
             else {
               Navigator.of(
               context,
-            ).pushNamed(AppRoutes.chatScreen, arguments: chat.id);
+            ).pushNamed(AppRoutes.chatEventScreen, arguments: chat.id);
             }
-          },
+          }, unreadCount: chat.unreadCount,
         );
       },
     );

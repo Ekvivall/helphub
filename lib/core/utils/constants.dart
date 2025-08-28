@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +9,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:helphub/models/volunteer_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
@@ -396,5 +399,120 @@ class Constants {
     } catch (e) {
       Constants.showErrorMessage(context, 'Некоректне посилання');
     }
+  }
+
+  static void pickImageFromCamera(
+    ImagePicker imagePicker,
+    BuildContext context,
+    Function(File file) function,
+    double maxWidth,
+    double maxHeight,
+  ) async {
+    try {
+      final XFile? image = await imagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        await function(File(image.path));
+      }
+    } catch (e) {
+      showErrorMessage(context, 'Помилка при зйомці фото: $e');
+    }
+  }
+
+  static void pickImageFromGallery(
+    ImagePicker imagePicker,
+    BuildContext context,
+    Function(File file) function,
+    double maxWidth,
+    double maxHeight,
+  ) async {
+    try {
+      final XFile? image = await imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: maxWidth,
+        maxHeight: maxHeight,
+        imageQuality: 80,
+      );
+
+      if (image != null) {
+        await function(File(image.path));
+      }
+    } catch (e) {
+      showErrorMessage(context, 'Помилка при виборі фото: $e');
+    }
+  }
+
+  static
+
+  void showImageDialog(BuildContext context, String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Stack(
+            children: [
+              Center(
+                child: InteractiveViewer(
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Container(
+                        width: 200,
+                        height: 200,
+                        color: appThemeColors.backgroundLightGrey,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: appThemeColors.blueAccent,
+                          ),
+                        ),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 200,
+                        height: 200,
+                        color: appThemeColors.errorRed.withAlpha(77),
+                        child: Icon(
+                          Icons.broken_image,
+                          color: appThemeColors.errorRed,
+                          size: 60,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 40,
+                right: 20,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: appThemeColors.primaryBlack.withAlpha(15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Icon(
+                      Icons.close,
+                      color: appThemeColors.primaryWhite,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

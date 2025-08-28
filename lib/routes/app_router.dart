@@ -6,6 +6,7 @@ import 'package:helphub/views/auth/register_organization_step1_screen.dart';
 import 'package:helphub/views/auth/register_type_screen.dart';
 import 'package:helphub/views/auth/register_volunteer_screen.dart';
 import 'package:helphub/views/auth/login_screen.dart';
+import 'package:helphub/views/chat/chat_event_screen.dart';
 import 'package:helphub/views/chat/chat_project_screen.dart';
 import 'package:helphub/views/event/create_event_screen.dart';
 import 'package:helphub/views/event/event_detail_screen.dart';
@@ -30,6 +31,7 @@ import 'package:helphub/views/report/view_report_screen.dart';
 import 'package:helphub/views/splash/splash_screen.dart';
 
 import '../views/auth/register_organization_step2_screen.dart';
+import '../views/chat/chat_friend_screen.dart';
 import '../views/chat/chat_list_screen.dart';
 import '../views/event/event_map_screen.dart';
 import '../views/fundraising/create_fundraising_application_screen.dart';
@@ -80,8 +82,9 @@ class AppRoutes {
   static const String createReportScreen = '/create_report';
   static const String allActivitiesScreen = '/all_activities';
   static const String viewReportScreen = '/view_report';
-  static const String chatScreen = '/chat';
   static const String chatListScreen = '/chat_list';
+  static const String chatFriendScreen = '/chat_friend';
+  static const String chatEventScreen = '/chat_event';
 
 
 
@@ -206,6 +209,18 @@ class AppRoutes {
             reportId: args?['reportId'] as String,
             canLeaveFeedback: args?['canLeaveFeedback'] as bool,
           ),
+        );
+      case chatFriendScreen:
+        final chatId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (context) =>
+              ChatFriendScreen(chatId: chatId),
+        );
+      case chatEventScreen:
+        final chatId = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (context) =>
+              ChatEventScreen(chatId: chatId),
         );
       default:
         if (routes.containsKey(settings.name)) {

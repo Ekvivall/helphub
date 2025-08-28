@@ -9,7 +9,7 @@ class MessageModel {
   final MessageType type;
   final List<String> attachments;
   final DateTime createdAt;
-  final bool isRead;
+  final List<String> readBy;
 
   MessageModel({
     this.id,
@@ -18,7 +18,7 @@ class MessageModel {
     this.type = MessageType.text,
     this.attachments = const [],
     required this.createdAt,
-    this.isRead = false,
+    this.readBy = const [],
   });
 
   Map<String, dynamic> toMap() {
@@ -28,7 +28,7 @@ class MessageModel {
       'type': type.name,
       'attachments': attachments,
       'createdAt': Timestamp.fromDate(createdAt),
-      'isRead': isRead,
+      'readBy': readBy,
     };
   }
 
@@ -45,7 +45,7 @@ class MessageModel {
       createdAt: map['createdAt'] != null
           ? (map['createdAt'] as Timestamp).toDate()
           : DateTime.now(),
-      isRead: map['isRead'] ?? false,
+      readBy: List<String>.from(map['readBy'] ?? []),
     );
   }
 
@@ -56,7 +56,7 @@ class MessageModel {
     MessageType? type,
     List<String>? attachments,
     DateTime? createdAt,
-    bool? isRead,
+    List<String>? readBy,
   }) {
     return MessageModel(
       id: id ?? this.id,
@@ -65,7 +65,10 @@ class MessageModel {
       type: type ?? this.type,
       attachments: attachments ?? this.attachments,
       createdAt: createdAt ?? this.createdAt,
-      isRead: isRead ?? this.isRead,
-    );
+      readBy: readBy ?? this.readBy,    );
   }
+
+  bool isReadBy(String userId) => readBy.contains(userId);
+
+  bool get isRead => readBy.isNotEmpty;
 }

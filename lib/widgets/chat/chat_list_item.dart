@@ -3,23 +3,27 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';
+import 'package:provider/provider.dart';
 import '../../models/chat_model.dart';
 import '../../models/base_profile_model.dart';
 import '../../models/event_model.dart';
 import '../../models/project_model.dart';
 import '../../models/volunteer_model.dart';
 import '../../models/organization_model.dart';
+import '../../view_models/chat/chat_view_model.dart';
 
 class ChatListItem extends StatefulWidget {
   final ChatModel chat;
   final String currentUserId;
   final VoidCallback onTap;
+  final int unreadCount;
 
   const ChatListItem({
     super.key,
     required this.chat,
     required this.currentUserId,
     required this.onTap,
+    required this.unreadCount,
   });
 
   @override
@@ -65,8 +69,10 @@ class _ChatListItemState extends State<ChatListItem> {
 
   Future<void> _loadFriendData() async {
     // Get friend's ID (the other participant)
-    final friendId = widget.chat.participants
-        .firstWhere((id) => id != widget.currentUserId, orElse: () => '');
+    final friendId = widget.chat.participants.firstWhere(
+      (id) => id != widget.currentUserId,
+      orElse: () => '',
+    );
 
     if (friendId.isEmpty) return;
 
@@ -80,9 +86,7 @@ class _ChatListItemState extends State<ChatListItem> {
       if (data['role'] == 'volunteer') {
         _friendProfile = VolunteerModel.fromMap(data);
         final volunteer = _friendProfile as VolunteerModel;
-        _chatTitle = volunteer.fullName ??
-            volunteer.displayName ??
-            'Волонтер';
+        _chatTitle = volunteer.fullName ?? volunteer.displayName ?? 'Волонтер';
       } else if (data['role'] == 'organization') {
         _friendProfile = OrganizationModel.fromMap(data);
         final org = _friendProfile as OrganizationModel;
@@ -132,7 +136,8 @@ class _ChatListItemState extends State<ChatListItem> {
     if (words.length == 1) {
       return words[0].substring(0, 1).toUpperCase();
     } else {
-      return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'.toUpperCase();
+      return '${words[0].substring(0, 1)}${words[1].substring(0, 1)}'
+          .toUpperCase();
     }
   }
 
@@ -201,14 +206,17 @@ class _ChatListItemState extends State<ChatListItem> {
               ? UserRole.volunteer
               : UserRole.organization,
           size: 28,
-          uid: widget.chat.participants
-              .firstWhere((id) => id != widget.currentUserId, orElse: () => ''),
+          uid: widget.chat.participants.firstWhere(
+            (id) => id != widget.currentUserId,
+            orElse: () => '',
+          ),
         );
 
       case ChatType.event:
       case ChatType.project:
-      // Для подій та проєктів показуємо кастомне фото або іконку
-        if (widget.chat.chatImageUrl != null && widget.chat.chatImageUrl!.isNotEmpty) {
+        // Для подій та проєктів показуємо кастомне фото або іконку
+        if (widget.chat.chatImageUrl != null &&
+            widget.chat.chatImageUrl!.isNotEmpty) {
           return CircleAvatar(
             radius: 28,
             backgroundImage: NetworkImage(widget.chat.chatImageUrl!),
@@ -221,35 +229,16 @@ class _ChatListItemState extends State<ChatListItem> {
                 backgroundColor: _avatarColor,
                 child: _typeIcon != null
                     ? Icon(
-                  _typeIcon,
-                  color: appThemeColors.primaryWhite,
-                  size: 24,
-                )
+                        _typeIcon,
+                        color: appThemeColors.primaryWhite,
+                        size: 24,
+                      )
                     : Text(
-                  _avatarText,
-                  style: TextStyleHelper.instance.title18Bold.copyWith(
-                    color: appThemeColors.primaryWhite,
-                  ),
-                ),
-              ),
-              // Додаємо індикатор типу чату
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: appThemeColors.primaryWhite,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    widget.chat.type == ChatType.event
-                        ? Icons.event
-                        : Icons.work,
-                    size: 12,
-                    color: _avatarColor,
-                  ),
-                ),
+                        _avatarText,
+                        style: TextStyleHelper.instance.title18Bold.copyWith(
+                          color: appThemeColors.primaryWhite,
+                        ),
+                      ),
               ),
             ],
           );
@@ -294,19 +283,24 @@ class _ChatListItemState extends State<ChatListItem> {
                         children: [
                           Expanded(
                             child: Text(
-                              _chatTitle.isNotEmpty ? _chatTitle : 'Завантаження...',
-                              style: TextStyleHelper.instance.title16Bold.copyWith(
-                                color: appThemeColors.backgroundLightGrey,
-                              ),
+                              _chatTitle.isNotEmpty
+                                  ? _chatTitle
+                                  : 'Завантаження...',
+                              style: TextStyleHelper.instance.title16Bold
+                                  .copyWith(
+                                    color: appThemeColors.backgroundLightGrey,
+                                  ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           Text(
                             _formatLastMessageTime(),
-                            style: TextStyleHelper.instance.title13Regular.copyWith(
-                              color: appThemeColors.backgroundLightGrey.withAlpha(150),
-                            ),
+                            style: TextStyleHelper.instance.title13Regular
+                                .copyWith(
+                                  color: appThemeColors.backgroundLightGrey
+                                      .withAlpha(150),
+                                ),
                           ),
                         ],
                       ),
@@ -319,21 +313,27 @@ class _ChatListItemState extends State<ChatListItem> {
                           Expanded(
                             child: Text(
                               _getLastMessagePreview(),
-                              style: TextStyleHelper.instance.title14Regular.copyWith(
-                                color: appThemeColors.backgroundLightGrey.withAlpha(180),
-                              ),
+                              style: TextStyleHelper.instance.title14Regular
+                                  .copyWith(
+                                    color: appThemeColors.backgroundLightGrey
+                                        .withAlpha(180),
+                                  ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
 
                           // Participants count for events/projects
-                          if (widget.chat.type != ChatType.friend && widget.chat.participants.length > 2)
+                          if (widget.chat.type != ChatType.friend)
                             Container(
                               margin: const EdgeInsets.only(left: 8),
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
                               decoration: BoxDecoration(
-                                color: appThemeColors.backgroundLightGrey.withAlpha(30),
+                                color: appThemeColors.backgroundLightGrey
+                                    .withAlpha(30),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
@@ -342,18 +342,25 @@ class _ChatListItemState extends State<ChatListItem> {
                                   Icon(
                                     Icons.people,
                                     size: 12,
-                                    color: appThemeColors.backgroundLightGrey.withAlpha(150),
+                                    color: appThemeColors.backgroundLightGrey
+                                        .withAlpha(150),
                                   ),
                                   const SizedBox(width: 2),
                                   Text(
                                     '${widget.chat.participants.length}',
-                                    style: TextStyleHelper.instance.title10Regular.copyWith(
-                                      color: appThemeColors.backgroundLightGrey.withAlpha(150),
-                                    ),
+                                    style: TextStyleHelper
+                                        .instance
+                                        .title10Regular
+                                        .copyWith(
+                                          color: appThemeColors
+                                              .backgroundLightGrey
+                                              .withAlpha(150),
+                                        ),
                                   ),
                                 ],
                               ),
                             ),
+                          _buildUnreadBadge(),
                         ],
                       ),
                     ],
@@ -364,6 +371,33 @@ class _ChatListItemState extends State<ChatListItem> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildUnreadBadge() {
+    return Consumer<ChatViewModel>(
+      builder: (context, viewModel, child) {
+        if (widget.unreadCount > 0) {
+          return Container(
+            margin: const EdgeInsets.only(left: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: appThemeColors.cyanAccent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+            child: Text(
+              widget.unreadCount.toString(),
+              style: TextStyleHelper.instance.title13Regular.copyWith(
+                color: appThemeColors.primaryWhite,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          );
+        }
+        return SizedBox.shrink();
+      },
     );
   }
 }

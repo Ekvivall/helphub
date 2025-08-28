@@ -119,6 +119,66 @@ class ChatService {
     });
   }
 
+
+  Future<int> getUnreadMessagesCount(String chatId, String userId) async {
+    try {
+      final unreadQuery = await _firestore
+          .collection(_chatsCollection)
+          .doc(chatId)
+          .collection(_messagesSubcollection)
+          .where('senderId', isNotEqualTo: userId)
+          .get();
+
+      int unreadCount = 0;
+      for (var doc in unreadQuery.docs) {
+        final message = MessageModel.fromMap(doc.data(), doc.id);
+        if (!message.isReadBy(userId)) {
+          unreadCount++;
+        }
+      }
+
+      return unreadCount;
+    } catch (e) {
+      print('Error getting unread messages count: $e');
+      return 0;
+    }
+  }
+  Stream<int> getUnreadMessagesCountStream(String chatId, String userId) {
+    return _firestore
+        .collection(_chatsCollection)
+        .doc(chatId)
+        .collection(_messagesSubcollection)
+        .where('senderId', isNotEqualTo: userId)
+        .snapshots()
+        .map((snapshot) {
+      int unreadCount = 0;
+      for (var doc in snapshot.docs) {
+        final message = MessageModel.fromMap(doc.data(), doc.id);
+        if (!message.readBy.contains(userId)) {
+          unreadCount++;
+        }
+      }
+      return unreadCount;
+    });
+  }
+
+  Stream<int> getTotalUnreadMessagesCount(String userId) {
+    return _firestore
+        .collection(_chatsCollection)
+        .where('participants', arrayContains: userId)
+        .snapshots()
+        .asyncMap((chatsSnapshot) async {
+      int totalUnread = 0;
+
+      for (var chatDoc in chatsSnapshot.docs) {
+        final unreadCount = await getUnreadMessagesCount(chatDoc.id, userId);
+        totalUnread += unreadCount;
+      }
+
+      return totalUnread;
+    });
+  }
+
   Stream<List<ChatModel>> getUserChats(String userId) {
     return _firestore
         .collection(_chatsCollection)
@@ -231,7 +291,6 @@ class ChatService {
       return false;
     }
   }
-
   Future<bool> markMessagesAsRead(String chatId, String userId) async {
     try {
       final messagesQuery = await _firestore
@@ -239,13 +298,17 @@ class ChatService {
           .doc(chatId)
           .collection(_messagesSubcollection)
           .where('senderId', isNotEqualTo: userId)
-          .where('isRead', isEqualTo: false)
           .get();
 
       final batch = _firestore.batch();
 
       for (var doc in messagesQuery.docs) {
-        batch.update(doc.reference, {'isRead': true});
+        final message = MessageModel.fromMap(doc.data(), doc.id);
+        if (!message.isReadBy(userId)) {
+          batch.update(doc.reference, {
+            'readBy': FieldValue.arrayUnion([userId])
+          });
+        }
       }
 
       await batch.commit();
@@ -253,6 +316,30 @@ class ChatService {
     } catch (e) {
       print('Error marking messages as read: $e');
       return false;
+    }
+  }
+
+  Future<MessageModel?> getFirstUnreadMessage(String chatId, String userId) async {
+    try {
+      final messagesQuery = await _firestore
+          .collection(_chatsCollection)
+          .doc(chatId)
+          .collection(_messagesSubcollection)
+          .where('senderId', isNotEqualTo: userId)
+          .orderBy('createdAt', descending: false)
+          .get();
+
+      for (var doc in messagesQuery.docs) {
+        final message = MessageModel.fromMap(doc.data(), doc.id);
+        if (!message.isReadBy(userId)) {
+          return message;
+        }
+      }
+
+      return null;
+    } catch (e) {
+      print('Error getting first unread message: $e');
+      return null;
     }
   }
 

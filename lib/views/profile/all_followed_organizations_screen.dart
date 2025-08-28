@@ -186,7 +186,7 @@ class _AllFollowedOrganizationsScreenState extends State<AllFollowedOrganization
                                 viewModel.user!.uid!,
                               );
                               Navigator.of(context).pushNamed(
-                                AppRoutes.chatScreen,
+                                AppRoutes.chatFriendScreen,
                                 arguments: chatId,
                               );
                             },
