@@ -36,7 +36,7 @@ Widget buildBottomNavigationBar(BuildContext context, int currentIndex) {
               break;
             case 3:
               // Екран "Календар"
-              //Navigator.pushReplacementNamed(context, AppRoutes.calendarScreen);
+              Navigator.pushReplacementNamed(context, AppRoutes.calendarScreen);
               break;
             case 4:
               // Екран "Чати"

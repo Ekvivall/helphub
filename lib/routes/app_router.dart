@@ -6,6 +6,7 @@ import 'package:helphub/views/auth/register_organization_step1_screen.dart';
 import 'package:helphub/views/auth/register_type_screen.dart';
 import 'package:helphub/views/auth/register_volunteer_screen.dart';
 import 'package:helphub/views/auth/login_screen.dart';
+import 'package:helphub/views/calendar/calendar_screen.dart';
 import 'package:helphub/views/chat/chat_event_screen.dart';
 import 'package:helphub/views/chat/chat_project_screen.dart';
 import 'package:helphub/views/event/create_event_screen.dart';
@@ -85,6 +86,7 @@ class AppRoutes {
   static const String chatListScreen = '/chat_list';
   static const String chatFriendScreen = '/chat_friend';
   static const String chatEventScreen = '/chat_event';
+  static const String calendarScreen = '/calendar';
 
 
 
@@ -114,6 +116,7 @@ class AppRoutes {
     allSavedFundraisersScreen: (context) => AllSavedFundraisersScreen(),
     allActivitiesScreen: (context) => AllActivitiesScreen(),
     chatListScreen: (context) => ChatListScreen(),
+    calendarScreen: (context) => CalendarScreen(),
   };
 
 

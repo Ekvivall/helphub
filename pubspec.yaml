@@ -57,6 +57,7 @@ dependencies:
   geocoding: ^4.0.0
   expandable_text: ^2.3.0
   share_plus: ^11.1.0
+  table_calendar: ^3.2.0
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   mockito: ^5.4.4
