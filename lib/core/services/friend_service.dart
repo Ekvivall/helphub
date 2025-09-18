@@ -12,7 +12,6 @@ class FriendService {
   String? get currentUserId => _auth.currentUser?.uid;
   final ChatService _chatService = ChatService();
 
-
   Future<void> sendFriendRequest(String receiverId) async {
     if (currentUserId == null) return;
     final senderProfile = await _firestore
@@ -23,23 +22,22 @@ class FriendService {
     if (senderProfile.exists) {
       senderDisplayName =
           senderProfile.data()?['fullName'] as String? ??
-              senderProfile.data()?['displayName'] as String? ??
-              'Невідомий';
+          senderProfile.data()?['displayName'] as String? ??
+          'Невідомий';
     }
 
     final friendRequest = FriendRequestModel(
-        senderId: currentUserId!,
-        receiverId: receiverId,
-        status: FriendRequestStatus.pending,
-        timestamp: DateTime.now(),
-        senderDisplayName:
-        senderDisplayName,
-        senderPhotoUrl: senderProfile.data()?['photoUrl'] as String?
+      senderId: currentUserId!,
+      receiverId: receiverId,
+      status: FriendRequestStatus.pending,
+      timestamp: DateTime.now(),
+      senderDisplayName: senderDisplayName,
+      senderPhotoUrl: senderProfile.data()?['photoUrl'] as String?,
     );
     await _firestore.collection('friendRequests').add(friendRequest.toMap());
   }
 
-  Future<void> acceptFriendRequest(String senderId,) async {
+  Future<void> acceptFriendRequest(String senderId) async {
     final batch = _firestore.batch();
     final query = await _firestore
         .collection('friendRequests')
@@ -47,8 +45,9 @@ class FriendService {
         .where('receiverId', isEqualTo: currentUserId)
         .where('status', isEqualTo: 'pending')
         .get();
-    for (var doc in query.docs) {
-      batch.delete(doc.reference);
+    if (query.docs.isNotEmpty) {
+      final docRef = query.docs.first.reference;
+      batch.update(docRef, {'status': 'accepted'});
     }
     final currentUserFriendsRef = _firestore
         .collection('users')
@@ -65,18 +64,21 @@ class FriendService {
     await batch.commit();
   }
 
-  Future<void> rejectFriendRequest(String senderId,) async {
-    await _firestore
+  Future<void> rejectFriendRequest(String senderId) async {
+    if (currentUserId == null) return;
+
+    final query = await _firestore
         .collection('friendRequests')
         .where('senderId', isEqualTo: senderId)
         .where('receiverId', isEqualTo: currentUserId)
         .where('status', isEqualTo: 'pending')
-        .get()
-        .then((snapshot) {
-      for (var doc in snapshot.docs) {
-        doc.reference.delete();
-      }
-    });
+        .limit(1)
+        .get();
+
+    if (query.docs.isNotEmpty) {
+      await query.docs.first.reference.update({'status': 'rejected'});
+    }
+
   }
 
   Stream<List<FriendRequestModel>> listenToIncomingRequests() {
@@ -87,44 +89,41 @@ class FriendService {
         .collection('friendRequests')
         .where('receiverId', isEqualTo: currentUserId)
         .where(
-      'status',
-      isEqualTo: FriendRequestStatus.pending
-          .toString()
-          .split('.')
-          .last,
-    )
+          'status',
+          isEqualTo: FriendRequestStatus.pending.toString().split('.').last,
+        )
         .snapshots()
         .asyncMap((snapshot) async {
-      final List<FriendRequestModel> requests = [];
-      for (var doc in snapshot.docs) {
-        final data = doc.data();
-        final friendRequest = FriendRequestModel.fromMap(data, id: doc.id);
-        final senderId = friendRequest.senderId;
-        final senderDoc = await _firestore
-            .collection('users')
-            .doc(senderId)
-            .get();
-        String senderDisplayName = 'Невідомий';
-        String? senderPhotoUrl;
-        if (senderDoc.exists) {
-          final senderData = senderDoc.data();
-          if (senderData != null) {
-            senderDisplayName =
-                senderData['fullName'] as String? ??
+          final List<FriendRequestModel> requests = [];
+          for (var doc in snapshot.docs) {
+            final data = doc.data();
+            final friendRequest = FriendRequestModel.fromMap(data, id: doc.id);
+            final senderId = friendRequest.senderId;
+            final senderDoc = await _firestore
+                .collection('users')
+                .doc(senderId)
+                .get();
+            String senderDisplayName = 'Невідомий';
+            String? senderPhotoUrl;
+            if (senderDoc.exists) {
+              final senderData = senderDoc.data();
+              if (senderData != null) {
+                senderDisplayName =
+                    senderData['fullName'] as String? ??
                     senderData['displayName'] as String? ??
                     'Невідомий';
-            senderPhotoUrl = senderData['photoUrl'] as String?;
+                senderPhotoUrl = senderData['photoUrl'] as String?;
+              }
+            }
+            requests.add(
+              friendRequest.copyWith(
+                senderDisplayName: senderDisplayName,
+                senderPhotoUrl: senderPhotoUrl,
+              ),
+            );
           }
-        }
-        requests.add(
-          friendRequest.copyWith(
-            senderDisplayName: senderDisplayName,
-            senderPhotoUrl: senderPhotoUrl,
-          ),
-        );
-      }
-      return requests;
-    });
+          return requests;
+        });
   }
 
   Stream<List<String>> getFriendList() {
@@ -176,37 +175,35 @@ class FriendService {
     await batch.commit();
   }
 
-  Future<bool> hasSentFriendRequest(String? currentAuthUserId,
-      String targetUserId,) async {
+  Future<bool> hasSentFriendRequest(
+    String? currentAuthUserId,
+    String targetUserId,
+  ) async {
     final query = await _firestore
         .collection('friendRequests')
         .where('senderId', isEqualTo: currentAuthUserId)
         .where('receiverId', isEqualTo: targetUserId)
         .where(
-      'status',
-      isEqualTo: FriendRequestStatus.pending
-          .toString()
-          .split('.')
-          .last,
-    )
+          'status',
+          isEqualTo: FriendRequestStatus.pending.toString().split('.').last,
+        )
         .limit(1)
         .get();
     return query.docs.isNotEmpty;
   }
 
-  Future<bool> hasReceivedFriendRequest(String? currentAuthUserId,
-      String targetUserId,) async {
+  Future<bool> hasReceivedFriendRequest(
+    String? currentAuthUserId,
+    String targetUserId,
+  ) async {
     final query = await _firestore
         .collection('friendRequests')
         .where('senderId', isEqualTo: targetUserId)
         .where('receiverId', isEqualTo: currentAuthUserId)
         .where(
-      'status',
-      isEqualTo: FriendRequestStatus.pending
-          .toString()
-          .split('.')
-          .last,
-    )
+          'status',
+          isEqualTo: FriendRequestStatus.pending.toString().split('.').last,
+        )
         .limit(1)
         .get();
     return query.docs.isNotEmpty;
@@ -227,17 +224,26 @@ class FriendService {
       return [];
     }
     try {
-      final friendsSnapshot = await _firestore.collection('users').doc(
-          currentUserId).collection('friends').get();
-      return friendsSnapshot.docs.map((doc)=>doc.id).toList();
-    } catch(e){
-      return[];
+      final friendsSnapshot = await _firestore
+          .collection('users')
+          .doc(currentUserId)
+          .collection('friends')
+          .get();
+      return friendsSnapshot.docs.map((doc) => doc.id).toList();
+    } catch (e) {
+      return [];
     }
   }
 
-  Future<String?> getOrCreateFriendChat(String currentUserId, String friendUserId) async {
+  Future<String?> getOrCreateFriendChat(
+    String currentUserId,
+    String friendUserId,
+  ) async {
     try {
-      final chatId = ChatModel.generateFriendChatId(currentUserId, friendUserId);
+      final chatId = ChatModel.generateFriendChatId(
+        currentUserId,
+        friendUserId,
+      );
 
       final existingChat = await FirebaseFirestore.instance
           .collection('chats')

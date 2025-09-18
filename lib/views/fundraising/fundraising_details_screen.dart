@@ -85,11 +85,36 @@ class _FundraisingDetailScreenState extends State<FundraisingDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FundraisingViewModel>(
-      builder: (context, viewModel, child) {
-        final fundraising = viewModel.filteredFundraisings
-            .where((f) => f.id == widget.fundraisingId)
-            .firstOrNull;
+    final viewModel = Provider.of<FundraisingViewModel>(context);
+
+    return StreamBuilder<FundraisingModel?>(
+      // Викликаємо новий метод з ViewModel, щоб отримати потік для конкретного збору
+      stream: viewModel.getFundraisingStreamById(widget.fundraisingId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Показуємо індикатор завантаження, поки чекаємо на дані
+          return Scaffold(
+            backgroundColor: appThemeColors.blueAccent,
+            body: Center(
+              child: CircularProgressIndicator(
+                color: appThemeColors.lightGreenColor,
+              ),
+            ),
+          );
+        } if (snapshot.hasError) {
+          // Показуємо повідомлення про помилку, якщо щось пішло не так
+          return Scaffold(
+            backgroundColor: appThemeColors.blueAccent,
+            body: Center(
+              child: Text(
+                'Error: ${snapshot.error}',
+                style: TextStyle(color: appThemeColors.errorLight),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          );
+        }
+        final fundraising = snapshot.data;
 
         if (fundraising == null) {
           return Scaffold(
@@ -843,32 +868,26 @@ class _FundraisingDetailScreenState extends State<FundraisingDetailScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildDetailRow('Призи:', ''),
-        ...prizes
-            .map(
-              (prize) => Padding(
-                padding: const EdgeInsets.only(left: 12.0, bottom: 4.0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.star,
-                      size: 16,
-                      color: appThemeColors.blueAccent,
+        ...prizes.map(
+          (prize) => Padding(
+            padding: const EdgeInsets.only(left: 12.0, bottom: 4.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.star, size: 16, color: appThemeColors.blueAccent),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    prize,
+                    style: TextStyleHelper.instance.title14Regular.copyWith(
+                      color: appThemeColors.primaryBlack,
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        prize,
-                        style: TextStyleHelper.instance.title14Regular.copyWith(
-                          color: appThemeColors.primaryBlack,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            )
-            ,
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }

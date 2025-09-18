@@ -10,6 +10,7 @@ import 'package:helphub/models/project_task_model.dart';
 import 'package:helphub/view_models/chat/chat_view_model.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/services/notification_service.dart';
 import '../../core/utils/constants.dart';
 import '../../models/message_model.dart';
 import '../../theme/text_style_helper.dart';
@@ -44,6 +45,8 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
   final ImagePicker _imagePicker = ImagePicker();
   bool _isUploadingImage = false;
   final Map<String, BaseProfileModel> _participantsCache = {};
+  final NotificationService _notificationService = NotificationService();
+
 
   @override
   void initState() {
@@ -52,6 +55,8 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
     _taskViewModel = Provider.of<ChatTaskViewModel>(context, listen: false);
     _displayMode = widget.initialDisplayMode;
     _initializeChat();
+    _notificationService.setCurrentChatId(widget.chatId);
+
   }
 
   Future<void> _initializeChat() async {
@@ -183,6 +188,8 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
                   _removeChatImage();
                 },
               ),
+            const SizedBox(height: 20,)
+
           ],
         ),
       ),
@@ -907,6 +914,8 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
                 _showChatImageOptions(context);
               },
             ),
+            const SizedBox(height: 20,)
+
           ],
         ),
       ),
@@ -945,6 +954,8 @@ class _ChatProjectScreenState extends State<ChatProjectScreen> {
 
   @override
   void dispose() {
+    _notificationService.setCurrentChatId(null);
+
     super.dispose();
   }
 }

@@ -26,7 +26,6 @@ class DonationService {
         'donorIds': FieldValue.arrayUnion([donation.donorId]),
         'currentAmount': FieldValue.increment(donation.amount),
       });
-
       await batch.commit();
       return donationRef.id;
     } catch (e) {
@@ -63,7 +62,8 @@ class DonationService {
   }
 
   // Отримати статистику донатів для збору
-  Future<Map<String, dynamic>> getFundraisingDonationStats(String fundraisingId) async {
+  Future<Map<String, dynamic>> getFundraisingDonationStats(
+      String fundraisingId,) async {
     try {
       final querySnapshot = await _firestore
           .collection('donations')
@@ -91,7 +91,9 @@ class DonationService {
   }
 
   // Отримати топ донорів для збору (не анонімних)
-  Future<List<Map<String, dynamic>>> getTopDonors(String fundraisingId, {int limit = 5}) async {
+  Future<List<Map<String, dynamic>>> getTopDonors(String fundraisingId, {
+    int limit = 5,
+  }) async {
     try {
       final querySnapshot = await _firestore
           .collection('donations')
@@ -118,7 +120,10 @@ class DonationService {
       }
 
       var sortedDonors = donorTotals.values.toList();
-      sortedDonors.sort((a, b) => (b['totalAmount'] as double).compareTo(a['totalAmount'] as double));
+      sortedDonors.sort(
+            (a, b) =>
+            (b['totalAmount'] as double).compareTo(a['totalAmount'] as double),
+      );
 
       return sortedDonors.take(limit).toList();
     } catch (e) {

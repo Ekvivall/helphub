@@ -7,6 +7,7 @@ import 'package:helphub/widgets/chat/message_input_widget.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/services/notification_service.dart';
 import '../../models/message_model.dart';
 import '../../models/organization_model.dart';
 import '../../view_models/chat/chat_view_model.dart';
@@ -25,12 +26,16 @@ class _ChatFriendScreenState extends State<ChatFriendScreen> {
   final ScrollController _scrollController = ScrollController();
 
   late ChatViewModel _viewModel;
+  final NotificationService _notificationService = NotificationService();
+
 
   @override
   void initState() {
     super.initState();
     _viewModel = Provider.of<ChatViewModel>(context, listen: false);
     _viewModel.openChat(widget.chatId);
+    _notificationService.setCurrentChatId(widget.chatId);
+
   }
 
 
@@ -217,6 +222,8 @@ class _ChatFriendScreenState extends State<ChatFriendScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _notificationService.setCurrentChatId(null);
+
     super.dispose();
   }
 }

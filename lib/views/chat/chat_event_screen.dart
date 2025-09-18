@@ -11,6 +11,7 @@ import 'package:helphub/widgets/chat/message_input_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/services/notification_service.dart';
 import '../../core/utils/constants.dart';
 import '../../models/base_profile_model.dart';
 import '../../models/message_model.dart';
@@ -35,12 +36,15 @@ class _ChatEventScreenState extends State<ChatEventScreen> {
 
   final Map<String, BaseProfileModel> _participantsCache = {};
   bool _isUploadingImage = false;
+  final NotificationService _notificationService = NotificationService();
 
   @override
   void initState() {
     super.initState();
     _viewModel = Provider.of<ChatViewModel>(context, listen: false);
     _viewModel.openChat(widget.chatId);
+    _notificationService.setCurrentChatId(widget.chatId);
+
   }
 
   Future<void> _scrollToFirstUnread() async {
@@ -476,6 +480,7 @@ class _ChatEventScreenState extends State<ChatEventScreen> {
                 _showChatImageOptions(context);
               },
             ),
+            const SizedBox(height: 20,)
           ],
         ),
       ),
@@ -610,6 +615,8 @@ class _ChatEventScreenState extends State<ChatEventScreen> {
                   _removeChatImage();
                 },
               ),
+            const SizedBox(height: 20,)
+
           ],
         ),
       ),
@@ -695,6 +702,7 @@ class _ChatEventScreenState extends State<ChatEventScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _notificationService.setCurrentChatId(null);
     super.dispose();
   }
 }

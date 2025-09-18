@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../models/notification_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
 
@@ -515,4 +516,42 @@ class Constants {
       },
     );
   }
+
+  static const Map<NotificationCategory, List<NotificationType>> notificationGroups = {
+    NotificationCategory.messagesAndChat: [
+      NotificationType.chat,
+    ],
+    NotificationCategory.projectActivities: [
+      NotificationType.projectApplication,
+      NotificationType.projectApplicationEdit,
+      NotificationType.taskAssigned,
+      NotificationType.taskCompleted,
+      NotificationType.taskConfirmed,
+      NotificationType.projectDeadline,
+      NotificationType.reportCreated,
+    ],
+    NotificationCategory.fundraisingActivities: [
+      NotificationType.fundraisingApplication,
+      NotificationType.fundraisingApplicationEdit,
+      NotificationType.fundraisingDonation,
+      NotificationType.newFundraising,
+      NotificationType.fundraisingCompleted,
+      NotificationType.raffleWinner,
+    ],
+    NotificationCategory.eventActivities: [
+      NotificationType.eventUpdate,
+      NotificationType.eventReminder,
+    ],
+    NotificationCategory.social: [
+      NotificationType.friendRequest,
+      NotificationType.friendRequestEdit,
+    ],
+    NotificationCategory.accountAndSystem: [
+      NotificationType.achievement,
+      NotificationType.adminNotification,
+      NotificationType.systemMaintenance,
+      NotificationType.appUpdate,
+    ],
+  };
+
 }

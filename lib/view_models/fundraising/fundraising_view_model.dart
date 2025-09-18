@@ -249,8 +249,9 @@ class FundraisingViewModel extends ChangeNotifier {
 
     if (_selectedBank != null) {
       tempFundraisings = tempFundraisings.where((f) {
-        if (_selectedBank == 'privat')
+        if (_selectedBank == 'privat') {
           return f.privatBankCard?.isNotEmpty ?? false;
+        }
         if (_selectedBank == 'mono') return f.monoBankCard?.isNotEmpty ?? false;
         return false;
       }).toList();
@@ -607,6 +608,9 @@ class FundraisingViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+  Stream<FundraisingModel?> getFundraisingStreamById(String fundraisingId) {
+    return _fundraisingService.getFundraisingStream(fundraisingId);
   }
 
   @override

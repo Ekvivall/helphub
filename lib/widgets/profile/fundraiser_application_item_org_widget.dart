@@ -127,12 +127,6 @@ class FundraiserApplicationItemOrg extends StatelessWidget {
             ],
             Row(
               children: [
-                Icon(
-                  Icons.attach_money,
-                  size: 20,
-                  color: appThemeColors.blueAccent,
-                ),
-                const SizedBox(width: 4),
                 Text(
                   '${application.requiredAmount.toStringAsFixed(0)} грн',
                   style: TextStyleHelper.instance.title14Regular.copyWith(

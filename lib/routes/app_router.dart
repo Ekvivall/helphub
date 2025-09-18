@@ -17,6 +17,7 @@ import 'package:helphub/views/fundraising/fundraising_details_screen.dart';
 import 'package:helphub/views/fundraising/fundraising_donations_screen.dart';
 import 'package:helphub/views/fundraising/fundraising_list_screen.dart';
 import 'package:helphub/views/fundraising/fundraising_raffle_screen.dart';
+import 'package:helphub/views/notification/notifications_screen.dart';
 import 'package:helphub/views/profile/all_applications_screen.dart';
 import 'package:helphub/views/profile/all_followed_organizations_screen.dart';
 import 'package:helphub/views/profile/all_saved_fundraisers_screen.dart';
@@ -31,6 +32,7 @@ import 'package:helphub/views/report/create_report_screen.dart';
 import 'package:helphub/views/report/view_report_screen.dart';
 import 'package:helphub/views/splash/splash_screen.dart';
 
+import '../core/services/notification_service.dart';
 import '../views/auth/register_organization_step2_screen.dart';
 import '../views/chat/chat_friend_screen.dart';
 import '../views/chat/chat_list_screen.dart';
@@ -41,7 +43,28 @@ import '../views/profile/all_activities_screen.dart';
 import '../views/profile/all_fundraiser_applications_screen.dart';
 import '../views/profile/friend_requests_screen.dart';
 import '../views/project/create_project_screen.dart';
+class AppLifecycleObserver with WidgetsBindingObserver {
+  final NotificationService _notificationService = NotificationService();
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        _notificationService.setAppForegroundState(true);
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+        _notificationService.setAppForegroundState(false);
+        break;
+      case AppLifecycleState.detached:
+        _notificationService.setAppForegroundState(false);
+        break;
+      case AppLifecycleState.hidden:
+        _notificationService.setAppForegroundState(false);
+        break;
+    }
+  }
+}
 class AppRoutes {
   static const String splashScreen = '/splash';
   static const String loginScreen = '/login';
@@ -87,8 +110,8 @@ class AppRoutes {
   static const String chatFriendScreen = '/chat_friend';
   static const String chatEventScreen = '/chat_event';
   static const String calendarScreen = '/calendar';
-
-
+  static const String notificationsScreen = '/notifications';
+  static String achievementsScreen = '/';
 
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
@@ -117,7 +140,9 @@ class AppRoutes {
     allActivitiesScreen: (context) => AllActivitiesScreen(),
     chatListScreen: (context) => ChatListScreen(),
     calendarScreen: (context) => CalendarScreen(),
+    notificationsScreen: (context) => NotificationsScreen(),
   };
+
 
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {

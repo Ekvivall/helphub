@@ -118,11 +118,11 @@ class ChatTaskViewModel extends ChangeNotifier {
 
   int _getStatusPriority(TaskStatus? status) {
     switch (status) {
-      case TaskStatus.pending:
-        return 1; // Найвищий пріоритет - відкриті завдання
-      case TaskStatus.inProgress:
-        return 2; // Завдання в процесі
       case TaskStatus.completed:
+        return 1; // Найвищий пріоритет - відкриті завдання
+      case TaskStatus.pending:
+        return 2; // Завдання в процесі
+      case TaskStatus.inProgress:
         return 3; // Завдання на підтвердженні
       case TaskStatus.confirmed:
         return 4; // Найнижчий пріоритет - підтверджені завдання

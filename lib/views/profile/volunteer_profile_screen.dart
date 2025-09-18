@@ -175,6 +175,7 @@ class VolunteerProfileScreen extends StatelessWidget {
                             _buildFriendList(context, viewModel),
                             _buildFooterMyFriends(context, viewModel),
                           ],
+                          SizedBox(height: 20,)
                         ],
                       ),
                     ),

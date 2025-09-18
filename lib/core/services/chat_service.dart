@@ -21,7 +21,10 @@ class ChatService {
       String chatId;
 
       if (type == ChatType.friend && participants.length == 2) {
-        chatId = ChatModel.generateFriendChatId(participants[0], participants[1]);
+        chatId = ChatModel.generateFriendChatId(
+          participants[0],
+          participants[1],
+        );
 
         final existingChat = await _firestore
             .collection(_chatsCollection)
@@ -89,15 +92,13 @@ class ChatService {
 
       batch.set(messageRef, message.toMap());
 
-      batch.update(
-        _firestore.collection(_chatsCollection).doc(chatId),
-        {
-          'lastMessage': text,
-          'lastMessageAt': Timestamp.fromDate(message.createdAt),
-        },
-      );
+      batch.update(_firestore.collection(_chatsCollection).doc(chatId), {
+        'lastMessage': text,
+        'lastMessageAt': Timestamp.fromDate(message.createdAt),
+      });
 
       await batch.commit();
+
       return true;
     } catch (e) {
       print('Error sending message: $e');
@@ -113,12 +114,11 @@ class ChatService {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => MessageModel.fromMap(doc.data(), doc.id))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => MessageModel.fromMap(doc.data(), doc.id))
+              .toList();
+        });
   }
-
 
   Future<int> getUnreadMessagesCount(String chatId, String userId) async {
     try {
@@ -143,6 +143,7 @@ class ChatService {
       return 0;
     }
   }
+
   Stream<int> getUnreadMessagesCountStream(String chatId, String userId) {
     return _firestore
         .collection(_chatsCollection)
@@ -151,15 +152,15 @@ class ChatService {
         .where('senderId', isNotEqualTo: userId)
         .snapshots()
         .map((snapshot) {
-      int unreadCount = 0;
-      for (var doc in snapshot.docs) {
-        final message = MessageModel.fromMap(doc.data(), doc.id);
-        if (!message.readBy.contains(userId)) {
-          unreadCount++;
-        }
-      }
-      return unreadCount;
-    });
+          int unreadCount = 0;
+          for (var doc in snapshot.docs) {
+            final message = MessageModel.fromMap(doc.data(), doc.id);
+            if (!message.readBy.contains(userId)) {
+              unreadCount++;
+            }
+          }
+          return unreadCount;
+        });
   }
 
   Stream<int> getTotalUnreadMessagesCount(String userId) {
@@ -168,15 +169,18 @@ class ChatService {
         .where('participants', arrayContains: userId)
         .snapshots()
         .asyncMap((chatsSnapshot) async {
-      int totalUnread = 0;
+          int totalUnread = 0;
 
-      for (var chatDoc in chatsSnapshot.docs) {
-        final unreadCount = await getUnreadMessagesCount(chatDoc.id, userId);
-        totalUnread += unreadCount;
-      }
+          for (var chatDoc in chatsSnapshot.docs) {
+            final unreadCount = await getUnreadMessagesCount(
+              chatDoc.id,
+              userId,
+            );
+            totalUnread += unreadCount;
+          }
 
-      return totalUnread;
-    });
+          return totalUnread;
+        });
   }
 
   Stream<List<ChatModel>> getUserChats(String userId) {
@@ -186,10 +190,10 @@ class ChatService {
         .orderBy('lastMessageAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => ChatModel.fromMap(doc.data(), doc.id))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => ChatModel.fromMap(doc.data(), doc.id))
+              .toList();
+        });
   }
 
   Future<ChatModel?> getChatById(String chatId) async {
@@ -210,11 +214,9 @@ class ChatService {
   }
 
   Stream<ChatModel> getChatStream(String chatId) {
-    return _firestore
-        .collection(_chatsCollection)
-        .doc(chatId)
-        .snapshots()
-        .map((snapshot) {
+    return _firestore.collection(_chatsCollection).doc(chatId).snapshots().map((
+      snapshot,
+    ) {
       if (snapshot.exists && snapshot.data() != null) {
         return ChatModel.fromMap(snapshot.data()!, snapshot.id);
       } else {
@@ -248,10 +250,10 @@ class ChatService {
   }
 
   Future<String?> createEventChat(
-      String eventId,
-      List<String> participantIds,
-      {String? chatImageUrl}
-      ) async {
+    String eventId,
+    List<String> participantIds, {
+    String? chatImageUrl,
+  }) async {
     return await createChat(
       type: ChatType.event,
       entityId: eventId,
@@ -261,10 +263,10 @@ class ChatService {
   }
 
   Future<String?> createProjectChat(
-      String projectId,
-      List<String> participantIds,
-      {String? chatImageUrl}
-      ) async {
+    String projectId,
+    List<String> participantIds, {
+    String? chatImageUrl,
+  }) async {
     return await createChat(
       type: ChatType.project,
       entityId: projectId,
@@ -291,6 +293,7 @@ class ChatService {
       return false;
     }
   }
+
   Future<bool> markMessagesAsRead(String chatId, String userId) async {
     try {
       final messagesQuery = await _firestore
@@ -306,7 +309,7 @@ class ChatService {
         final message = MessageModel.fromMap(doc.data(), doc.id);
         if (!message.isReadBy(userId)) {
           batch.update(doc.reference, {
-            'readBy': FieldValue.arrayUnion([userId])
+            'readBy': FieldValue.arrayUnion([userId]),
           });
         }
       }
@@ -319,7 +322,10 @@ class ChatService {
     }
   }
 
-  Future<MessageModel?> getFirstUnreadMessage(String chatId, String userId) async {
+  Future<MessageModel?> getFirstUnreadMessage(
+    String chatId,
+    String userId,
+  ) async {
     try {
       final messagesQuery = await _firestore
           .collection(_chatsCollection)

@@ -45,7 +45,7 @@ dependencies:
   shared_preferences: ^2.5.3
   cached_network_image: any
   flutter_svg: any
-  file_picker: ^10.2.0
+  file_picker: ^8.0.7
   cloud_firestore: ^5.6.11
   firebase_storage: ^12.4.9
   url_launcher: ^6.3.2
@@ -58,6 +58,14 @@ dependencies:
   expandable_text: ^2.3.0
   share_plus: ^11.1.0
   table_calendar: ^3.2.0
+  firebase_messaging: ^15.2.10
+  #flutter_local_notifications: ^19.4.1
+  flutter_local_notifications: ^17.2.3
+  cloud_functions: ^5.6.2
+  timeago: ^3.7.1
+  #googleapis_auth: ^2.0.0
+
+
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   mockito: ^5.4.4
