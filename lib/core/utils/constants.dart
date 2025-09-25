@@ -528,7 +528,6 @@ class Constants {
       NotificationType.taskCompleted,
       NotificationType.taskConfirmed,
       NotificationType.projectDeadline,
-      NotificationType.reportCreated,
     ],
     NotificationCategory.fundraisingActivities: [
       NotificationType.fundraisingApplication,
@@ -551,6 +550,8 @@ class Constants {
       NotificationType.adminNotification,
       NotificationType.systemMaintenance,
       NotificationType.appUpdate,
+      NotificationType.general,
+      NotificationType.reportCreated,
     ],
   };
 

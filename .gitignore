@@ -45,4 +45,4 @@ app.*.map.json
 /android/app/release
 
 #Firebase service accoount
-assets/helphub-9f23d-95f6d7a75c76.json
+/assets/*.json

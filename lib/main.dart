@@ -18,6 +18,7 @@ import 'package:helphub/view_models/notification/notification_view_model.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:helphub/view_models/project/project_view_model.dart';
 import 'package:helphub/view_models/report/report_view_model.dart';
+import 'package:helphub/view_models/settings/settings_view_model.dart';
 import 'package:helphub/view_models/splash/splash_view_model.dart';
 import 'package:helphub/view_models/auth/volunteer_register_view_model.dart';
 import 'package:provider/provider.dart';
@@ -48,7 +49,8 @@ class HelpHubApp extends StatefulWidget {
 class _HelpHubAppState extends State<HelpHubApp> with WidgetsBindingObserver {
   final AppLifecycleObserver _lifecycleObserver = AppLifecycleObserver();
 
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
 
   @override
   void initState() {
@@ -98,6 +100,7 @@ class _HelpHubAppState extends State<HelpHubApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (_) => ReportViewModel()),
         ChangeNotifierProvider(create: (_) => ChatViewModel()),
         ChangeNotifierProvider(create: (_) => NotificationViewModel()),
+        ChangeNotifierProvider(create: (_) => SettingsViewModel()),
       ],
       child: NotificationInitWrapper(
         child: MaterialApp(
@@ -112,7 +115,10 @@ class _HelpHubAppState extends State<HelpHubApp> with WidgetsBindingObserver {
               data: MediaQuery.of(
                 context,
               ).copyWith(textScaler: TextScaler.linear(1.0)),
-              child: child!,
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 37),
+                child: child!,
+              ),
             );
           },
           localizationsDelegates: const [

@@ -43,6 +43,7 @@ import '../views/profile/all_activities_screen.dart';
 import '../views/profile/all_fundraiser_applications_screen.dart';
 import '../views/profile/friend_requests_screen.dart';
 import '../views/project/create_project_screen.dart';
+import '../views/settings/settings_screen.dart';
 class AppLifecycleObserver with WidgetsBindingObserver {
   final NotificationService _notificationService = NotificationService();
 
@@ -111,7 +112,9 @@ class AppRoutes {
   static const String chatEventScreen = '/chat_event';
   static const String calendarScreen = '/calendar';
   static const String notificationsScreen = '/notifications';
+  static const String settingsScreen = '/settings';
   static String achievementsScreen = '/';
+  static String faqScreen = '/';
 
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
@@ -141,6 +144,7 @@ class AppRoutes {
     chatListScreen: (context) => ChatListScreen(),
     calendarScreen: (context) => CalendarScreen(),
     notificationsScreen: (context) => NotificationsScreen(),
+    settingsScreen: (context) => SettingsScreen(),
   };
 
 

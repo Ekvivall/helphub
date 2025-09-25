@@ -82,10 +82,14 @@ class VolunteerProfileScreen extends StatelessWidget {
                       color: appThemeColors.backgroundLightGrey,
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {},
+                  if (isOwner)
+
+                    IconButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(AppRoutes.settingsScreen);
+                    },
                     icon: Icon(
-                      isOwner ? Icons.settings : Icons.more_vert,
+                      Icons.settings,
                       size: 32,
                       color: appThemeColors.backgroundLightGrey,
                     ),
@@ -175,7 +179,7 @@ class VolunteerProfileScreen extends StatelessWidget {
                             _buildFriendList(context, viewModel),
                             _buildFooterMyFriends(context, viewModel),
                           ],
-                          SizedBox(height: 20,)
+                          SizedBox(height: 20),
                         ],
                       ),
                     ),

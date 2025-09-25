@@ -20,6 +20,9 @@ class NotificationViewModel with ChangeNotifier {
   StreamSubscription<int>? _unreadCountSubscription;
   StreamSubscription<DocumentSnapshot>? _userSettingsSubscription;
 
+  bool get isAllNotificationsEnabled =>
+      _notificationSettings.values.any((enabled) => enabled);
+
   List<NotificationModel> get notifications => _notifications;
 
   int get unreadCount => _unreadCount;
@@ -400,6 +403,19 @@ class NotificationViewModel with ChangeNotifier {
       notification.type,
       context,
     );
+  }
+
+  void toggleAllNotifications() async {
+    final newState = !isAllNotificationsEnabled;
+    for (final type in NotificationType.values) {
+      _notificationSettings[type] = newState;
+    }
+    await _saveNotificationSettings();
+
+    if (!newState) {
+      await markAllAsRead();
+    }
+    notifyListeners();
   }
 
   @override

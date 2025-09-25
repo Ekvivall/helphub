@@ -122,14 +122,19 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
                       color: appThemeColors.backgroundLightGrey,
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      isOwner ? Icons.settings : Icons.more_vert,
-                      size: 32,
-                      color: appThemeColors.backgroundLightGrey,
+                  if (isOwner)
+                    IconButton(
+                      onPressed: () {
+                        Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.settingsScreen);
+                      },
+                      icon: Icon(
+                        Icons.settings,
+                        size: 32,
+                        color: appThemeColors.backgroundLightGrey,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -670,7 +675,7 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
         ),
       );
     }
-    return  Container(
+    return Container(
       margin: EdgeInsets.symmetric(horizontal: 28, vertical: 7),
       child: CustomElevatedButton(
         text: 'Написати',
@@ -680,10 +685,9 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
             viewModel.currentAuthUserId!,
             viewModel.user!.uid!,
           );
-          Navigator.of(context).pushNamed(
-            AppRoutes.chatFriendScreen,
-            arguments: chatId,
-          );
+          Navigator.of(
+            context,
+          ).pushNamed(AppRoutes.chatFriendScreen, arguments: chatId);
         },
         width: double.infinity,
         height: 44,
