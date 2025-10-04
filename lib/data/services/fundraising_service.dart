@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:helphub/models/fundraising_model.dart';
+import 'package:helphub/data/models/fundraising_model.dart';
 
-import '../../models/fundraiser_application_model.dart';
-import '../../models/raffle_winner_model.dart';
+import '../../data/models/fundraiser_application_model.dart';
+import '../../data/models/raffle_winner_model.dart';
 
 class FundraisingService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

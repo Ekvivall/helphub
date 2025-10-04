@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:helphub/models/category_chip_model.dart';
-import 'package:helphub/models/raffle_winner_model.dart';
+import 'package:helphub/data/models/category_chip_model.dart';
+import 'package:helphub/data/models/raffle_winner_model.dart';
 
 class FundraisingModel {
   final String? id;

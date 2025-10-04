@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/project_model.dart';
+import 'package:helphub/data/models/project_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 

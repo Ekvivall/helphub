@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 
-import '../../core/services/user_service.dart';
-import '../../models/base_profile_model.dart';
+import '../../data/services/user_service.dart';
+import '../../data/models/base_profile_model.dart';
 
 class SettingsViewModel extends ChangeNotifier {
   final UserService _userService = UserService();

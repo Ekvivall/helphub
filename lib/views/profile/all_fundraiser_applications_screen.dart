@@ -3,9 +3,9 @@ import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:helphub/widgets/profile/fundraiser_application_item_org_widget.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/services/user_service.dart';
+import '../../data/services/user_service.dart';
 import '../../core/utils/constants.dart';
-import '../../models/fundraiser_application_model.dart';
+import '../../data/models/fundraiser_application_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/fundraiser_application/fundraiser_application_view_model.dart';

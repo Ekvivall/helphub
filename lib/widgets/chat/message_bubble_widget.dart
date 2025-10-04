@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/base_profile_model.dart';
-import 'package:helphub/models/message_model.dart';
-import 'package:helphub/models/volunteer_model.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
+import 'package:helphub/data/models/message_model.dart';
+import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';
 
-import '../../models/organization_model.dart';
+import '../../data/models/organization_model.dart';
 import '../../theme/text_style_helper.dart';
 
 class MessageBubble extends StatelessWidget {

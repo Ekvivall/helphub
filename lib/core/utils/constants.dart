@@ -6,14 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:helphub/models/volunteer_model.dart';
+import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
-import '../../models/notification_model.dart';
+import '../../data/models/notification_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
 

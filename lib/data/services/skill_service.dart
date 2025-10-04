@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:helphub/models/category_chip_model.dart';
+import 'package:helphub/data/models/category_chip_model.dart';
 
 class SkillService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

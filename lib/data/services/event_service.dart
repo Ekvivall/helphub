@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:helphub/models/event_model.dart';
+import 'package:helphub/data/models/event_model.dart';
 
 import 'chat_service.dart';
 

@@ -4,12 +4,12 @@ import 'package:helphub/widgets/custom_checkbox.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/base_profile_model.dart';
-import '../../models/category_chip_model.dart';
-import '../../models/organization_model.dart';
-import '../../models/project_model.dart';
-import '../../models/project_task_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/category_chip_model.dart';
+import '../../data/models/organization_model.dart';
+import '../../data/models/project_model.dart';
+import '../../data/models/project_task_model.dart';
+import '../../data/models/volunteer_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/project/project_view_model.dart';
@@ -165,29 +165,36 @@ class _ApplyToProjectScreenState extends State<ApplyToProjectScreen> {
             }
             final ProjectModel project = viewModel.currentProject!;
             final BaseProfileModel? organizer = viewModel.organizer;
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Блок інформації про проєкт та організатора
-                  _buildProjectAndOrganizerInfo(project, organizer),
-                  const SizedBox(height: 24),
+            return Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Блок інформації про проєкт та організатора
+                        _buildProjectAndOrganizerInfo(project, organizer),
+                        const SizedBox(height: 24),
 
-                  // Секція вибору завдань
-                  Text(
-                    'Оберіть завдання',
-                    style: TextStyleHelper.instance.title20Regular.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: appThemeColors.backgroundLightGrey,
+                        // Секція вибору завдань
+                        Text(
+                          'Оберіть завдання',
+                          style: TextStyleHelper.instance.title20Regular
+                              .copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: appThemeColors.backgroundLightGrey,
+                              ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildTasksSelection(project.tasks ?? []),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _buildTasksSelection(project.tasks ?? []),
-                  const SizedBox(height: 32),
-
-                  // Кнопка відправки
-                  CustomElevatedButton(
+                ),
+                Container(
+                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 10),
+                  child: CustomElevatedButton(
                     isLoading: viewModel.isSubmitting,
                     onPressed: _submitApplication,
                     text: 'Надіслати заявку',
@@ -196,9 +203,10 @@ class _ApplyToProjectScreenState extends State<ApplyToProjectScreen> {
                       color: appThemeColors.primaryWhite,
                     ),
                     borderRadius: 10,
+                    height: 48,
                   ),
-                ],
-              ),
+                ),
+              ],
             );
           },
         ),
@@ -289,95 +297,97 @@ class _ApplyToProjectScreenState extends State<ApplyToProjectScreen> {
         final int assigned = task.assignedVolunteerIds?.length ?? 0;
         final bool isFull = assigned >= needed;
         final int res = needed - assigned;
-        return !isFull? Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          color: appThemeColors.primaryWhite,
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        task.title ?? 'Назва завдання',
-                        style: TextStyleHelper.instance.title16Bold.copyWith(
-                          color: appThemeColors.primaryBlack,
-                        ),
+        return !isFull
+            ? Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                color: appThemeColors.primaryWhite,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              task.title ?? 'Назва завдання',
+                              style: TextStyleHelper.instance.title16Bold
+                                  .copyWith(color: appThemeColors.primaryBlack),
+                            ),
+                          ),
+                          if (needed > 0)
+                            Text(
+                              isFull
+                                  ? 'Заповнено'
+                                  : 'Потріб${res > 1 ? 'но' : 'ен'} $res учасник${res > 1 ? 'и' : ''}',
+                              style: TextStyleHelper.instance.title14Regular
+                                  .copyWith(
+                                    color: isFull
+                                        ? appThemeColors.errorRed
+                                        : appThemeColors.successGreen,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                        ],
                       ),
-                    ),
-                    if (needed > 0)
+                      const SizedBox(height: 4),
                       Text(
-                        isFull
-                            ? 'Заповнено'
-                            : 'Потріб${res > 1 ? 'но' : 'ен'} $res учасник${res > 1 ? 'и' : ''}',
+                        task.description ?? 'Опис завдання',
                         style: TextStyleHelper.instance.title14Regular.copyWith(
-                          color: isFull
-                              ? appThemeColors.errorRed
-                              : appThemeColors.successGreen,
-                          fontWeight: FontWeight.w700,
+                          color: appThemeColors.textMediumGrey,
                         ),
                       ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  task.description ?? 'Опис завдання',
-                  style: TextStyleHelper.instance.title14Regular.copyWith(
-                    color: appThemeColors.textMediumGrey,
-                  ),
-                ),
-                if (task.deadline != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      'Дедлайн: ${DateFormat('dd.MM.yyyy').format(task.deadline!)}',
-                      style: TextStyleHelper.instance.title13Regular.copyWith(
-                        color: appThemeColors.textMediumGrey,
+                      if (task.deadline != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            'Дедлайн: ${DateFormat('dd.MM.yyyy').format(task.deadline!)}',
+                            style: TextStyleHelper.instance.title13Regular
+                                .copyWith(color: appThemeColors.textMediumGrey),
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      CustomCheckboxWithText(
+                        text: 'Хочу долучитися',
+                        onChanged: isFull
+                            ? null // Disable checkbox if task is full
+                            : (bool? newValue) {
+                                if (newValue != null) {
+                                  _toggleTaskSelection(task);
+                                }
+                              },
+                        initialValue: isTaskSelected,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        textStyle: TextStyleHelper.instance.title14Regular
+                            .copyWith(
+                              color: isFull
+                                  ? appThemeColors.textMediumGrey
+                                  : appThemeColors.primaryBlack,
+                            ),
                       ),
-                    ),
-                  ),
-                const SizedBox(height: 8),
-                CustomCheckboxWithText(
-                  text: 'Хочу долучитися',
-                  onChanged: isFull
-                      ? null // Disable checkbox if task is full
-                      : (bool? newValue) {
-                          if (newValue != null) {
-                            _toggleTaskSelection(task);
-                          }
-                        },
-                  initialValue: isTaskSelected,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  textStyle: TextStyleHelper.instance.title14Regular.copyWith(
-                    color: isFull
-                        ? appThemeColors.textMediumGrey
-                        : appThemeColors.primaryBlack,
+                      if (isTaskSelected)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: CustomTextField(
+                            controller: _messageControllers[task.id!]!,
+                            hintText:
+                                'Розкажіть, чому ви хочете долучитися до цього завдання...',
+                            maxLines: 5,
+                            inputType: TextInputType.multiline,
+                            labelColor: appThemeColors.primaryBlack,
+                            label: 'Супровідне повідомлення',
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-                if (isTaskSelected)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: CustomTextField(
-                      controller: _messageControllers[task.id!]!,
-                      hintText:
-                          'Розкажіть, чому ви хочете долучитися до цього завдання...',
-                      maxLines: 5,
-                      inputType: TextInputType.multiline,
-                      labelColor: appThemeColors.primaryBlack,
-                      label: 'Супровідне повідомлення',
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ) : SizedBox.shrink();
+              )
+            : SizedBox.shrink();
       },
     );
   }

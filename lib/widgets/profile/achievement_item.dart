@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:helphub/models/achievement_item_model.dart';
+import 'package:helphub/data/models/achievement_item_model.dart';
 
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';

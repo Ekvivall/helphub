@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:helphub/models/fundraiser_application_model.dart';
+import 'package:helphub/data/models/fundraiser_application_model.dart';
 
 class FundraiserApplicationService {
   final CollectionReference _fundraiserApplicationsCollection =

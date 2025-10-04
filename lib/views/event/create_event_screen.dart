@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/constants.dart';
-import 'package:helphub/models/category_chip_model.dart';
+import 'package:helphub/data/models/category_chip_model.dart';
 import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/widgets/custom_date_picker.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
@@ -11,7 +11,7 @@ import 'package:helphub/widgets/custom_time_picker.dart';
 import 'package:helphub/widgets/profile/category_chip_widget_with_icon.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/event_model.dart';
+import '../../data/models/event_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../validators/auth_validator.dart';

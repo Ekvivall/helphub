@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:helphub/core/services/event_service.dart';
-import 'package:helphub/core/services/user_service.dart';
-import 'package:helphub/models/event_model.dart';
+import 'package:helphub/data/services/event_service.dart';
+import 'package:helphub/data/services/user_service.dart';
+import 'package:helphub/data/models/event_model.dart';
 
-import '../../core/services/chat_service.dart';
-import '../../models/base_profile_model.dart';
-import '../../models/chat_model.dart';
-import '../../models/message_model.dart';
+import '../../data/services/chat_service.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/chat_model.dart';
+import '../../data/models/message_model.dart';
 
 class ChatViewModel extends ChangeNotifier {
   final ChatService _chatService = ChatService();

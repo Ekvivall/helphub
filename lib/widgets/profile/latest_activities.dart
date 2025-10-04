@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:helphub/widgets/profile/fundraising_creation_activity_item.dart';
 import 'package:helphub/widgets/profile/project_participation_activity_item.dart';
 
-import '../../models/activity_model.dart';
+import '../../data/models/activity_model.dart';
 import 'event_organization_activity_item.dart';
 import 'event_participation_activity_item.dart';
 import 'fundraising_donation_activity_item.dart';

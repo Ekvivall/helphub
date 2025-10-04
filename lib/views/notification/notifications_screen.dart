@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/notification_model.dart';
+import 'package:helphub/data/models/notification_model.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/notification/notification_view_model.dart';
 import 'package:provider/provider.dart';

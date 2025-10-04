@@ -3,7 +3,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:helphub/core/services/notification_service.dart';
+import 'package:helphub/data/services/notification_service.dart';
 import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/auth/auth_view_model.dart';
@@ -12,6 +12,7 @@ import 'package:helphub/view_models/chat/chat_task_view_model.dart';
 import 'package:helphub/view_models/chat/chat_view_model.dart';
 import 'package:helphub/view_models/donation/donation_view_model.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';
+import 'package:helphub/view_models/faq/faq_view_model.dart';
 import 'package:helphub/view_models/fundraiser_application/fundraiser_application_view_model.dart';
 import 'package:helphub/view_models/fundraising/fundraising_view_model.dart';
 import 'package:helphub/view_models/notification/notification_view_model.dart';
@@ -101,6 +102,7 @@ class _HelpHubAppState extends State<HelpHubApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (_) => ChatViewModel()),
         ChangeNotifierProvider(create: (_) => NotificationViewModel()),
         ChangeNotifierProvider(create: (_) => SettingsViewModel()),
+        ChangeNotifierProvider(create: (_) => FAQViewModel()),
       ],
       child: NotificationInitWrapper(
         child: MaterialApp(
@@ -115,10 +117,7 @@ class _HelpHubAppState extends State<HelpHubApp> with WidgetsBindingObserver {
               data: MediaQuery.of(
                 context,
               ).copyWith(textScaler: TextScaler.linear(1.0)),
-              child: Padding(
-                padding: EdgeInsets.only(bottom: 37),
-                child: child!,
-              ),
+              child: child!
             );
           },
           localizationsDelegates: const [

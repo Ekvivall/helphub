@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/constants.dart';
-import '../../models/notification_model.dart';
+import '../../data/models/notification_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/notification/notification_view_model.dart';

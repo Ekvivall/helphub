@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:helphub/models/category_chip_model.dart';
-import 'package:helphub/models/project_task_model.dart';
+import 'package:helphub/data/models/category_chip_model.dart';
+import 'package:helphub/data/models/project_task_model.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/constants.dart';
-import '../../models/project_model.dart';
+import '../../data/models/project_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';

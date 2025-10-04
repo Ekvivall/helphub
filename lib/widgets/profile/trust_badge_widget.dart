@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/trust_badge_model.dart';
+import 'package:helphub/data/models/trust_badge_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/custom_image_view.dart';

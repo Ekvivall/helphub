@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/widgets/custom_image_view.dart';
 
-import '../../models/category_chip_model.dart';
+import '../../data/models/category_chip_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 

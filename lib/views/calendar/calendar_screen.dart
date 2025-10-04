@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:helphub/core/services/event_service.dart';
-import 'package:helphub/core/services/project_service.dart';
-import 'package:helphub/models/base_profile_model.dart';
-import 'package:helphub/models/project_task_model.dart';
-import 'package:helphub/models/volunteer_model.dart';
+import 'package:helphub/data/services/event_service.dart';
+import 'package:helphub/data/services/project_service.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
+import 'package:helphub/data/models/project_task_model.dart';
+import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';
@@ -20,9 +20,9 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-import '../../models/activity_model.dart';
-import '../../models/event_model.dart';
-import '../../models/project_model.dart';
+import '../../data/models/activity_model.dart';
+import '../../data/models/event_model.dart';
+import '../../data/models/project_model.dart';
 import '../../view_models/project/project_view_model.dart';
 import '../../widgets/profile/event_organization_activity_item.dart';
 import '../../widgets/profile/event_participation_activity_item.dart';
@@ -126,44 +126,21 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final Map<DateTime, List<CalendarItem>> projectsByDate = {};
     final currentUserId = _auth.currentUser?.uid;
     for (final project in projects) {
-      CalendarItem calendarItem = CalendarItem(project);
-      //Для організатора показує всі дати проєкту
-      if (currentUserId == project.organizerId) {
-        if (project.startDate != null) {
-          final normalizedStartDate = _normalizeData(project.startDate!);
-          if (projectsByDate[normalizedStartDate] == null) {
-            projectsByDate[normalizedStartDate] = [];
-          }
-          projectsByDate[normalizedStartDate]!.add(calendarItem);
-        }
-
-        if (project.endDate != null && project.startDate != project.endDate) {
-          final normalizedEndDate = _normalizeData(project.endDate!);
-          if (projectsByDate[normalizedEndDate] == null) {
-            projectsByDate[normalizedEndDate] = [];
-          }
-          if (!projectsByDate[normalizedEndDate]!.contains(calendarItem)) {
-            projectsByDate[normalizedEndDate]!.add(calendarItem);
-          }
-        }
-      } else {
-        // Для учасника показує тільки для завдань, на які він записаний
-
-        if (project.tasks != null) {
-          for (final task in project.tasks!) {
-            if (task.assignedVolunteerIds?.contains(currentUserId) == true &&
-                task.deadline != null) {
-              final normalizedDeadline = _normalizeData(task.deadline!);
-              if (projectsByDate[normalizedDeadline] == null) {
-                projectsByDate[normalizedDeadline] = [];
-              }
-              if (!projectsByDate[normalizedDeadline]!.contains(
+      // Для учасника показує тільки для завдань, на які він записаний
+      if (project.tasks != null) {
+        for (final task in project.tasks!) {
+          if (task.assignedVolunteerIds?.contains(currentUserId) == true &&
+              task.deadline != null) {
+            final normalizedDeadline = _normalizeData(task.deadline!);
+            if (projectsByDate[normalizedDeadline] == null) {
+              projectsByDate[normalizedDeadline] = [];
+            }
+            if (!projectsByDate[normalizedDeadline]!.contains(
+              CalendarItem(project, task: task),
+            )) {
+              projectsByDate[normalizedDeadline]!.add(
                 CalendarItem(project, task: task),
-              )) {
-                projectsByDate[normalizedDeadline]!.add(
-                  CalendarItem(project, task: task),
-                );
-              }
+              );
             }
           }
         }

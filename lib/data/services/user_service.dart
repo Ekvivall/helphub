@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../../models/base_profile_model.dart';
-import '../../models/organization_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/organization_model.dart';
+import '../../data/models/volunteer_model.dart';
 
 class UserService{
   Future<BaseProfileModel?> fetchUserProfile(String? userId) async {

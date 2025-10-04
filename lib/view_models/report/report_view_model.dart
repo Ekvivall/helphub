@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:helphub/models/base_profile_model.dart';
-import 'package:helphub/models/report_model.dart';
-import 'package:helphub/core/services/report_service.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
+import 'package:helphub/data/models/report_model.dart';
+import 'package:helphub/data/services/report_service.dart';
 
-import '../../core/services/user_service.dart';
-import '../../models/organization_model.dart';
-import '../../models/organizer_feedback_model.dart';
-import '../../models/participant_feedback_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/services/user_service.dart';
+import '../../data/models/organization_model.dart';
+import '../../data/models/organizer_feedback_model.dart';
+import '../../data/models/participant_feedback_model.dart';
+import '../../data/models/volunteer_model.dart';
 
 class ReportViewModel extends ChangeNotifier {
   final ReportService _reportService = ReportService();

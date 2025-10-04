@@ -5,22 +5,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:geolocator/geolocator.dart' hide ActivityType;
-import 'package:helphub/core/services/friend_service.dart';
-import 'package:helphub/core/services/project_application_service.dart';
+import 'package:helphub/data/services/friend_service.dart';
+import 'package:helphub/data/services/project_application_service.dart';
 
-import '../../core/services/activity_service.dart';
-import '../../core/services/category_service.dart';
-import '../../core/services/chat_service.dart';
-import '../../core/services/project_service.dart';
-import '../../core/services/skill_service.dart';
-import '../../models/activity_model.dart';
-import '../../models/base_profile_model.dart';
-import '../../models/category_chip_model.dart';
-import '../../models/organization_model.dart';
-import '../../models/project_application_model.dart';
-import '../../models/project_model.dart';
-import '../../models/project_task_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/services/activity_service.dart';
+import '../../data/services/category_service.dart';
+import '../../data/services/chat_service.dart';
+import '../../data/services/project_service.dart';
+import '../../data/services/skill_service.dart';
+import '../../data/models/activity_model.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/category_chip_model.dart';
+import '../../data/models/organization_model.dart';
+import '../../data/models/project_application_model.dart';
+import '../../data/models/project_model.dart';
+import '../../data/models/project_task_model.dart';
+import '../../data/models/volunteer_model.dart';
 
 class ProjectViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

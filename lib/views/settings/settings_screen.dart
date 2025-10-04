@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/constants.dart';
-import 'package:helphub/models/volunteer_model.dart';
+import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/settings/settings_view_model.dart';
@@ -12,8 +12,8 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../models/base_profile_model.dart';
-import '../../models/organization_model.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/organization_model.dart';
 import '../../routes/app_router.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/notifications/notifications_settings.dart';
@@ -196,6 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 32),
                   _buildSignOutButton(),
+
                 ],
               ),
             ),

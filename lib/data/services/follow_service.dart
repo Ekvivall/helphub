@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:helphub/models/follow_model.dart';
+import 'package:helphub/data/models/follow_model.dart';
 
 class FollowService {
   final CollectionReference _followsCollection = FirebaseFirestore.instance

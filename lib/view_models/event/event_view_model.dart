@@ -7,20 +7,20 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
-import 'package:helphub/core/services/activity_service.dart';
-import 'package:helphub/core/services/category_service.dart';
-import 'package:helphub/core/services/event_service.dart';
-import 'package:helphub/core/services/friend_service.dart';
-import 'package:helphub/models/base_profile_model.dart';
-import 'package:helphub/models/category_chip_model.dart';
-import 'package:helphub/models/event_model.dart';
+import 'package:helphub/data/services/activity_service.dart';
+import 'package:helphub/data/services/category_service.dart';
+import 'package:helphub/data/services/event_service.dart';
+import 'package:helphub/data/services/friend_service.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
+import 'package:helphub/data/models/category_chip_model.dart';
+import 'package:helphub/data/models/event_model.dart';
 import 'package:path/path.dart' as p;
 
-import '../../core/services/user_service.dart';
+import '../../data/services/user_service.dart';
 import '../../core/utils/constants.dart';
-import '../../models/activity_model.dart';
-import '../../models/organization_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/models/activity_model.dart';
+import '../../data/models/organization_model.dart';
+import '../../data/models/volunteer_model.dart';
 
 class EventViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'achievement_item_model.dart';
-import 'base_profile_model.dart';
-import 'category_chip_model.dart';
-import 'medal_item_model.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/category_chip_model.dart';
+import '../../data/models/medal_item_model.dart';
 
 class VolunteerModel extends BaseProfileModel {
   final String? fullName;

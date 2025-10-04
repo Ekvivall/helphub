@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:helphub/models/friend_request_model.dart';
+import 'package:helphub/data/models/friend_request_model.dart';
 
-import '../../models/chat_model.dart';
+import '../../data/models/chat_model.dart';
 import 'chat_service.dart';
 
 class FriendService {

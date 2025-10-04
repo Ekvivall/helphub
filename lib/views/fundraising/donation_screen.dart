@@ -6,7 +6,7 @@ import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/constants.dart';
-import '../../models/fundraising_model.dart';
+import '../../data/models/fundraising_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/custom_elevated_button.dart';

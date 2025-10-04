@@ -8,11 +8,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../core/services/friend_service.dart';
+import '../../data/services/friend_service.dart';
 import '../../core/utils/constants.dart';
 import '../../core/utils/image_constant.dart';
-import '../../models/base_profile_model.dart';
-import '../../models/organization_model.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/organization_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';

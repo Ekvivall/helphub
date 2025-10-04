@@ -4,8 +4,8 @@ import 'package:helphub/routes/app_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/utils/constants.dart';
-import '../../models/project_model.dart';
-import '../../models/project_task_model.dart';
+import '../../data/models/project_model.dart';
+import '../../data/models/project_task_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/project/project_view_model.dart';

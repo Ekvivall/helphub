@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/base_profile_model.dart';
+import '../data/models/base_profile_model.dart';
 import '../routes/app_router.dart';
 import '../theme/theme_helper.dart';
 import 'custom_image_view.dart';

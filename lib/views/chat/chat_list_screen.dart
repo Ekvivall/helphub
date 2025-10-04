@@ -5,9 +5,9 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/widgets/custom_tournament_icon_button.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/base_profile_model.dart';
-import '../../models/chat_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/chat_model.dart';
+import '../../data/models/volunteer_model.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/chat/chat_view_model.dart';
 import '../../widgets/chat/chat_list_item.dart';

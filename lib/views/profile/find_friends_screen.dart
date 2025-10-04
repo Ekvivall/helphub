@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/constants.dart';
-import 'package:helphub/models/friend_request_model.dart';
-import 'package:helphub/models/volunteer_model.dart';
+import 'package:helphub/data/models/friend_request_model.dart';
+import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';

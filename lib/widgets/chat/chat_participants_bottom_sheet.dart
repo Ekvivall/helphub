@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/core/services/user_service.dart';
-import 'package:helphub/models/chat_model.dart';
-import 'package:helphub/models/base_profile_model.dart';
+import 'package:helphub/data/services/user_service.dart';
+import 'package:helphub/data/models/chat_model.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';
-import '../../models/organization_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/models/organization_model.dart';
+import '../../data/models/volunteer_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 

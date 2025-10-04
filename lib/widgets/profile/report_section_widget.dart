@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/activity_model.dart';
+import 'package:helphub/data/models/activity_model.dart';
 
-import '../../core/services/report_service.dart';
+import '../../data/services/report_service.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';

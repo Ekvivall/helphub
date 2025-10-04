@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:helphub/models/trust_badge_model.dart';
+import 'package:helphub/data/models/trust_badge_model.dart';
 
 import 'base_profile_model.dart';
 import 'category_chip_model.dart';

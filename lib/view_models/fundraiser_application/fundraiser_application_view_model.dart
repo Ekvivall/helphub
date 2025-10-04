@@ -5,16 +5,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:helphub/core/services/category_service.dart';
-import 'package:helphub/core/services/fundraiser_application_service.dart';
-import 'package:helphub/models/volunteer_model.dart';
+import 'package:helphub/data/services/category_service.dart';
+import 'package:helphub/data/services/fundraiser_application_service.dart';
+import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:path/path.dart' as p;
 
-import '../../core/services/user_service.dart';
-import '../../models/base_profile_model.dart';
-import '../../models/category_chip_model.dart';
-import '../../models/fundraiser_application_model.dart';
-import '../../models/organization_model.dart';
+import '../../data/services/user_service.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/category_chip_model.dart';
+import '../../data/models/fundraiser_application_model.dart';
+import '../../data/models/organization_model.dart';
 
 class FundraiserApplicationViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

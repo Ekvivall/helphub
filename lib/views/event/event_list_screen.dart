@@ -4,8 +4,8 @@ import 'package:helphub/views/event/event_filters_screen.dart';
 import 'package:helphub/views/event/event_map_screen.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/base_profile_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';

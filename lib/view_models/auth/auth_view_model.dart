@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:helphub/models/base_profile_model.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
 
 import '../../core/utils/constants.dart';
 import '../../routes/app_router.dart';

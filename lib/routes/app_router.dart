@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/activity_model.dart';
-import 'package:helphub/models/fundraising_model.dart';
+import 'package:helphub/data/models/activity_model.dart';
+import 'package:helphub/data/models/fundraising_model.dart';
 import 'package:helphub/views/auth/forgot_password_screen.dart';
 import 'package:helphub/views/auth/register_organization_step1_screen.dart';
 import 'package:helphub/views/auth/register_type_screen.dart';
@@ -12,6 +12,7 @@ import 'package:helphub/views/chat/chat_project_screen.dart';
 import 'package:helphub/views/event/create_event_screen.dart';
 import 'package:helphub/views/event/event_detail_screen.dart';
 import 'package:helphub/views/event/event_list_screen.dart' hide DisplayMode;
+import 'package:helphub/views/faq/faq_screen.dart';
 import 'package:helphub/views/fundraising/donation_screen.dart';
 import 'package:helphub/views/fundraising/fundraising_details_screen.dart';
 import 'package:helphub/views/fundraising/fundraising_donations_screen.dart';
@@ -32,7 +33,7 @@ import 'package:helphub/views/report/create_report_screen.dart';
 import 'package:helphub/views/report/view_report_screen.dart';
 import 'package:helphub/views/splash/splash_screen.dart';
 
-import '../core/services/notification_service.dart';
+import '../data/services/notification_service.dart';
 import '../views/auth/register_organization_step2_screen.dart';
 import '../views/chat/chat_friend_screen.dart';
 import '../views/chat/chat_list_screen.dart';
@@ -114,7 +115,7 @@ class AppRoutes {
   static const String notificationsScreen = '/notifications';
   static const String settingsScreen = '/settings';
   static String achievementsScreen = '/';
-  static String faqScreen = '/';
+  static String faqScreen = '/faq';
 
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
@@ -145,6 +146,7 @@ class AppRoutes {
     calendarScreen: (context) => CalendarScreen(),
     notificationsScreen: (context) => NotificationsScreen(),
     settingsScreen: (context) => SettingsScreen(),
+    faqScreen: (context) => FAQScreen(),
   };
 
 

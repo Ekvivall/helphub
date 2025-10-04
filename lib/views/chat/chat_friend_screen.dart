@@ -1,15 +1,15 @@
 
 import 'package:flutter/material.dart';
-import 'package:helphub/models/volunteer_model.dart';
+import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/chat/message_input_widget.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/services/notification_service.dart';
-import '../../models/message_model.dart';
-import '../../models/organization_model.dart';
+import '../../data/services/notification_service.dart';
+import '../../data/models/message_model.dart';
+import '../../data/models/organization_model.dart';
 import '../../view_models/chat/chat_view_model.dart';
 import '../../widgets/chat/message_bubble_widget.dart';
 

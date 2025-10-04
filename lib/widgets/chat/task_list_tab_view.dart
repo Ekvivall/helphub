@@ -5,7 +5,7 @@ import 'package:helphub/view_models/chat/chat_task_view_model.dart';
 import 'package:helphub/widgets/chat/project_task_card.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/project_task_model.dart';
+import '../../data/models/project_task_model.dart';
 
 enum TaskDisplayFilter { all, my, completed }
 

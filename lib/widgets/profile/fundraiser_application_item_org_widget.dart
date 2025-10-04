@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/base_profile_model.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../models/fundraiser_application_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/models/fundraiser_application_model.dart';
+import '../../data/models/volunteer_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../custom_elevated_button.dart';

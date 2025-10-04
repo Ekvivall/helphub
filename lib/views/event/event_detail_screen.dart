@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:helphub/models/event_model.dart';
-import 'package:helphub/models/organization_model.dart';
-import 'package:helphub/models/volunteer_model.dart';
+import 'package:helphub/data/models/event_model.dart';
+import 'package:helphub/data/models/organization_model.dart';
+import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';
 import 'package:helphub/widgets/custom_image_view.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';
@@ -11,7 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/utils/constants.dart';
-import '../../models/base_profile_model.dart';
+import '../../data/models/base_profile_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/custom_elevated_button.dart';

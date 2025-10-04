@@ -1,11 +1,11 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:helphub/core/services/friend_service.dart';
+import 'package:helphub/data/services/friend_service.dart';
 import 'package:helphub/core/utils/image_constant.dart';
-import 'package:helphub/models/achievement_item_model.dart';
-import 'package:helphub/models/medal_item_model.dart';
-import 'package:helphub/models/base_profile_model.dart';
+import 'package:helphub/data/models/achievement_item_model.dart';
+import 'package:helphub/data/models/medal_item_model.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
@@ -17,8 +17,8 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/utils/constants.dart';
-import '../../models/friend_request_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/models/friend_request_model.dart';
+import '../../data/models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/profile/category_chip_widget.dart';

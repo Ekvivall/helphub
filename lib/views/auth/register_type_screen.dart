@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/image_constant.dart';
-import 'package:helphub/models/base_profile_model.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/widgets/auth/divider.dart';
 import 'package:helphub/widgets/auth/google_login_button.dart';

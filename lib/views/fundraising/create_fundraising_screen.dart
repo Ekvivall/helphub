@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/category_chip_model.dart';
-import 'package:helphub/models/fundraiser_application_model.dart';
+import 'package:helphub/data/models/category_chip_model.dart';
+import 'package:helphub/data/models/fundraiser_application_model.dart';
 import 'package:helphub/widgets/custom_document_upload_field.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/constants.dart';
-import '../../models/fundraising_model.dart';
+import '../../data/models/fundraising_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/fundraiser_application/fundraiser_application_view_model.dart';

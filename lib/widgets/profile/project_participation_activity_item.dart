@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/core/services/project_service.dart';
-import 'package:helphub/models/activity_model.dart';
-import 'package:helphub/models/project_model.dart';
+import 'package:helphub/data/services/project_service.dart';
+import 'package:helphub/data/models/activity_model.dart';
+import 'package:helphub/data/models/project_model.dart';
 import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
@@ -9,7 +9,7 @@ import 'package:helphub/widgets/profile/category_chip_widget.dart';
 import 'package:helphub/widgets/profile/participant_report_section_widget.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/project_task_model.dart';
+import '../../data/models/project_task_model.dart';
 import '../custom_elevated_button.dart';
 import '../../views/chat/chat_project_screen.dart';
 

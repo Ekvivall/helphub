@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/constants.dart';
 
-import '../../models/event_model.dart';
+import '../../data/models/event_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/event/event_view_model.dart';

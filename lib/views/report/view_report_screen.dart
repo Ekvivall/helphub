@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:helphub/models/report_model.dart';
+import 'package:helphub/data/models/report_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
@@ -314,7 +314,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: appThemeColors.primaryWhite.withAlpha(178),
+        color: appThemeColors.primaryWhite.withAlpha(230),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -409,7 +409,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: appThemeColors.primaryWhite.withAlpha(178),
+        color: appThemeColors.primaryWhite.withAlpha(230),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -446,7 +446,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: appThemeColors.primaryWhite.withAlpha(178),
+        color: appThemeColors.primaryWhite.withAlpha(230),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -543,7 +543,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: appThemeColors.primaryWhite.withAlpha(178),
+        color: appThemeColors.primaryWhite.withAlpha(230),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -590,7 +590,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: appThemeColors.primaryWhite.withAlpha(178),
+        color: appThemeColors.primaryWhite.withAlpha(230),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -637,7 +637,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: appThemeColors.primaryWhite.withAlpha(178),
+        color: appThemeColors.primaryWhite.withAlpha(230),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -728,7 +728,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: appThemeColors.primaryWhite.withAlpha(178),
+        color: appThemeColors.primaryWhite.withAlpha(230),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -812,7 +812,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: appThemeColors.primaryWhite.withAlpha(178),
+        color: appThemeColors.primaryWhite.withAlpha(230),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
@@ -906,7 +906,7 @@ class _ViewReportScreenState extends State<ViewReportScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: appThemeColors.primaryWhite.withAlpha(178),
+        color: appThemeColors.primaryWhite.withAlpha(230),
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(

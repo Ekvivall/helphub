@@ -1,4 +1,4 @@
-import 'package:helphub/models/base_profile_model.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
 
 
 extension UserRoleStringExtension on String{

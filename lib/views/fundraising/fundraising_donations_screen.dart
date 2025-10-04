@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/core/services/donation_service.dart';
-import 'package:helphub/core/services/fundraising_service.dart';
-import 'package:helphub/models/base_profile_model.dart';
-import 'package:helphub/models/donation_model.dart';
-import 'package:helphub/models/fundraising_model.dart';
-import 'package:helphub/models/volunteer_model.dart';
+import 'package:helphub/data/services/donation_service.dart';
+import 'package:helphub/data/services/fundraising_service.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
+import 'package:helphub/data/models/donation_model.dart';
+import 'package:helphub/data/models/fundraising_model.dart';
+import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';

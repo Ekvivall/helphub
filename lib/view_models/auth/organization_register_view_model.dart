@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:helphub/models/organization_model.dart';
+import 'package:helphub/data/models/organization_model.dart';
 import 'package:helphub/routes/app_router.dart';
 
 import '../../core/utils/constants.dart';

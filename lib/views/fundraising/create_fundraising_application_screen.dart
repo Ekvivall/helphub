@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/category_chip_model.dart';
+import 'package:helphub/data/models/category_chip_model.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/constants.dart';

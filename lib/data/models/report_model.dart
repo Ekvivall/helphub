@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:helphub/models/participant_feedback_model.dart';
+import 'package:helphub/data/models/participant_feedback_model.dart';
 
 import 'organizer_feedback_model.dart';
+
 
 enum ActivityReportType {
   event,        // Звіт про подію

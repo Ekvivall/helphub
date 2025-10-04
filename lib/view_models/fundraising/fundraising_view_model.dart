@@ -7,15 +7,15 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:path/path.dart' as p;
 
-import '../../core/services/activity_service.dart';
-import '../../core/services/category_service.dart';
-import '../../core/services/fundraising_service.dart';
-import '../../core/services/user_service.dart';
-import '../../models/activity_model.dart';
-import '../../models/base_profile_model.dart';
-import '../../models/category_chip_model.dart';
-import '../../models/fundraising_model.dart';
-import '../../models/organization_model.dart';
+import '../../data/services/activity_service.dart';
+import '../../data/services/category_service.dart';
+import '../../data/services/fundraising_service.dart';
+import '../../data/services/user_service.dart';
+import '../../data/models/activity_model.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/category_chip_model.dart';
+import '../../data/models/fundraising_model.dart';
+import '../../data/models/organization_model.dart';
 
 class FundraisingViewModel extends ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/image_constant.dart';
-import 'package:helphub/models/base_profile_model.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/validators/auth_validator.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
@@ -15,7 +15,7 @@ import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/constants.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/models/volunteer_model.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/custom_dropdown.dart';
 import '../../widgets/user_avatar_with_frame.dart';
@@ -334,6 +334,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                     ),
                   ),
                 ),
+
               ],
             ),
           ),

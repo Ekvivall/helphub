@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:helphub/models/report_model.dart';
+import 'package:helphub/data/models/report_model.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart' as p;
 
-import '../../models/organizer_feedback_model.dart';
-import '../../models/participant_feedback_model.dart';
+import '../../data/models/organizer_feedback_model.dart';
+import '../../data/models/participant_feedback_model.dart';
 
 class ReportService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;

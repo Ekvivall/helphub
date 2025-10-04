@@ -3,8 +3,8 @@ import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/services/friend_service.dart';
-import '../../models/base_profile_model.dart';
+import '../../data/services/friend_service.dart';
+import '../../data/models/base_profile_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/custom_input_field.dart';

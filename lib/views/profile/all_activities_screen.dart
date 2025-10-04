@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/activity_model.dart';
+import 'package:helphub/data/models/activity_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
@@ -11,10 +11,10 @@ import 'package:helphub/widgets/profile/project_organization_activity_item.dart'
 import 'package:helphub/widgets/profile/project_participation_activity_item.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/event_model.dart';
-import '../../models/fundraising_model.dart';
-import '../../models/project_model.dart';
-import '../../models/project_task_model.dart';
+import '../../data/models/event_model.dart';
+import '../../data/models/fundraising_model.dart';
+import '../../data/models/project_model.dart';
+import '../../data/models/project_task_model.dart';
 
 class AllActivitiesScreen extends StatefulWidget {
   const AllActivitiesScreen({super.key});

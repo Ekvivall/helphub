@@ -1,23 +1,23 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:helphub/core/services/event_service.dart';
-import 'package:helphub/core/services/project_service.dart';
-import 'package:helphub/core/services/fundraising_service.dart';
+import 'package:helphub/data/services/event_service.dart';
+import 'package:helphub/data/services/project_service.dart';
+import 'package:helphub/data/services/fundraising_service.dart';
 import 'package:helphub/core/utils/constants.dart';
-import 'package:helphub/models/activity_model.dart';
-import 'package:helphub/models/project_task_model.dart';
-import 'package:helphub/models/report_model.dart';
+import 'package:helphub/data/models/activity_model.dart';
+import 'package:helphub/data/models/project_task_model.dart';
+import 'package:helphub/data/models/report_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:helphub/widgets/custom_text_field.dart';
 import 'package:helphub/widgets/custom_multi_document_upload_field.dart';
 
-import '../../core/services/user_service.dart';
-import '../../models/organization_model.dart';
-import '../../models/participant_feedback_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/services/user_service.dart';
+import '../../data/models/organization_model.dart';
+import '../../data/models/participant_feedback_model.dart';
+import '../../data/models/volunteer_model.dart';
 import '../../view_models/report/report_view_model.dart';
 import '../../widgets/custom_multi_image_upload_field.dart';
 

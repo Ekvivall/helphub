@@ -1,12 +1,12 @@
 import 'package:expandable_text/expandable_text.dart';
 import 'package:flutter/material.dart';
-import 'package:helphub/models/project_application_model.dart';
-import 'package:helphub/models/project_model.dart';
+import 'package:helphub/data/models/project_application_model.dart';
+import 'package:helphub/data/models/project_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:intl/intl.dart';
 
-import '../../core/services/project_service.dart';
+import '../../data/services/project_service.dart';
 import '../../routes/app_router.dart';
 import '../../views/chat/chat_project_screen.dart';
 import '../custom_elevated_button.dart';

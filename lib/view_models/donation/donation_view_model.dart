@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
-import 'package:helphub/core/services/donation_service.dart';
-import 'package:helphub/models/donation_model.dart';
-import 'package:helphub/models/organization_model.dart';
-import 'package:helphub/models/volunteer_model.dart';
+import 'package:helphub/data/services/donation_service.dart';
+import 'package:helphub/data/models/donation_model.dart';
+import 'package:helphub/data/models/organization_model.dart';
+import 'package:helphub/data/models/volunteer_model.dart';
 
-import '../../core/services/activity_service.dart';
-import '../../models/activity_model.dart';
-import '../../models/base_profile_model.dart';
-import '../../models/fundraising_model.dart';
+import '../../data/services/activity_service.dart';
+import '../../data/models/activity_model.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/fundraising_model.dart';
 
 class DonationViewModel extends ChangeNotifier {
   final DonationService _donationService = DonationService();

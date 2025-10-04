@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/core/services/fundraising_service.dart';
-import 'package:helphub/models/activity_model.dart';
-import 'package:helphub/models/fundraising_model.dart';
+import 'package:helphub/data/services/fundraising_service.dart';
+import 'package:helphub/data/models/activity_model.dart';
+import 'package:helphub/data/models/fundraising_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/profile/report_section_widget.dart';

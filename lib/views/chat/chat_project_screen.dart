@@ -1,18 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:helphub/core/services/chat_service.dart';
-import 'package:helphub/core/services/user_service.dart';
-import 'package:helphub/models/base_profile_model.dart';
+import 'package:helphub/data/services/chat_service.dart';
+import 'package:helphub/data/services/user_service.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
 import 'package:helphub/widgets/chat/message_input_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:helphub/models/project_task_model.dart';
+import 'package:helphub/data/models/project_task_model.dart';
 import 'package:helphub/view_models/chat/chat_view_model.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/services/notification_service.dart';
+import '../../data/services/notification_service.dart';
 import '../../core/utils/constants.dart';
-import '../../models/message_model.dart';
+import '../../data/models/message_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/chat/chat_task_view_model.dart';

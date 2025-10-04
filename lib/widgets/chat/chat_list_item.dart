@@ -4,12 +4,12 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';
 import 'package:provider/provider.dart';
-import '../../models/chat_model.dart';
-import '../../models/base_profile_model.dart';
-import '../../models/event_model.dart';
-import '../../models/project_model.dart';
-import '../../models/volunteer_model.dart';
-import '../../models/organization_model.dart';
+import '../../data/models/chat_model.dart';
+import '../../data/models/base_profile_model.dart';
+import '../../data/models/event_model.dart';
+import '../../data/models/project_model.dart';
+import '../../data/models/volunteer_model.dart';
+import '../../data/models/organization_model.dart';
 import '../../view_models/chat/chat_view_model.dart';
 
 class ChatListItem extends StatefulWidget {

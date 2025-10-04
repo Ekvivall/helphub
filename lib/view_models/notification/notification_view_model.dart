@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:helphub/core/services/notification_service.dart';
-import 'package:helphub/models/notification_model.dart';
+import 'package:helphub/data/services/notification_service.dart';
+import 'package:helphub/data/models/notification_model.dart';
 
 import '../../core/utils/constants.dart';
 

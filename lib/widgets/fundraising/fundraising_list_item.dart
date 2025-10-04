@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/fundraising_model.dart';
+import 'package:helphub/data/models/fundraising_model.dart';
 import 'package:helphub/view_models/fundraising/fundraising_view_model.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/theme/text_style_helper.dart';

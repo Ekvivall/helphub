@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/image_constant.dart';
-import 'package:helphub/models/event_model.dart';
+import 'package:helphub/data/models/event_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:helphub/models/project_task_model.dart';
+import 'package:helphub/data/models/project_task_model.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../models/organization_model.dart';
-import '../../models/project_application_model.dart';
-import '../../models/volunteer_model.dart';
+import '../../data/models/organization_model.dart';
+import '../../data/models/project_application_model.dart';
+import '../../data/models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
