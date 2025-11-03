@@ -60,15 +60,13 @@ class ChatViewModel extends ChangeNotifier {
   EventModel? get currentEvent => _currentEvent;
 
   ChatViewModel() {
-    _init();
-  }
-
-  Future<void> _init() async {
-    _currentUserId = _auth.currentUser?.uid;
-    if (_currentUserId != null) {
-      _user = await _userService.fetchUserProfile(_currentUserId);
-      loadUserChats(_currentUserId!);
-    }
+    _auth.authStateChanges().listen((user) async {
+      _currentUserId = _auth.currentUser?.uid;
+      if (_currentUserId != null) {
+        _user = await _userService.fetchUserProfile(_currentUserId);
+        loadUserChats(_currentUserId!);
+      }
+    });
   }
 
   void loadUserChats(String userId) {

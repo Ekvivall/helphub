@@ -297,7 +297,7 @@ class _ApplyToProjectScreenState extends State<ApplyToProjectScreen> {
         final int assigned = task.assignedVolunteerIds?.length ?? 0;
         final bool isFull = assigned >= needed;
         final int res = needed - assigned;
-        return !isFull
+        return !isFull && task.status != TaskStatus.confirmed
             ? Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 elevation: 2,
@@ -323,11 +323,13 @@ class _ApplyToProjectScreenState extends State<ApplyToProjectScreen> {
                           if (needed > 0)
                             Text(
                               isFull
-                                  ? 'Заповнено'
+                                  ? 'Заповнено':
+                              task.status == TaskStatus.confirmed
+                                  ? 'виконано'
                                   : 'Потріб${res > 1 ? 'но' : 'ен'} $res учасник${res > 1 ? 'и' : ''}',
                               style: TextStyleHelper.instance.title14Regular
                                   .copyWith(
-                                    color: isFull
+                                    color: isFull || task.status == TaskStatus.confirmed
                                         ? appThemeColors.errorRed
                                         : appThemeColors.successGreen,
                                     fontWeight: FontWeight.w700,
@@ -354,7 +356,7 @@ class _ApplyToProjectScreenState extends State<ApplyToProjectScreen> {
                       const SizedBox(height: 8),
                       CustomCheckboxWithText(
                         text: 'Хочу долучитися',
-                        onChanged: isFull
+                        onChanged: isFull  || task.status == TaskStatus.confirmed
                             ? null // Disable checkbox if task is full
                             : (bool? newValue) {
                                 if (newValue != null) {
@@ -365,7 +367,7 @@ class _ApplyToProjectScreenState extends State<ApplyToProjectScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         textStyle: TextStyleHelper.instance.title14Regular
                             .copyWith(
-                              color: isFull
+                              color: isFull || task.status == TaskStatus.confirmed
                                   ? appThemeColors.textMediumGrey
                                   : appThemeColors.primaryBlack,
                             ),

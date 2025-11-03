@@ -107,18 +107,16 @@ class ProjectViewModel extends ChangeNotifier {
 
   String? get projectChatId => _projectChatId;
   ProjectViewModel() {
-    _init();
-  }
-
-  Future<void> _init() async {
-    _currentAuthUserId = _auth.currentUser?.uid;
-    if (_currentAuthUserId != null) {
-      _user = await _fetchCurrentUserProfile(_currentAuthUserId);
-      await _fetchCurrentUserFriends();
-      await _getCurrentUserLocation();
-      _listenToProjects();
-    }
-    await fetchSkillsAndCategories();
+    _auth.authStateChanges().listen((user) async {
+      _currentAuthUserId = user?.uid;
+      if (_currentAuthUserId != null) {
+        _user = await _fetchCurrentUserProfile(_currentAuthUserId);
+        await _fetchCurrentUserFriends();
+        await _getCurrentUserLocation();
+        _listenToProjects();
+      }
+      await fetchSkillsAndCategories();
+    });
   }
 
   Future<BaseProfileModel?> _fetchCurrentUserProfile(String? userId) async {
@@ -634,5 +632,10 @@ class ProjectViewModel extends ChangeNotifier {
   void dispose() {
     _projectsSubscription?.cancel();
     super.dispose();
+  }
+
+  void refresh() {
+    _listenToProjects();
+
   }
 }

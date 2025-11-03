@@ -9,7 +9,7 @@ class FAQViewModel extends ChangeNotifier {
 
   List<FAQItemModel> _allFAQItems = [];
   List<FAQItemModel> _filteredFAQItems = [];
-  Map<String, List<FAQItemModel>> _categorizedItems = {};
+  final Map<String, List<FAQItemModel>> _categorizedItems = {};
   List<String> _categories = [];
 
   bool _isLoading = false;

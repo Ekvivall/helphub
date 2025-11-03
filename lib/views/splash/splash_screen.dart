@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
@@ -24,46 +25,53 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment(0.9, -0.4),
-            end: Alignment(-0.9, 0.4),
-            colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+    return PopScope(
+      canPop: false, // Блокуємо стандартний pop
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          SystemNavigator.pop(); // Закриваємо додаток
+        }
+      },
+      child: Scaffold(
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment(0.9, -0.4),
+              end: Alignment(-0.9, 0.4),
+              colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+            ),
           ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-
-            //HelpHub logo
-            Container(
-              margin: EdgeInsets.only(bottom: 32),
-              child: CustomImageView(
-                imagePath: ImageConstant.volunteerLogo,
-                height: 177,
-                width: 242,
-                fit: BoxFit.contain,
-              ),
-            ),
-
-            // Mission statement
-            Container(
-              constraints: BoxConstraints(maxWidth: 320),
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Об\'єднуємо небайдужих заради добрих справ',
-                style: TextStyleHelper.instance.headline24SemiBold.copyWith(
-                  color: appThemeColors.primaryWhite,
-                  height: 1.2,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              //HelpHub logo
+              Container(
+                margin: EdgeInsets.only(bottom: 32),
+                child: CustomImageView(
+                  imagePath: ImageConstant.volunteerLogo,
+                  height: 177,
+                  width: 242,
+                  fit: BoxFit.contain,
                 ),
-                textAlign: TextAlign.center,
               ),
-            ),
-          ],
+
+              // Mission statement
+              Container(
+                constraints: BoxConstraints(maxWidth: 320),
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'Об\'єднуємо небайдужих заради добрих справ',
+                  style: TextStyleHelper.instance.headline24SemiBold.copyWith(
+                    color: appThemeColors.primaryWhite,
+                    height: 1.2,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -33,7 +33,6 @@ class NotificationService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   String? _fcmToken;
-  BuildContext? _context;
   bool _isAppInForeground = true;
   String? _currentChatId; // Для перевірки чи користувач в чаті
   final Set<String> _processedNotifications = <String>{};
@@ -53,7 +52,6 @@ class NotificationService {
   static RemoteMessage? _pendingRemoteMessage;
 
   Future<void> initialize(BuildContext context) async {
-    _context = context;
     await _requestPermissions();
     await _initializeLocalNotifications();
     await _getFCMToken();
@@ -165,7 +163,6 @@ class NotificationService {
     }
 
     final notificationType = message.data['type'];
-
     if (notificationType != 'chat' &&
         notificationType != 'fundraisingDonation') {
       await _saveNotificationToFirestore(message);
@@ -185,6 +182,10 @@ class NotificationService {
       }
     }
     if (_isAppInForeground) {
+      if (notificationType == 'achievement') {
+        await _showLocalNotification(message);
+        return;
+      }
       _showInAppNotification(message);
     }
     await _showLocalNotification(message);
@@ -258,8 +259,9 @@ class NotificationService {
   }
 
   void _showInAppNotification(RemoteMessage message) {
-    if (_context != null && _context!.mounted) {
-      ScaffoldMessenger.of(_context!).showSnackBar(
+    final context = navigatorKey?.currentContext;
+    if (context != null && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: appThemeColors.backgroundLightGrey,
           content: Column(
@@ -284,8 +286,8 @@ class NotificationService {
             label: 'Переглянути',
             textColor: appThemeColors.blueAccent,
             onPressed: () {
-              ScaffoldMessenger.of(_context!).hideCurrentSnackBar();
-              navigateFromNotificationData(message.data, null, _context);
+              ScaffoldMessenger.of(context).hideCurrentSnackBar();
+              navigateFromNotificationData(message.data, null);
             },
           ),
           duration: const Duration(seconds: 4),
@@ -297,16 +299,9 @@ class NotificationService {
 
   Future<void> navigateFromNotificationData(
     Map<String, dynamic> data,
-    NotificationType? type, [
-    BuildContext? context,
-  ]) async {
-    NavigatorState? navigator;
-
-    if (navigatorKey?.currentState != null) {
-      navigator = navigatorKey!.currentState!;
-    } else if (_context != null && _context!.mounted) {
-      navigator = Navigator.of(_context!);
-    } else {
+    NotificationType? type) async {
+    final navigator = navigatorKey?.currentState;
+    if (navigator == null) {
       return;
     }
     if (type == null) {
@@ -420,7 +415,7 @@ class NotificationService {
   }
 
   Future<void> _navigateBasedOnNotification(RemoteMessage message) async {
-    await navigateFromNotificationData(message.data, null, _context);
+    await navigateFromNotificationData(message.data, null);
   }
 
   void _onLocalNotificationTapped(NotificationResponse response) {
@@ -451,8 +446,6 @@ class NotificationService {
   void _navigateToNotifications() {
     if (navigatorKey?.currentState != null) {
       navigatorKey!.currentState!.pushNamed(AppRoutes.notificationsScreen);
-    } else if (_context != null && _context!.mounted) {
-      Navigator.of(_context!).pushNamed(AppRoutes.notificationsScreen);
     }
   }
 

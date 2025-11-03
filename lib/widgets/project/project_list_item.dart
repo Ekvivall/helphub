@@ -36,7 +36,7 @@ class ProjectListItem extends StatelessWidget {
         ? completedTasks! / totalTasks
         : 0.0;
     final bool isProjectFinished =
-        (project.endDate?.isBefore(DateTime.now()) ??false || progress == 1);
+    (project.endDate?.isBefore(DateTime.now()) ?? false || progress == 1);
     final totalNeededPeople = project.tasks
         ?.map((task) => task.neededPeople ?? 0)
         .fold<int>(0, (sum, count) => sum + count);
@@ -45,13 +45,14 @@ class ProjectListItem extends StatelessWidget {
         .fold<int>(0, (sum, count) => sum + count);
     final bool isFull =
         totalVolunteers != null &&
-        totalNeededPeople != null &&
-        totalVolunteers >= totalNeededPeople;
+            totalNeededPeople != null &&
+            totalVolunteers >= totalNeededPeople;
     final bool isParticipant =
         project.tasks?.any(
-          (task) => task.assignedVolunteerIds?.contains(currentUserId) ?? false,
+              (task) =>
+          task.assignedVolunteerIds?.contains(currentUserId) ?? false,
         ) ??
-        false;
+            false;
 
     String buttonText;
     Color buttonColor;
@@ -120,7 +121,8 @@ class ProjectListItem extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    '${totalVolunteers ?? 0}/${totalNeededPeople ?? 0} учасників',
+                    '${totalVolunteers ?? 0}/${totalNeededPeople ??
+                        0} учасників',
                     style: TextStyleHelper.instance.title14Regular.copyWith(
                       color: appThemeColors.textMediumGrey,
                     ),
@@ -145,10 +147,11 @@ class ProjectListItem extends StatelessWidget {
                   if (project.categories != null &&
                       project.categories!.isNotEmpty)
                     ...project.categories!.map(
-                      (category) => Padding(
-                        padding: const EdgeInsets.only(right: 8.0),
-                        child: CategoryChipWidget(chip: category),
-                      ),
+                          (category) =>
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: CategoryChipWidget(chip: category),
+                          ),
                     ),
                 ],
               ),
@@ -217,7 +220,7 @@ class ProjectListItem extends StatelessWidget {
                     final task = project.tasks!.elementAt(index);
                     final freeSpots =
                         (task.neededPeople ?? 0) -
-                        (task.assignedVolunteerIds?.length ?? 0);
+                            (task.assignedVolunteerIds?.length ?? 0);
                     final isTaskFull = freeSpots <= 0;
 
                     final formattedDate = DateFormat(
@@ -242,8 +245,8 @@ class ProjectListItem extends StatelessWidget {
                                 task.title ?? '',
                                 style: TextStyleHelper.instance.title14Regular
                                     .copyWith(
-                                      color: appThemeColors.primaryBlack,
-                                    ),
+                                  color: appThemeColors.primaryBlack,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -254,19 +257,23 @@ class ProjectListItem extends StatelessWidget {
                                   '$formattedDate • ',
                                   style: TextStyleHelper.instance.title13Regular
                                       .copyWith(
-                                        color: appThemeColors.textMediumGrey,
-                                      ),
+                                    color: appThemeColors.textMediumGrey,
+                                  ),
                                 ),
                                 Text(
                                   isTaskFull
-                                      ? 'зайнято'
-                                      : '$freeSpots місц${freeSpots == 1 ? 'е' : 'я'} вільно',
+                                      ? 'зайнято':
+                                  task.status == TaskStatus.confirmed
+                                      ? 'виконано'
+                                      : '$freeSpots місц${freeSpots == 1
+                                      ? 'е'
+                                      : 'я'} вільно',
                                   style: TextStyleHelper.instance.title13Regular
                                       .copyWith(
-                                        color: isTaskFull
-                                            ? appThemeColors.errorRed
-                                            : appThemeColors.successGreen,
-                                      ),
+                                    color: isTaskFull || task.status == TaskStatus.confirmed
+                                        ? appThemeColors.errorRed
+                                        : appThemeColors.successGreen,
+                                  ),
                                 ),
                               ],
                             ),

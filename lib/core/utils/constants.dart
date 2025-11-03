@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../data/models/achievement_item_model.dart';
 import '../../data/models/notification_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
@@ -555,4 +556,94 @@ class Constants {
     ],
   };
 
+  static final List<AchievementModel> allAchievements = [
+    AchievementModel(
+      id: 'newcomer',
+      title: 'Новачок',
+      description: 'Візьми участь у першій події',
+      iconPath: 'assets/images/achievements/llama_newcomer.png',
+      isSecret: false,
+      order: 1,
+    ),
+    AchievementModel(
+      id: 'activist',
+      title: 'Активіст',
+      description: 'Візьми участь у 5 подіях',
+      iconPath: 'assets/images/achievements/llama_activist.png',
+      isSecret: false,
+      order: 2,
+    ),
+    AchievementModel(
+      id: 'event_veteran',
+      title: 'Ветеран подій',
+      description: 'Візьми участь у 20 подіях',
+      iconPath: 'assets/images/achievements/llama_veteran.png',
+      isSecret: false,
+      order: 3,
+    ),
+    AchievementModel(
+      id: 'team_player',
+      title: 'Командний гравець',
+      description: 'Приєднайся до 3 різних проєктів',
+      iconPath: 'assets/images/achievements/llama_team_player.png',
+      isSecret: false,
+      order: 4,
+    ),
+    AchievementModel(
+      id: 'project_leader',
+      title: 'Лідер проєктів',
+      description: 'Заверши проєкт як організатор',
+      iconPath: 'assets/images/achievements/llama_leader.png',
+      isSecret: false,
+      order: 5,
+    ),
+    AchievementModel(
+      id: 'donator',
+      title: 'Донатор',
+      description: 'Зроби перший донат у збір',
+      iconPath: 'assets/images/achievements/llama_donator.png',
+      isSecret: false,
+      order: 6,
+    ),
+    AchievementModel(
+      id: 'philanthropist',
+      title: 'Благодійник',
+      description: 'Задонать понад 1000 грн у різні збори',
+      iconPath: 'assets/images/achievements/llama_philanthropist.png',
+      isSecret: false,
+      order: 7,
+    ),
+    AchievementModel(
+      id: 'community_fan',
+      title: 'Фанат спільноти',
+      description: 'Додай 5 друзів',
+      iconPath: 'assets/images/achievements/llama_community.png',
+      isSecret: false,
+      order: 8,
+    ),
+    AchievementModel(
+      id: 'marathoner',
+      title: 'Марафонець',
+      description: 'Бери участь у подіях щотижня протягом місяця',
+      iconPath: 'assets/images/achievements/llama_marathoner.png',
+      isSecret: false,
+      order: 9,
+    ),
+    AchievementModel(
+      id: 'photographer',
+      title: 'Фотограф',
+      description: 'Додай звіт з фото',
+      iconPath: 'assets/images/achievements/llama_photographer.png',
+      isSecret: false,
+      order: 10,
+    ),
+    AchievementModel(
+      id: 'secret_master',
+      title: 'Секретне',
+      description: 'Отримай всі інші досягнення',
+      iconPath: 'assets/images/achievements/llama_secret.gif',
+      isSecret: true,
+      order: 11,
+    ),
+  ];
 }

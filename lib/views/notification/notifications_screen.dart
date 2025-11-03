@@ -306,7 +306,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
               decoration: BoxDecoration(
                 color: notification.isRead
                     ? appThemeColors.primaryWhite
-                    : appThemeColors.blueMixedColor,
+                    : appThemeColors.backgroundLightGrey.withAlpha(193),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
                   color: notification.isRead

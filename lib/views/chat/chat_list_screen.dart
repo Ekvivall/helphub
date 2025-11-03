@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/widgets/custom_tournament_icon_button.dart';
@@ -49,62 +50,69 @@ class _ChatListScreenState extends State<ChatListScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: appThemeColors.blueAccent,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment(0.9, -0.4),
-            end: Alignment(-0.9, 0.4),
-            colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: appThemeColors.blueAccent,
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment(0.9, -0.4),
+              end: Alignment(-0.9, 0.4),
+              colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+            ),
           ),
-        ),
-        child: Consumer<ChatViewModel>(
-          builder: (context, viewModel, child) {
-            if (viewModel.user == null) return SizedBox.shrink();
-            final BaseProfileModel user = viewModel.user!;
-            return Column(
-              children: [
-                _buildHeader(context, viewModel, user),
-                const SizedBox(height: 9),
-                TabBar(
-                  tabAlignment: TabAlignment.start,
-                  controller: _tabController,
-                  isScrollable: true,
-                  labelColor: appThemeColors.backgroundLightGrey,
-                  unselectedLabelColor: appThemeColors.backgroundLightGrey
-                      .withAlpha(150),
-                  indicatorColor: appThemeColors.lightGreenColor,
-                  labelStyle: TextStyleHelper.instance.title14Regular.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                  tabs: const [
-                    Tab(text: 'Усі чати'),
-                    Tab(text: 'Події'),
-                    Tab(text: 'Проєкти'),
-                    Tab(text: 'Друзі'),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: TabBarView(
+          child: Consumer<ChatViewModel>(
+            builder: (context, viewModel, child) {
+              if (viewModel.user == null) return SizedBox.shrink();
+              final BaseProfileModel user = viewModel.user!;
+              return Column(
+                children: [
+                  _buildHeader(context, viewModel, user),
+                  const SizedBox(height: 9),
+                  TabBar(
+                    tabAlignment: TabAlignment.start,
                     controller: _tabController,
-                    children: [
-                      _buildChatList(viewModel, filter: 'all'),
-                      _buildChatList(viewModel, filter: 'events'),
-                      _buildChatList(viewModel, filter: 'projects'),
-                      _buildChatList(viewModel, filter: 'friends'),
+                    isScrollable: true,
+                    labelColor: appThemeColors.backgroundLightGrey,
+                    unselectedLabelColor: appThemeColors.backgroundLightGrey
+                        .withAlpha(150),
+                    indicatorColor: appThemeColors.lightGreenColor,
+                    labelStyle: TextStyleHelper.instance.title14Regular
+                        .copyWith(fontWeight: FontWeight.w600),
+                    tabs: const [
+                      Tab(text: 'Усі чати'),
+                      Tab(text: 'Події'),
+                      Tab(text: 'Проєкти'),
+                      Tab(text: 'Друзі'),
                     ],
                   ),
-                ),
-              ],
-            );
-          },
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildChatList(viewModel, filter: 'all'),
+                        _buildChatList(viewModel, filter: 'events'),
+                        _buildChatList(viewModel, filter: 'projects'),
+                        _buildChatList(viewModel, filter: 'friends'),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
+        bottomNavigationBar: buildBottomNavigationBar(context, 4),
       ),
-      bottomNavigationBar: buildBottomNavigationBar(context, 4),
     );
   }
 
@@ -203,24 +211,22 @@ class _ChatListScreenState extends State<ChatListScreen>
           chat: chat,
           currentUserId: _currentUserId!,
           onTap: () {
-            if(chat.type == ChatType.project){
+            if (chat.type == ChatType.project) {
               Navigator.of(context).pushNamed(
-                  AppRoutes.chatProjectScreen,
-                  arguments: {
-                  'chatId': chat.id,
-                  'displayMode': DisplayMode.chat});
-            }
-            else if(chat.type == ChatType.friend) {
+                AppRoutes.chatProjectScreen,
+                arguments: {'chatId': chat.id, 'displayMode': DisplayMode.chat},
+              );
+            } else if (chat.type == ChatType.friend) {
               Navigator.of(
-              context,
-            ).pushNamed(AppRoutes.chatFriendScreen, arguments: chat.id);
-            }
-            else {
+                context,
+              ).pushNamed(AppRoutes.chatFriendScreen, arguments: chat.id);
+            } else {
               Navigator.of(
-              context,
-            ).pushNamed(AppRoutes.chatEventScreen, arguments: chat.id);
+                context,
+              ).pushNamed(AppRoutes.chatEventScreen, arguments: chat.id);
             }
-          }, unreadCount: chat.unreadCount,
+          },
+          unreadCount: chat.unreadCount,
         );
       },
     );

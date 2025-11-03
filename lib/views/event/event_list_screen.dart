@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:helphub/view_models/event/event_view_model.dart';
 import 'package:helphub/views/event/event_filters_screen.dart';
 import 'package:helphub/views/event/event_map_screen.dart';
@@ -37,55 +38,60 @@ class _EventListScreenState extends State<EventListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: appThemeColors.blueAccent,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment(0.9, -0.4),
-            end: Alignment(-0.9, 0.4),
-            colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: appThemeColors.blueAccent,
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment(0.9, -0.4),
+              end: Alignment(-0.9, 0.4),
+              colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+            ),
+          ),
+          child: Consumer<EventViewModel>(
+            builder: (context, viewModel, child) {
+              if (viewModel.user == null) return SizedBox.shrink();
+              final BaseProfileModel user = viewModel.user!;
+              return Column(
+                children: [
+                  // Кастомний хедер
+                  _buildHeader(context, viewModel, user),
+                  const SizedBox(height: 16),
+                  // Перемикач режимів "Список" / "Мапа"
+                  _buildDisplayModeToggle(context),
+                  const SizedBox(height: 16),
+                  //Основний контент (список подій або карта)
+                  Expanded(
+                    child: _displayMode == DisplayMode.list
+                        ? _buildEventList(viewModel)
+                        : const EventMapScreen(),
+                  ),
+                ],
+              );
+            },
           ),
         ),
-        child: Consumer<EventViewModel>(
-          builder: (context, viewModel, child) {
-            if (viewModel.user == null) return SizedBox.shrink();
-            final BaseProfileModel user = viewModel.user!;
-            return Column(
-              children: [
-                // Кастомний хедер
-                _buildHeader(context, viewModel, user),
-                const SizedBox(height: 16),
-                // Перемикач режимів "Список" / "Мапа"
-                _buildDisplayModeToggle(context),
-                const SizedBox(height: 16),
-                //Основний контент (список подій або карта)
-                Expanded(
-                  child: _displayMode == DisplayMode.list
-                      ? _buildEventList(viewModel)
-                      : const EventMapScreen(),
-                ),
-              ],
-            );
+        // Плаваюча кнопка дії
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(
+              context,
+            ).pushNamed(AppRoutes.createEventScreen, arguments: '');
           },
+          backgroundColor: appThemeColors.blueAccent,
+          shape: const CircleBorder(),
+          child: Icon(Icons.add, color: appThemeColors.primaryWhite, size: 37),
         ),
-      ),
-      // Плаваюча кнопка дії
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(
-            context,
-          ).pushNamed(AppRoutes.createEventScreen, arguments: '');
-        },
-        backgroundColor: appThemeColors.blueAccent,
-        shape: const CircleBorder(),
-        child: Icon(Icons.add, color: appThemeColors.primaryWhite, size: 37),
-      ),
-      bottomNavigationBar: buildBottomNavigationBar(
-        context,
-        0
+        bottomNavigationBar: buildBottomNavigationBar(context, 0),
       ),
     );
   }

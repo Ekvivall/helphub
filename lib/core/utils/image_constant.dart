@@ -22,4 +22,7 @@ class ImageConstant{
   static String privatLogo = '${_basePath}privat_logo.png';
 
   static String monoLogo = '${_basePath}mono_logo.png';
+
+  static String llamaSecretClose = '${_basePath}achievements/llama_secret_close.png';
+
 }

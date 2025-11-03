@@ -19,6 +19,7 @@ import 'package:helphub/views/fundraising/fundraising_donations_screen.dart';
 import 'package:helphub/views/fundraising/fundraising_list_screen.dart';
 import 'package:helphub/views/fundraising/fundraising_raffle_screen.dart';
 import 'package:helphub/views/notification/notifications_screen.dart';
+import 'package:helphub/views/profile/all_achievements_screen.dart';
 import 'package:helphub/views/profile/all_applications_screen.dart';
 import 'package:helphub/views/profile/all_followed_organizations_screen.dart';
 import 'package:helphub/views/profile/all_saved_fundraisers_screen.dart';
@@ -114,7 +115,7 @@ class AppRoutes {
   static const String calendarScreen = '/calendar';
   static const String notificationsScreen = '/notifications';
   static const String settingsScreen = '/settings';
-  static String achievementsScreen = '/';
+  static String achievementsScreen = '/all_achievements';
   static String faqScreen = '/faq';
 
   static Map<String, WidgetBuilder> routes = {
@@ -147,6 +148,7 @@ class AppRoutes {
     notificationsScreen: (context) => NotificationsScreen(),
     settingsScreen: (context) => SettingsScreen(),
     faqScreen: (context) => FAQScreen(),
+    achievementsScreen: (context) => AllAchievementsScreen(),
   };
 
 

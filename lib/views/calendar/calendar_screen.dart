@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:helphub/data/services/event_service.dart';
 import 'package:helphub/data/services/project_service.dart';
 import 'package:helphub/data/models/base_profile_model.dart';
@@ -170,48 +171,57 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: appThemeColors.blueAccent,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: const Alignment(0.9, -0.4),
-            end: const Alignment(-0.9, 0.4),
-            colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: appThemeColors.blueAccent,
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: const Alignment(0.9, -0.4),
+              end: const Alignment(-0.9, 0.4),
+              colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+            ),
+          ),
+          child: Consumer2<EventViewModel, ProjectViewModel>(
+            builder: (context, eventViewModel, projectViewModel, child) {
+              if (eventViewModel.user == null &&
+                  projectViewModel.user == null) {
+                return const SizedBox.shrink();
+              }
+              final BaseProfileModel user =
+                  eventViewModel.user ?? projectViewModel.user!;
+              return Column(
+                children: [
+                  _buildHeader(context, user),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        _buildCalendar(),
+                        Expanded(
+                          child: _buildEventsList(
+                            eventViewModel,
+                            projectViewModel,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  //),
+                ],
+              );
+            },
           ),
         ),
-        child: Consumer2<EventViewModel, ProjectViewModel>(
-          builder: (context, eventViewModel, projectViewModel, child) {
-            if (eventViewModel.user == null && projectViewModel.user == null) {
-              return const SizedBox.shrink();
-            }
-            final BaseProfileModel user =
-                eventViewModel.user ?? projectViewModel.user!;
-            return Column(
-              children: [
-                _buildHeader(context, user),
-                Expanded(
-                  child: Column(
-                    children: [
-                      _buildCalendar(),
-                      Expanded(
-                        child: _buildEventsList(
-                          eventViewModel,
-                          projectViewModel,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                //),
-              ],
-            );
-          },
-        ),
+        bottomNavigationBar: buildBottomNavigationBar(context, 3),
       ),
-      bottomNavigationBar: buildBottomNavigationBar(context, 3),
     );
   }
 

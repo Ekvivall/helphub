@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/views/project/project_filters_screen.dart';
 import 'package:provider/provider.dart';
@@ -33,45 +34,53 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: appThemeColors.blueAccent,
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment(0.9, -0.4),
-            end: Alignment(-0.9, 0.4),
-            colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: appThemeColors.blueAccent,
+        body: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment(0.9, -0.4),
+              end: Alignment(-0.9, 0.4),
+              colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+            ),
+          ),
+          child: Consumer<ProjectViewModel>(
+            builder: (context, viewModel, child) {
+              if (viewModel.user == null) return SizedBox.shrink();
+              final BaseProfileModel user = viewModel.user!;
+              return Column(
+                children: [
+                  _buildHeader(context, viewModel, user),
+                  const SizedBox(height: 16),
+                  Expanded(child: _buildProjectList(viewModel)),
+                ],
+              );
+            },
           ),
         ),
-        child: Consumer<ProjectViewModel>(
-          builder: (context, viewModel, child) {
-            if (viewModel.user == null) return SizedBox.shrink();
-            final BaseProfileModel user = viewModel.user!;
-            return Column(
-              children: [
-                _buildHeader(context, viewModel, user),
-                const SizedBox(height: 16),
-                Expanded(child: _buildProjectList(viewModel)),
-              ],
-            );
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(
+              context,
+            ).pushNamed(AppRoutes.createProjectScreen, arguments: '');
           },
+          backgroundColor: appThemeColors.blueAccent,
+          shape: const CircleBorder(),
+          child: Icon(Icons.add, color: appThemeColors.primaryWhite, size: 37),
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(
-            context,
-          ).pushNamed(AppRoutes.createProjectScreen, arguments: '');
-        },
-        backgroundColor: appThemeColors.blueAccent,
-        shape: const CircleBorder(),
-        child: Icon(Icons.add, color: appThemeColors.primaryWhite, size: 37),
-      ),
-      bottomNavigationBar: buildBottomNavigationBar(
-        context,
-        1, // Index 1 for "Проєкти"
+        bottomNavigationBar: buildBottomNavigationBar(
+          context,
+          1, // Index 1 for "Проєкти"
+        ),
       ),
     );
   }
@@ -101,7 +110,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
               hintText: 'Пошук проєктів...',
               controller: _searchController,
               onChanged: (query) {
-                 viewModel.setSearchQuery(query);
+                viewModel.setSearchQuery(query);
               },
               borderRadius: 10,
               textColor: appThemeColors.primaryBlack,
@@ -143,14 +152,51 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
     }
     if (errorMessage != null) {
       return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            errorMessage,
-            textAlign: TextAlign.center,
-            style: TextStyleHelper.instance.title16Regular.copyWith(
-              color: appThemeColors.errorRed,
-            ),
+        child: Container(
+          margin: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: appThemeColors.primaryWhite.withAlpha(230),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: appThemeColors.errorRed.withAlpha(127)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: appThemeColors.errorRed,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Помилка завантаження',
+                style: TextStyleHelper.instance.title18Bold.copyWith(
+                  color: appThemeColors.primaryBlack,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                viewModel.errorMessage!,
+                textAlign: TextAlign.center,
+                style: TextStyleHelper.instance.title14Regular.copyWith(
+                  color: appThemeColors.textMediumGrey,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: viewModel.refresh,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: appThemeColors.lightGreenColor,
+                ),
+                child: Text(
+                  'Спробувати знову',
+                  style: TextStyleHelper.instance.title14Regular.copyWith(
+                    color: appThemeColors.primaryWhite,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       );

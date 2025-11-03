@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'achievement_item_model.dart';
 import '../../data/models/base_profile_model.dart';
 import '../../data/models/category_chip_model.dart';
 import '../../data/models/medal_item_model.dart';
@@ -15,7 +14,6 @@ class VolunteerModel extends BaseProfileModel {
   final double? progressPercent;
   final int? pointsToNextLevel;
   final int? achievementsCount;
-  final List<AchievementItemModel>? achievements;
   final List<MedalItemModel>? medals;
 
   VolunteerModel({
@@ -43,7 +41,6 @@ class VolunteerModel extends BaseProfileModel {
     this.progressPercent,
     this.pointsToNextLevel,
     this.achievementsCount,
-    this.achievements,
     this.medals,
   }) : super(role: UserRole.volunteer); // Встановлюємо роль для волонтера
 
@@ -77,7 +74,6 @@ class VolunteerModel extends BaseProfileModel {
       'progressPercent': progressPercent,
       'pointsToNextLevel': pointsToNextLevel,
       'achievementsCount': achievementsCount,
-      'achievements': achievements?.map((e) => e.toMap()).toList(),
       'medals': medals?.map((e) => e.toMap()).toList(),
     };
   }
@@ -112,9 +108,6 @@ class VolunteerModel extends BaseProfileModel {
       progressPercent: map['progressPercent'] as double?,
       pointsToNextLevel: map['pointsToNextLevel'] as int?,
       achievementsCount: map['achievementsCount'] as int?,
-      achievements: (map['achievements'] as List<dynamic>?)
-          ?.map((e) => AchievementItemModel.fromMap(e as Map<String, dynamic>))
-          .toList(),
       medals: (map['medals'] as List<dynamic>?)
           ?.map((e) => MedalItemModel.fromMap(e as Map<String, dynamic>))
           .toList(),
@@ -146,7 +139,6 @@ class VolunteerModel extends BaseProfileModel {
     double? progressPercent,
     int? pointsToNextLevel,
     int? achievementsCount,
-    List<AchievementItemModel>? achievements,
     List<MedalItemModel>? medals,
     List<CategoryChipModel>? categoryChips,
     String? phoneNumber,
@@ -172,7 +164,6 @@ class VolunteerModel extends BaseProfileModel {
       progressPercent: progressPercent ?? this.progressPercent,
       pointsToNextLevel: pointsToNextLevel ?? this.pointsToNextLevel,
       achievementsCount: achievementsCount ?? this.achievementsCount,
-      achievements: achievements ?? this.achievements,
       medals: medals ?? this.medals,
       categoryChips: categoryChips ?? this.categoryChips,
       phoneNumber: phoneNumber ?? this.phoneNumber,

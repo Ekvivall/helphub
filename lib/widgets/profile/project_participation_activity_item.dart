@@ -33,7 +33,7 @@ class ProjectParticipationActivityItem extends StatelessWidget {
     return FutureBuilder<ProjectModel?>(
       future: projectService.getProjectById(activity.entityId),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (!snapshot.hasData) {
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
             elevation: 2,
@@ -47,7 +47,7 @@ class ProjectParticipationActivityItem extends StatelessWidget {
           );
         }
 
-        if (snapshot.hasError || !snapshot.hasData || snapshot.data == null) {
+        if (snapshot.hasError || snapshot.data == null) {
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
             elevation: 2,

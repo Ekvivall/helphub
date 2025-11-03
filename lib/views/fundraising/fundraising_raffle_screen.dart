@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:helphub/data/models/activity_model.dart';
 import 'package:helphub/data/services/donation_service.dart';
 import 'package:helphub/data/services/fundraising_service.dart';
 import 'package:helphub/data/models/base_profile_model.dart';
@@ -163,18 +164,20 @@ class _FundraisingRaffleScreenState extends State<FundraisingRaffleScreen> {
         }
       }
 
-      final List<RaffleWinnerModel> raffleWinners = winners.asMap().entries.map((entry) {
-        final winnerId = entry.value;
-        final winnerTickets = donorTickets[winnerId]!;
-        final prize = fundraising!.prizes![entry.key];
-        return RaffleWinnerModel(
-          donorId: winnerTickets.donorId,
-          donorName: winnerTickets.donorName,
-          prize: prize,
-          ticketsWon: winnerTickets.ticketCount,
-          timestamp: Timestamp.now(),
-        );
-      }).toList();
+      final List<RaffleWinnerModel> raffleWinners = winners.asMap().entries.map(
+        (entry) {
+          final winnerId = entry.value;
+          final winnerTickets = donorTickets[winnerId]!;
+          final prize = fundraising!.prizes![entry.key];
+          return RaffleWinnerModel(
+            donorId: winnerTickets.donorId,
+            donorName: winnerTickets.donorName,
+            prize: prize,
+            ticketsWon: winnerTickets.ticketCount,
+            timestamp: Timestamp.now(),
+          );
+        },
+      ).toList();
 
       await _fundraisingService.saveRaffleWinners(
         widget.fundraisingId,
@@ -254,67 +257,72 @@ class _FundraisingRaffleScreenState extends State<FundraisingRaffleScreen> {
         child: isLoadingData
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Інформація про збір
-                _buildFundraisingInfo(),
-                const SizedBox(height: 16),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Інформація про збір
+                      _buildFundraisingInfo(),
+                      const SizedBox(height: 16),
 
-                // Призи
-                _buildPrizesSection(),
-                const SizedBox(height: 16),
+                      // Призи
+                      _buildPrizesSection(),
+                      const SizedBox(height: 16),
 
-                // Учасники розіграшу
-                _buildParticipantsSection(),
-                const SizedBox(height: 16),
+                      // Учасники розіграшу
+                      _buildParticipantsSection(),
+                      const SizedBox(height: 16),
 
-                // Кнопка розіграшу або результати
-                if (fundraising?.raffleWinners?.isNotEmpty == true)
-                  _buildRaffleResults()
-                else if (isRaffleInProgress)
-                  _buildRaffleInProgress()
-                else
-                  _buildRaffleButton(),
+                      // Кнопка розіграшу або результати
+                      if (fundraising?.raffleWinners?.isNotEmpty == true)
+                        _buildRaffleResults()
+                      else if (isRaffleInProgress)
+                        _buildRaffleInProgress()
+                      else
+                        _buildRaffleButton(),
 
-                const SizedBox(height: 16),
-                if (isRaffleCompleted) ...[
-                  CustomElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushNamed(
-                        //TODO
-                        AppRoutes.createReportScreen,
-                        arguments: widget.fundraisingId,
-                      );
-                    },
-                    backgroundColor: appThemeColors.successGreen,
-                    borderRadius: 12,
-                    height: 50,
-                    text: 'Додати звіт',
-                    textStyle: TextStyleHelper.instance.title16Bold.copyWith(
-                      color: appThemeColors.primaryWhite,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                CustomElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  backgroundColor: appThemeColors.backgroundLightGrey,
-                  borderRadius: 12,
-                  height: 50,
-                  text: 'Назад до профілю',
-                  textStyle: TextStyleHelper.instance.title16Bold.copyWith(
-                    color: appThemeColors.blueAccent,
+                      const SizedBox(height: 16),
+                      if (isRaffleCompleted) ...[
+                        CustomElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pushNamed(
+                              AppRoutes.createReportScreen,
+                              arguments: {
+                                'activity': ActivityModel(
+                                  type: ActivityType.fundraiserCreation,
+                                  entityId: fundraising!.id!,
+                                  title: fundraising!.title!,
+                                  description: fundraising!.description,
+                                  timestamp: fundraising!.timestamp!,
+                                ),
+                              },
+                            );
+                          },
+                          backgroundColor: appThemeColors.successGreen,
+                          borderRadius: 12,
+                          height: 50,
+                          text: 'Додати звіт',
+                          textStyle: TextStyleHelper.instance.title16Bold
+                              .copyWith(color: appThemeColors.primaryWhite),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      CustomElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        backgroundColor: appThemeColors.backgroundLightGrey,
+                        borderRadius: 12,
+                        height: 50,
+                        text: 'Назад до профілю',
+                        textStyle: TextStyleHelper.instance.title16Bold
+                            .copyWith(color: appThemeColors.blueAccent),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-              ],
-            ),
-          ),
-        ),
+              ),
       ),
     );
   }
@@ -398,10 +406,11 @@ class _FundraisingRaffleScreenState extends State<FundraisingRaffleScreen> {
                       child: Center(
                         child: Text(
                           '${index + 1}',
-                          style: TextStyleHelper.instance.title13Regular.copyWith(
-                            color: appThemeColors.backgroundLightGrey,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyleHelper.instance.title13Regular
+                              .copyWith(
+                                color: appThemeColors.backgroundLightGrey,
+                                fontWeight: FontWeight.bold,
+                              ),
                         ),
                       ),
                     ),
@@ -431,8 +440,10 @@ class _FundraisingRaffleScreenState extends State<FundraisingRaffleScreen> {
   }
 
   Widget _buildParticipantsSection() {
-    final totalTickets = donorTickets.values
-        .fold(0, (sum, donor) => sum + donor.ticketCount);
+    final totalTickets = donorTickets.values.fold(
+      0,
+      (sum, donor) => sum + donor.ticketCount,
+    );
     final sortedDonors = donorTickets.values.toList()
       ..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
 
@@ -497,23 +508,29 @@ class _FundraisingRaffleScreenState extends State<FundraisingRaffleScreen> {
 
   Widget _buildParticipantItem(DonorTickets donor) {
     return FutureBuilder<BaseProfileModel?>(
-      future: Provider.of<ProfileViewModel>(context, listen: false)
-          .fetchUser(donor.donorId),
+      future: Provider.of<ProfileViewModel>(
+        context,
+        listen: false,
+      ).fetchUser(donor.donorId),
       builder: (context, snapshot) {
         final user = snapshot.data;
-        final bool isLoading = snapshot.connectionState == ConnectionState.waiting;
+        final bool isLoading =
+            snapshot.connectionState == ConnectionState.waiting;
 
         return ListTile(
-          contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+          contentPadding: const EdgeInsets.symmetric(
+            vertical: 8,
+            horizontal: 0,
+          ),
           leading: isLoading
               ? const CircularProgressIndicator()
               : UserAvatarWithFrame(
-            size: 20,
-            role: user?.role!,
-            uid: donor.donorId,
-            photoUrl: user?.photoUrl,
-            frame: user is VolunteerModel ? user.frame : null,
-          ),
+                  size: 20,
+                  role: user?.role!,
+                  uid: donor.donorId,
+                  photoUrl: user?.photoUrl,
+                  frame: user is VolunteerModel ? user.frame : null,
+                ),
           title: Text(
             donor.donorName,
             style: TextStyleHelper.instance.title16Regular.copyWith(
@@ -561,8 +578,8 @@ class _FundraisingRaffleScreenState extends State<FundraisingRaffleScreen> {
   }
 
   Widget _buildRaffleButton() {
-    final canRaffle = donorTickets.isNotEmpty &&
-        fundraising?.prizes?.isNotEmpty == true;
+    final canRaffle =
+        donorTickets.isNotEmpty && fundraising?.prizes?.isNotEmpty == true;
 
     return CustomElevatedButton(
       onPressed: canRaffle ? _onCompleteRaffle : null,
@@ -662,9 +679,7 @@ class _FundraisingRaffleScreenState extends State<FundraisingRaffleScreen> {
       decoration: BoxDecoration(
         color: appThemeColors.lightGreenColor.withAlpha(31),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: appThemeColors.lightGreenColor.withAlpha(77),
-        ),
+        border: Border.all(color: appThemeColors.lightGreenColor.withAlpha(77)),
       ),
       child: Row(
         children: [

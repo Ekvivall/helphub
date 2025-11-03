@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:helphub/data/models/organization_model.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:provider/provider.dart';
@@ -34,9 +35,35 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FundraisingViewModel>(
-      builder: (context, viewModel, child) {
-        if (viewModel.user == null) {
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          SystemNavigator.pop();
+        }
+      },
+      child: Consumer<FundraisingViewModel>(
+        builder: (context, viewModel, child) {
+          if (viewModel.user == null) {
+            return Scaffold(
+              backgroundColor: appThemeColors.blueAccent,
+              body: Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment(0.9, -0.4),
+                    end: Alignment(-0.9, 0.4),
+                    colors: [
+                      appThemeColors.blueAccent,
+                      appThemeColors.cyanAccent,
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+          final BaseProfileModel user = viewModel.user!;
           return Scaffold(
             backgroundColor: appThemeColors.blueAccent,
             body: Container(
@@ -52,68 +79,53 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
                   ],
                 ),
               ),
-            ),
-          );
-        }
-        final BaseProfileModel user = viewModel.user!;
-        return Scaffold(
-          backgroundColor: appThemeColors.blueAccent,
-          body: Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment(0.9, -0.4),
-                end: Alignment(-0.9, 0.4),
-                colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+              child: Column(
+                children: [
+                  _buildHeader(context, viewModel, user),
+                  const SizedBox(height: 16),
+                  Expanded(child: _buildFundraisingList(viewModel)),
+                  const SizedBox(height: 14),
+                ],
               ),
             ),
-            child: Column(
-              children: [
-                _buildHeader(context, viewModel, user),
-                const SizedBox(height: 16),
-                Expanded(child: _buildFundraisingList(viewModel)),
-                const SizedBox(height: 14),
-              ],
-            ),
-          ),
-          floatingActionButton:
-              user is OrganizationModel && user.isVerification == true
-              ? FloatingActionButton(
-                  onPressed: () {
-                    Navigator.of(context).pushNamed(
-                      AppRoutes.createFundraisingScreen,
-                      arguments: '',
-                    );
-                  },
-                  backgroundColor: appThemeColors.blueAccent,
-                  shape: const CircleBorder(),
-                  child: Icon(
-                    Icons.add,
-                    color: appThemeColors.primaryWhite,
-                    size: 37,
-                  ),
-                )
-              : user is VolunteerModel
-              ? FloatingActionButton(
-                  onPressed: () {
-                    Navigator.of(context).pushNamed(
-                      AppRoutes.createFundraisingApplicationScreen,
-                      arguments: '',
-                    );
-                  },
-                  backgroundColor: appThemeColors.blueAccent,
-                  shape: const CircleBorder(),
-                  child: Icon(
-                    Icons.request_quote,
-                    color: appThemeColors.primaryWhite,
-                    size: 37,
-                  ),
-                )
-              : null,
-          bottomNavigationBar: buildBottomNavigationBar(context, 2),
-        );
-      },
+            floatingActionButton:
+                user is OrganizationModel && user.isVerification == true
+                ? FloatingActionButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(
+                        AppRoutes.createFundraisingScreen,
+                        arguments: '',
+                      );
+                    },
+                    backgroundColor: appThemeColors.blueAccent,
+                    shape: const CircleBorder(),
+                    child: Icon(
+                      Icons.add,
+                      color: appThemeColors.primaryWhite,
+                      size: 37,
+                    ),
+                  )
+                : user is VolunteerModel
+                ? FloatingActionButton(
+                    onPressed: () {
+                      Navigator.of(context).pushNamed(
+                        AppRoutes.createFundraisingApplicationScreen,
+                        arguments: '',
+                      );
+                    },
+                    backgroundColor: appThemeColors.blueAccent,
+                    shape: const CircleBorder(),
+                    child: Icon(
+                      Icons.request_quote,
+                      color: appThemeColors.primaryWhite,
+                      size: 37,
+                    ),
+                  )
+                : null,
+            bottomNavigationBar: buildBottomNavigationBar(context, 2),
+          );
+        },
+      ),
     );
   }
 

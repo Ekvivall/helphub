@@ -789,7 +789,7 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Text(
-              'У вас немає активних зборів.',
+              'Активних зборів немає.',
               style: TextStyleHelper.instance.title14Regular.copyWith(
                 color: appThemeColors.backgroundLightGrey.withAlpha(150),
               ),

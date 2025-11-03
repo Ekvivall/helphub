@@ -25,6 +25,7 @@ import 'package:helphub/view_models/auth/volunteer_register_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
+
 // Обробник фонових повідомлень Firebase
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -42,23 +43,30 @@ void main() async {
 
 class HelpHubApp extends StatefulWidget {
   const HelpHubApp({super.key});
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   State<HelpHubApp> createState() => _HelpHubAppState();
 }
 
 class _HelpHubAppState extends State<HelpHubApp> with WidgetsBindingObserver {
-  final AppLifecycleObserver _lifecycleObserver = AppLifecycleObserver();
-
-  static final GlobalKey<NavigatorState> navigatorKey =
-      GlobalKey<NavigatorState>();
+  //final AppLifecycleObserver _lifecycleObserver = AppLifecycleObserver();
+  //final AchievementListenerService _achievementListener = AchievementListenerService();
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(_lifecycleObserver);
+    WidgetsBinding.instance.addObserver(this);
 
-    NotificationService.setNavigatorKey(navigatorKey);
+    NotificationService.setNavigatorKey(HelpHubApp.navigatorKey);
+   /* FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null && mounted) {
+        _achievementListener.initialize();
+      }
+      else {
+        _achievementListener.stopListening();
+      }
+    });*/
   }
 
   @override
@@ -74,7 +82,8 @@ class _HelpHubAppState extends State<HelpHubApp> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(_lifecycleObserver);
+    WidgetsBinding.instance.removeObserver(this);
+    //_achievementListener.dispose();
     super.dispose();
   }
 
@@ -106,7 +115,7 @@ class _HelpHubAppState extends State<HelpHubApp> with WidgetsBindingObserver {
       ],
       child: NotificationInitWrapper(
         child: MaterialApp(
-          navigatorKey: navigatorKey,
+          navigatorKey: HelpHubApp.navigatorKey,
           debugShowCheckedModeBanner: false,
           theme: appThemeData,
           initialRoute: AppRoutes.splashScreen,

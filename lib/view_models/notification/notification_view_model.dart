@@ -3,14 +3,19 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:helphub/data/services/achievement_service.dart';
 import 'package:helphub/data/services/notification_service.dart';
 import 'package:helphub/data/models/notification_model.dart';
 
 import '../../core/utils/constants.dart';
+import '../../data/models/user_achievement_model.dart';
+import '../../widgets/achievement/achievement_notification_dialog.dart';
 
 class NotificationViewModel with ChangeNotifier {
   final NotificationService _notificationService = NotificationService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  StreamSubscription<QuerySnapshot>? _achievementsSubscription;
+  AchievementService _achievementService = AchievementService();
 
   List<NotificationModel> _notifications = [];
   int _unreadCount = 0;
@@ -52,8 +57,37 @@ class NotificationViewModel with ChangeNotifier {
     await _notificationService.initialize(context);
     _startListeningToSettings();
     _startListening();
+    _startListeningForAchievements();
   }
+  void _startListeningForAchievements() {
+    _achievementsSubscription?.cancel();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
+    _achievementsSubscription = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('achievements')
+        .snapshots()
+        .listen((snapshot) {
+      final context = NotificationService.navigatorKey?.currentContext;
+      if (context == null) return;
+
+      for (final doc in snapshot.docs) {
+        final achievementData = UserAchievementModel.fromMap(doc.data());
+        if (!achievementData.dialogShown) {
+          final achievement = Constants.allAchievements.firstWhere(
+                (a) => a.id == achievementData.achievementId,
+          );
+
+          if (achievement.id.isNotEmpty) {
+            AchievementNotificationDialog.show(context, achievement);
+            _achievementService.markAchievementDialogAsShown(user.uid, achievement.id);
+          }
+        }
+      }
+    });
+  }
   void _startListeningToSettings() {
     _userSettingsSubscription?.cancel();
     final user = FirebaseAuth.instance.currentUser;
@@ -401,7 +435,6 @@ class NotificationViewModel with ChangeNotifier {
     _notificationService.navigateFromNotificationData(
       notification.data,
       notification.type,
-      context,
     );
   }
 
