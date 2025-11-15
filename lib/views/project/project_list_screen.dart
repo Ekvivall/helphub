@@ -8,6 +8,7 @@ import '../../data/models/base_profile_model.dart';
 import '../../data/models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
+import '../../view_models/profile/profile_view_model.dart';
 import '../../view_models/project/project_view_model.dart';
 import '../../widgets/custom_bottom_navigation_bar.dart';
 import '../../widgets/custom_input_field.dart';
@@ -53,15 +54,15 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
               colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
             ),
           ),
-          child: Consumer<ProjectViewModel>(
-            builder: (context, viewModel, child) {
-              if (viewModel.user == null) return SizedBox.shrink();
-              final BaseProfileModel user = viewModel.user!;
+          child: Consumer2<ProjectViewModel, ProfileViewModel>(
+            builder: (context, viewModel, profileViewModel, child) {
+              if (profileViewModel.user == null) return SizedBox.shrink();
+              final BaseProfileModel user = profileViewModel.user!;
               return Column(
                 children: [
                   _buildHeader(context, viewModel, user),
                   const SizedBox(height: 16),
-                  Expanded(child: _buildProjectList(viewModel)),
+                  Expanded(child: _buildProjectList(viewModel, profileViewModel)),
                 ],
               );
             },
@@ -104,7 +105,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
             frame: volunteer?.frame,
             uid: user.uid!,
           ),
-          const SizedBox(width: 7),
+          const SizedBox(width: 4),
           Expanded(
             child: CustomInputField(
               hintText: 'Пошук проєктів...',
@@ -141,7 +142,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
     );
   }
 
-  Widget _buildProjectList(ProjectViewModel viewModel) {
+  Widget _buildProjectList(ProjectViewModel viewModel, ProfileViewModel profileViewModel) {
     final String? errorMessage = viewModel.errorMessage;
     final List<dynamic> filteredProjects = viewModel.filteredProjects;
 
@@ -221,6 +222,7 @@ class _ProjectListScreenState extends State<ProjectListScreen> {
           project: project,
           viewModel: viewModel,
           userCurrentLocation: viewModel.currentUserLocation,
+          currentUserId: profileViewModel.user!.uid!,
         );
       },
     );

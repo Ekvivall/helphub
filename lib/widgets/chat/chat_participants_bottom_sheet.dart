@@ -101,7 +101,7 @@ class ChatParticipantsBottomSheet extends StatelessWidget {
 
                         return ListTile(
                           leading: UserAvatarWithFrame(
-                            size: 32,
+                            size: 24,
                             role: user.role!,
                             uid: user.uid!,
                             frame: user is VolunteerModel ? (user).frame : null,

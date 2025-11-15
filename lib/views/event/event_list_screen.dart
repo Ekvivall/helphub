@@ -10,6 +10,7 @@ import '../../data/models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
+import '../../view_models/profile/profile_view_model.dart';
 import '../../widgets/custom_bottom_navigation_bar.dart';
 import '../../widgets/custom_input_field.dart';
 import '../../widgets/custom_notification_icon_button.dart';
@@ -57,14 +58,16 @@ class _EventListScreenState extends State<EventListScreen> {
               colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
             ),
           ),
-          child: Consumer<EventViewModel>(
-            builder: (context, viewModel, child) {
-              if (viewModel.user == null) return SizedBox.shrink();
-              final BaseProfileModel user = viewModel.user!;
+          child: Consumer2<EventViewModel, ProfileViewModel>(
+            builder: (context, eventViewModel, profileViewModel, child) {
+              if (profileViewModel.user == null) {
+                return Center(child: CircularProgressIndicator());
+              }
+              final BaseProfileModel user = profileViewModel.user!;
               return Column(
                 children: [
                   // Кастомний хедер
-                  _buildHeader(context, viewModel, user),
+                  _buildHeader(context, eventViewModel, user),
                   const SizedBox(height: 16),
                   // Перемикач режимів "Список" / "Мапа"
                   _buildDisplayModeToggle(context),
@@ -72,7 +75,7 @@ class _EventListScreenState extends State<EventListScreen> {
                   //Основний контент (список подій або карта)
                   Expanded(
                     child: _displayMode == DisplayMode.list
-                        ? _buildEventList(viewModel)
+                        ? _buildEventList(eventViewModel)
                         : const EventMapScreen(),
                   ),
                 ],
@@ -101,7 +104,6 @@ class _EventListScreenState extends State<EventListScreen> {
     EventViewModel viewModel,
     BaseProfileModel user,
   ) {
-    final VolunteerModel? volunteer = user is VolunteerModel ? user : null;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 40, 16, 12),
       color: appThemeColors.appBarBg,
@@ -112,7 +114,7 @@ class _EventListScreenState extends State<EventListScreen> {
             size: 22,
             role: user.role,
             photoUrl: user.photoUrl,
-            frame: volunteer?.frame,
+            frame: user is VolunteerModel ? user.frame : null,
             uid: user.uid!,
           ),
           const SizedBox(width: 7),

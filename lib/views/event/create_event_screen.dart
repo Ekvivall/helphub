@@ -16,6 +16,7 @@ import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../validators/auth_validator.dart';
 import '../../view_models/event/event_view_model.dart';
+import '../../view_models/profile/profile_view_model.dart';
 import '../../widgets/custom_document_upload_field.dart';
 import '../../widgets/custom_dropdown.dart';
 import '../../widgets/events/location_coordinates_widget.dart';
@@ -130,8 +131,8 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
             colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
           ),
         ),
-        child: Consumer<EventViewModel>(
-          builder: (context, viewModel, child) {
+        child: Consumer2<EventViewModel, ProfileViewModel>(
+          builder: (context, viewModel, profileViewModel, child) {
             if (widget.eventId.isNotEmpty &&
                 viewModel.currentEvent != null &&
                 !_isFormPopulated) {
@@ -212,7 +213,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                           ? viewModel.currentEvent?.photoUrl
                           : null,
                     ),
-                    if (viewModel.user!.city == null) ...[
+                    if (profileViewModel.user!.city == null) ...[
                       const SizedBox(height: 16),
                       CustomDropdown(
                         labelText: 'Місто',
@@ -251,7 +252,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                       labelColor: appThemeColors.backgroundLightGrey,
                       inputType: TextInputType.text,
                       onChanged: (value) {
-                        final city = viewModel.user!.city ?? _selectedCity;
+                        final city = profileViewModel.user!.city ?? _selectedCity;
                         _triggerGeocoding(value, city);
                       },
                       validator: (value) {
@@ -442,7 +443,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                     _maxParticipantsController.text,
                                   )!,
                                   duration: _durationController.text,
-                                  city: viewModel.user!.city ?? _selectedCity,
+                                  city: profileViewModel.user!.city ?? _selectedCity,
                                 );
                               } else {
                                 errorMessage = await viewModel.createEvent(
@@ -455,7 +456,7 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
                                     _maxParticipantsController.text,
                                   )!,
                                   duration: _durationController.text,
-                                  city: viewModel.user!.city ?? _selectedCity,
+                                  city: profileViewModel.user!.city ?? _selectedCity,
                                 );
                               }
 

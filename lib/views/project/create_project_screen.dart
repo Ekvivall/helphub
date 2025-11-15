@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:helphub/data/models/category_chip_model.dart';
 import 'package:helphub/data/models/project_task_model.dart';
+import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/utils/constants.dart';
@@ -167,8 +168,8 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
             colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
           ),
         ),
-        child: Consumer<ProjectViewModel>(
-          builder: (context, viewModel, child) {
+        child: Consumer2<ProjectViewModel, ProfileViewModel>(
+          builder: (context, viewModel, profileViewModel, child) {
             if (isEditing &&
                 viewModel.currentProject != null &&
                 !_isFormPopulated) {
@@ -235,7 +236,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    if (viewModel.user?.city == null) ...[
+                    if (profileViewModel.user?.city == null) ...[
                       const SizedBox(height: 16),
                       CustomDropdown(
                         labelText: 'Місто',
@@ -274,7 +275,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                       labelColor: appThemeColors.backgroundLightGrey,
                       inputType: TextInputType.text,
                       onChanged: (value) {
-                        final city = viewModel.user?.city ?? _selectedCity;
+                        final city = profileViewModel.user?.city ?? _selectedCity;
                         _triggerGeocoding(value, city);
                       },
                       validator: (value) {
@@ -634,7 +635,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                   categories: _selectedCategories,
                                   skills: _selectedSkills,
                                   tasks: _tasks,
-                                  city: viewModel.user?.city ?? _selectedCity,
+                                  city: profileViewModel.user?.city ?? _selectedCity,
                                   isOnlyFriends: _isOnlyFriends,
                                 );
                               } else {
@@ -647,7 +648,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                                   categories: _selectedCategories,
                                   skills: _selectedSkills,
                                   tasks: _tasks,
-                                  city: viewModel.user?.city ?? _selectedCity,
+                                  city: profileViewModel.user?.city ?? _selectedCity,
                                   isOnlyFriends: _isOnlyFriends,
                                 );
                               }

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:helphub/widgets/profile/category_chip_widget.dart';
 import 'package:helphub/widgets/profile/fundraiser_application_item_org_widget.dart';
@@ -22,8 +20,10 @@ import '../../widgets/custom_elevated_button.dart';
 import '../../widgets/custom_image_view.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/profile/active_fundraising_item.dart';
+import '../../widgets/profile/photo_options_bottom_sheet.dart';
 import '../../widgets/profile/statistic_item_widget.dart';
 import '../../widgets/profile/latest_activities.dart';
+import '../../widgets/user_avatar_with_frame.dart';
 
 class OrganizationProfileScreen extends StatefulWidget {
   const OrganizationProfileScreen({super.key, this.userId});
@@ -272,19 +272,12 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
           Stack(
             alignment: Alignment.center,
             children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: appThemeColors.lightGreenColor,
-                backgroundImage: user.photoUrl != null
-                    ? NetworkImage(user.photoUrl!)
-                    : null,
-                child: user.photoUrl == null
-                    ? Icon(
-                        Icons.business,
-                        size: 60,
-                        color: appThemeColors.primaryWhite,
-                      )
-                    : null,
+              UserAvatarWithFrame(
+                size: 50,
+                role: user.role,
+                photoUrl: user.photoUrl,
+                frame: null,
+                uid: user.uid!,
               ),
               if (isOwner)
                 Positioned(
@@ -295,12 +288,16 @@ class _OrganizationProfileScreenState extends State<OrganizationProfileScreen> {
                     height: 32,
                     width: 32,
                     onTap: () async {
-                      final XFile? image = await _picker.pickImage(
-                        source: ImageSource.gallery,
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (context) => PhotoOptionsBottomSheet(
+                          viewModel: viewModel,
+                          picker: _picker,
+                          onSelectAvatar: (volunteer) {},
+                        ),
                       );
-                      if (image != null) {
-                        await viewModel.updateProfilePhoto(File(image.path));
-                      }
                     },
                   ),
                 ),

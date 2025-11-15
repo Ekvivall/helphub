@@ -78,7 +78,10 @@ class VolunteerRegisterViewModel extends ChangeNotifier {
           email: emailController.text.trim(),
           fullName: fullNameController.text.trim(),
           city: _selectedCity,
-          levelProgress: 1,
+          currentLevel: 1,
+          frame: Constants.getLevelByNumber(1).framePath,
+          photoUrl: Constants.getLevelByNumber(1).avatarPath,
+          points: 0,
           projectsCount: 0,
           eventsCount: 0,
 

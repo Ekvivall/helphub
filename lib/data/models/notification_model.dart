@@ -22,6 +22,7 @@ enum NotificationType {
   eventReminder, // Нагадування про події
   projectDeadline, // Нагадування про дедлайн проєктів
   achievement, // Досягнення
+  levelUp, // Підняття рівня
   general, // Загальні сповіщення
   systemMaintenance, // Технічні роботи
   appUpdate, // Оновлення додатку

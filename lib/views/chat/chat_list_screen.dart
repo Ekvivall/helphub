@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/text_style_helper.dart';
+import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:helphub/widgets/custom_tournament_icon_button.dart';
 import 'package:provider/provider.dart';
 
@@ -69,10 +70,10 @@ class _ChatListScreenState extends State<ChatListScreen>
               colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
             ),
           ),
-          child: Consumer<ChatViewModel>(
-            builder: (context, viewModel, child) {
-              if (viewModel.user == null) return SizedBox.shrink();
-              final BaseProfileModel user = viewModel.user!;
+          child: Consumer2<ChatViewModel, ProfileViewModel>(
+            builder: (context, viewModel, profileViewModel, child) {
+              if (profileViewModel.user == null) return SizedBox.shrink();
+              final BaseProfileModel user = profileViewModel.user!;
               return Column(
                 children: [
                   _buildHeader(context, viewModel, user),

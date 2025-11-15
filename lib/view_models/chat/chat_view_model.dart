@@ -41,9 +41,6 @@ class ChatViewModel extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   String? get currentUserId => _currentUserId;
-  BaseProfileModel? _user;
-
-  BaseProfileModel? get user => _user;
 
   BaseProfileModel? _friendProfile;
 
@@ -63,7 +60,6 @@ class ChatViewModel extends ChangeNotifier {
     _auth.authStateChanges().listen((user) async {
       _currentUserId = _auth.currentUser?.uid;
       if (_currentUserId != null) {
-        _user = await _userService.fetchUserProfile(_currentUserId);
         loadUserChats(_currentUserId!);
       }
     });

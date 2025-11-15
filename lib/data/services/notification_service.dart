@@ -405,6 +405,9 @@ class NotificationService {
       case NotificationType.achievement:
         navigator.pushNamed(AppRoutes.achievementsScreen);
         break;
+      case NotificationType.levelUp:
+        navigator.pushNamed(AppRoutes.volunteerProfileScreen);
+        break;
       case NotificationType.adminNotification:
       case NotificationType.systemMaintenance:
       case NotificationType.appUpdate:

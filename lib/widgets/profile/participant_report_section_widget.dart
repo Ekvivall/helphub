@@ -12,7 +12,8 @@ Widget buildParticipantReportSection(String? reportId, String currentUserId, boo
       const SizedBox(height: 8),
       if (reportId != null) ...[
         // Показати інформацію про звіт
-        Container(
+      if(isOwner)
+      Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: appThemeColors.blueAccent.withAlpha(25),
@@ -43,7 +44,6 @@ Widget buildParticipantReportSection(String? reportId, String currentUserId, boo
               ),
               const SizedBox(height: 8),
               // Показати відгук організатора про цього учасника
-              if(isOwner)
               FutureBuilder<String?>(
                 future: _getParticipantFeedback(reportId, currentUserId),
                 builder: (context, snapshot) {

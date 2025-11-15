@@ -4,12 +4,13 @@ import '../../data/models/base_profile_model.dart';
 import '../../data/models/organization_model.dart';
 import '../../data/models/volunteer_model.dart';
 
-class UserService{
+class UserService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   Future<BaseProfileModel?> fetchUserProfile(String? userId) async {
     try {
       if (userId == null) return null;
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;
-      final doc = await firestore.collection('users').doc(userId).get();
+      final doc = await _firestore.collection('users').doc(userId).get();
       if (doc.exists && doc.data() != null) {
         final data = doc.data();
         final roleString = data?['role'] as String?;
@@ -24,6 +25,26 @@ class UserService{
     } catch (e) {
       print('Error fetching user profile: $e');
       return null;
+    }
+  }
+
+  Future<void> updateSelectedFrame(String userId, String framePath) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'frame': framePath,
+      });
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateProfilePhoto(String userId, String photoUrl) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'photoUrl': photoUrl,
+      });
+    } catch (e) {
+      rethrow;
     }
   }
 }

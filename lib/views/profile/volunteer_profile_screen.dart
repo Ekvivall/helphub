@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:helphub/data/models/user_achievement_model.dart';
 import 'package:helphub/data/services/achievement_service.dart';
@@ -12,6 +10,7 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:helphub/widgets/custom_image_view.dart';
+import 'package:helphub/widgets/level/level_card_widget.dart';
 import 'package:helphub/widgets/profile/achievement_item.dart';
 import 'package:helphub/widgets/profile/statistic_item_widget.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,9 +22,11 @@ import '../../data/models/friend_request_model.dart';
 import '../../data/models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
+import '../../widgets/profile/avatar_selection_dialog.dart';
 import '../../widgets/profile/category_chip_widget.dart';
 import '../../widgets/profile/fundraiser_application_item_widget.dart';
 import '../../widgets/profile/medal_item.dart';
+import '../../widgets/profile/photo_options_bottom_sheet.dart';
 import '../../widgets/profile/project_application_item.dart';
 import '../../widgets/profile/saved_fundraising_item.dart';
 import '../../widgets/user_avatar_with_frame.dart';
@@ -133,8 +134,17 @@ class VolunteerProfileScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           //Блок інформації про користувача (шапка)
-                          _buildProfileSection(volunteer!, isOwner, viewModel),
-                          //_buildLevelCard(volunteer, isOwner),
+                          _buildProfileSection(
+                            volunteer!,
+                            isOwner,
+                            viewModel,
+                            context,
+                          ),
+                          LevelCardWidget(
+                            userPoints: volunteer.points ?? 0,
+                            currentLevel: volunteer.currentLevel ?? 1,
+                            isOwner: isOwner,
+                          ),
                           _buildStatistics(volunteer),
                           if (volunteer.aboutMe != null) _buildBio(volunteer),
                           _buildContactInfo(context, volunteer),
@@ -195,6 +205,7 @@ class VolunteerProfileScreen extends StatelessWidget {
     VolunteerModel user,
     bool isOwner,
     ProfileViewModel viewModel,
+    BuildContext context,
   ) {
     final String displayName = user.fullName ?? user.displayName ?? 'Волонтер';
     final String displayCity = user.city != null && user.city!.isNotEmpty
@@ -207,27 +218,13 @@ class VolunteerProfileScreen extends StatelessWidget {
           Stack(
             alignment: Alignment.center,
             children: [
-              CircleAvatar(
-                radius: 50,
-                backgroundColor: appThemeColors.lightGreenColor,
-                backgroundImage: user.photoUrl != null
-                    ? NetworkImage(user.photoUrl!)
-                    : null,
-                child: user.photoUrl == null
-                    ? Icon(
-                        Icons.person,
-                        size: 60,
-                        color: appThemeColors.primaryWhite,
-                      )
-                    : null,
+              UserAvatarWithFrame(
+                size: 50,
+                role: UserRole.volunteer,
+                uid: user.uid,
+                photoUrl: user.photoUrl,
+                frame: user.frame,
               ),
-              if (user.frame != null && user.frame!.isNotEmpty)
-                CustomImageView(
-                  imagePath: user.frame!,
-                  height: 130,
-                  width: 130,
-                  fit: BoxFit.contain,
-                ),
               if (isOwner)
                 Positioned(
                   bottom: 0,
@@ -236,13 +233,25 @@ class VolunteerProfileScreen extends StatelessWidget {
                     imagePath: ImageConstant.penIcon,
                     height: 32,
                     width: 32,
-                    onTap: () async {
-                      final XFile? image = await _picker.pickImage(
-                        source: ImageSource.gallery,
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (context) => PhotoOptionsBottomSheet(
+                          viewModel: viewModel,
+                          picker: _picker,
+                          onSelectAvatar: (volunteer) {
+                            showDialog(
+                              context: context,
+                              builder: (dialogContext) => AvatarSelectionDialog(
+                                viewModel: viewModel,
+                                volunteer: volunteer,
+                              ),
+                            );
+                          },
+                        ),
                       );
-                      if (image != null) {
-                        await viewModel.updateProfilePhoto(File(image.path));
-                      }
                     },
                   ),
                 ),
@@ -279,84 +288,6 @@ class VolunteerProfileScreen extends StatelessWidget {
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLevelCard(VolunteerModel user, bool isOwner) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 28, vertical: 7),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: appThemeColors.blueMixedColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Text(
-            user.levelTitle ?? '',
-            style: TextStyleHelper.instance.title16Bold.copyWith(
-              color: appThemeColors.primaryBlack,
-            ),
-          ),
-          if (isOwner) SizedBox(height: 4),
-          if (isOwner)
-            Text(
-              '(${user.levelProgress}/9 рівень)',
-              style: TextStyleHelper.instance.title13Regular.copyWith(
-                color: appThemeColors.primaryBlack,
-              ),
-            ),
-          SizedBox(height: 8),
-          Text(
-            '"${user.levelDescription}"',
-            style: TextStyleHelper.instance.title16Regular.copyWith(
-              fontStyle: FontStyle.italic,
-              color: appThemeColors.primaryBlack,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          if (isOwner) SizedBox(height: 16),
-          if (isOwner)
-            Container(
-              width: double.infinity,
-              height: 8,
-              decoration: BoxDecoration(
-                color: appThemeColors.backgroundLightGrey,
-                borderRadius: BorderRadius.circular(4),
-              ),
-
-              child: Stack(
-                children: [
-                  Container(
-                    width: double.infinity,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: appThemeColors.backgroundLightGrey,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                  Container(
-                    width: user.progressPercent ?? 0 / 100 * 200,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: appThemeColors.successGreen,
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          if (isOwner) SizedBox(height: 12),
-          if (isOwner)
-            Text(
-              '${user.pointsToNextLevel} балів до наступного рівня',
-              style: TextStyleHelper.instance.title16Regular.copyWith(
-                color: appThemeColors.primaryBlack,
-              ),
-              textAlign: TextAlign.center,
-            ),
         ],
       ),
     );
@@ -405,7 +336,6 @@ class VolunteerProfileScreen extends StatelessWidget {
     BuildContext context,
     ProfileViewModel viewModel,
   ) {
-    final FriendshipStatus status = viewModel.friendshipStatus;
     if (viewModel.currentUserRole != UserRole.organization) {
       return FutureBuilder<FriendshipStatus>(
         future: viewModel.getFriendshipStatus(viewModel.user!.uid!),

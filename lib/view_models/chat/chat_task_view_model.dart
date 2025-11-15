@@ -17,13 +17,15 @@ import '../../data/models/organization_model.dart';
 import '../../data/models/volunteer_model.dart';
 
 class ChatTaskViewModel extends ChangeNotifier {
-  final String _currentUserId = FirebaseAuth.instance.currentUser!.uid;
+  late final String? _currentUserId;
 
   final ProjectService _projectService = ProjectService();
   final ProjectApplicationService _applicationService =
       ProjectApplicationService();
   final ActivityService _activityService = ActivityService();
   final ChatService _chatService = ChatService();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
 
   ProjectModel? _project;
   List<ProjectTaskModel> _allTasks = [];
@@ -44,7 +46,13 @@ class ChatTaskViewModel extends ChangeNotifier {
 
   String? get errorMessage => _errorMessage;
 
-  String get currentUserId => _currentUserId;
+  String? get currentUserId => _currentUserId;
+
+  ChatTaskViewModel(){
+    _auth.authStateChanges().listen((user) async {
+      _currentUserId = _auth.currentUser?.uid;
+    });
+  }
 
   List<ProjectTaskModel> get myTasks {
     return _allTasks
@@ -277,7 +285,7 @@ class ChatTaskViewModel extends ChangeNotifier {
     try {
       final List<String> updatedAssignedIds = [
         ...?task.assignedVolunteerIds,
-        _currentUserId,
+        _currentUserId!,
       ];
 
       final updatedTask = task.copyWith(
@@ -293,7 +301,7 @@ class ChatTaskViewModel extends ChangeNotifier {
         description: task.description,
         timestamp: DateTime.now(),
       );
-      await _activityService.logActivity(currentUserId, activity);
+      await _activityService.logActivity(currentUserId!, activity);
     } catch (e) {
       _errorMessage = 'Помилка призначення на завдання: $e';
       notifyListeners();

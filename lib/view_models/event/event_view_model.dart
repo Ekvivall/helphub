@@ -104,8 +104,6 @@ class EventViewModel extends ChangeNotifier {
   BaseProfileModel? _user;
   BaseProfileModel? _organizer;
 
-  BaseProfileModel? get user => _user;
-
   BaseProfileModel? get organizer => _organizer;
 
   EventViewModel() {

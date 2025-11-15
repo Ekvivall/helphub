@@ -8,11 +8,8 @@ class VolunteerModel extends BaseProfileModel {
   final String? fullName;
   final String? displayName;
   final String? frame;
-  final String? levelTitle;
-  final int? levelProgress;
-  final String? levelDescription;
-  final double? progressPercent;
-  final int? pointsToNextLevel;
+  final int? currentLevel;
+  final int? points;
   final int? achievementsCount;
   final List<MedalItemModel>? medals;
 
@@ -35,11 +32,8 @@ class VolunteerModel extends BaseProfileModel {
     this.fullName,
     this.displayName,
     this.frame,
-    this.levelTitle,
-    this.levelProgress,
-    this.levelDescription,
-    this.progressPercent,
-    this.pointsToNextLevel,
+    this.currentLevel,
+    this.points,
     this.achievementsCount,
     this.medals,
   }) : super(role: UserRole.volunteer); // Встановлюємо роль для волонтера
@@ -68,11 +62,8 @@ class VolunteerModel extends BaseProfileModel {
       // Поля VolunteerModel
       'fullName': fullName,
       'frame': frame,
-      'levelTitle': levelTitle,
-      'levelProgress': levelProgress,
-      'levelDescription': levelDescription,
-      'progressPercent': progressPercent,
-      'pointsToNextLevel': pointsToNextLevel,
+      'currentLevel': currentLevel,
+      'points': points,
       'achievementsCount': achievementsCount,
       'medals': medals?.map((e) => e.toMap()).toList(),
     };
@@ -102,11 +93,8 @@ class VolunteerModel extends BaseProfileModel {
       eventsCount: map['eventsCount'] as int?,
       fullName: map['fullName'] as String?,
       frame: map['frame'] as String?,
-      levelTitle: map['levelTitle'] as String?,
-      levelProgress: map['levelProgress'] as int?,
-      levelDescription: map['levelDescription'] as String?,
-      progressPercent: map['progressPercent'] as double?,
-      pointsToNextLevel: map['pointsToNextLevel'] as int?,
+      currentLevel: map['currentLevel'] as int?,
+      points: map['points'] as int?,
       achievementsCount: map['achievementsCount'] as int?,
       medals: (map['medals'] as List<dynamic>?)
           ?.map((e) => MedalItemModel.fromMap(e as Map<String, dynamic>))
@@ -133,11 +121,8 @@ class VolunteerModel extends BaseProfileModel {
     int? eventsCount,
     String? fullName,
     String? frame,
-    String? levelTitle,
-    int? levelProgress,
-    String? levelDescription,
-    double? progressPercent,
-    int? pointsToNextLevel,
+    int? currentLevel,
+    int? points,
     int? achievementsCount,
     List<MedalItemModel>? medals,
     List<CategoryChipModel>? categoryChips,
@@ -158,11 +143,8 @@ class VolunteerModel extends BaseProfileModel {
       eventsCount: eventsCount ?? this.eventsCount,
       fullName: fullName ?? this.fullName,
       frame: frame ?? this.frame,
-      levelTitle: levelTitle ?? this.levelTitle,
-      levelProgress: levelProgress ?? this.levelProgress,
-      levelDescription: levelDescription ?? this.levelDescription,
-      progressPercent: progressPercent ?? this.progressPercent,
-      pointsToNextLevel: pointsToNextLevel ?? this.pointsToNextLevel,
+      currentLevel: currentLevel ?? this.currentLevel,
+      points: points ?? this.points,
       achievementsCount: achievementsCount ?? this.achievementsCount,
       medals: medals ?? this.medals,
       categoryChips: categoryChips ?? this.categoryChips,

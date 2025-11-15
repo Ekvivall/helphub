@@ -50,7 +50,7 @@ class MessageBubble extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: isMine
-                    ? appThemeColors.cyanAccent
+                    ? appThemeColors.backgroundLightGrey.withAlpha(147)
                     : appThemeColors.primaryWhite,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
@@ -93,8 +93,7 @@ class MessageBubble extends StatelessWidget {
                               style: TextStyleHelper.instance.title13Regular
                                   .copyWith(
                                     color: appThemeColors.blueAccent,
-                                    fontWeight:
-                                        FontWeight.w800,
+                                    fontWeight: FontWeight.w800,
                                   ),
                             ),
                         ],
@@ -111,9 +110,7 @@ class MessageBubble extends StatelessWidget {
                     Text(
                       message.text,
                       style: TextStyleHelper.instance.title14Regular.copyWith(
-                        color: isMine
-                            ? appThemeColors.primaryWhite
-                            : appThemeColors.primaryBlack,
+                        color: appThemeColors.primaryBlack,
                       ),
                     ),
                   ],
@@ -124,9 +121,7 @@ class MessageBubble extends StatelessWidget {
                       Text(
                         _formatMessageTime(message.createdAt),
                         style: TextStyleHelper.instance.title13Regular.copyWith(
-                          color: isMine
-                              ? appThemeColors.primaryWhite.withAlpha(180)
-                              : appThemeColors.grey400,
+                          color: appThemeColors.primaryBlack.withAlpha(180),
                         ),
                       ),
                       if (isMine) ...[
@@ -134,9 +129,7 @@ class MessageBubble extends StatelessWidget {
                         Icon(
                           message.isRead ? Icons.done_all : Icons.done,
                           size: 16,
-                          color: message.isRead
-                              ? appThemeColors.lightGreenColor
-                              : appThemeColors.primaryWhite.withAlpha(180),
+                          color: appThemeColors.blueAccent.withGreen(48),
                         ),
                       ],
                     ],

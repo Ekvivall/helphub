@@ -81,8 +81,6 @@ class ProjectViewModel extends ChangeNotifier {
 
   GeoPoint? get currentUserLocation => _currentUserLocation;
 
-  BaseProfileModel? get user => _user;
-
   BaseProfileModel? get organizer => _organizer;
 
   ProjectModel? get currentProject => _currentProject;

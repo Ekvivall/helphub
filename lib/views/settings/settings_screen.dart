@@ -487,7 +487,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Navigator.of(context).pop();
                   Navigator.of(
                     context,
-                  ).pushReplacementNamed(AppRoutes.loginScreen);
+                  ).pushReplacementNamed(AppRoutes.splashScreen);
                 }
               } catch (e) {
                 Navigator.of(context).pop();

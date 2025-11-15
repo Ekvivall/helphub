@@ -7,6 +7,7 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
 import 'package:helphub/widgets/custom_input_field.dart';
+import 'package:helphub/widgets/user_avatar_with_frame.dart';
 import 'package:provider/provider.dart';
 
 class FindFriendsScreen extends StatefulWidget {
@@ -79,15 +80,15 @@ class _FindFriendsScreenState extends State<FindFriendsScreen> {
                 ),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
-                        onPressed: () {
-                          _searchController.clear();
-                          _viewModel.clearSearchResults();
-                        },
-                        icon: Icon(
-                          Icons.clear,
-                          color: appThemeColors.textMediumGrey,
-                        ),
-                      )
+                  onPressed: () {
+                    _searchController.clear();
+                    _viewModel.clearSearchResults();
+                  },
+                  icon: Icon(
+                    Icons.clear,
+                    color: appThemeColors.textMediumGrey,
+                  ),
+                )
                     : null,
                 borderRadius: 24,
                 onChanged: (query) {
@@ -155,39 +156,31 @@ class _FindFriendsScreenState extends State<FindFriendsScreen> {
                           vertical: 8,
                         ),
                         child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: user.photoUrl != null
-                                ? NetworkImage(user.photoUrl!)
-                                : null,
-                            backgroundColor: appThemeColors.blueAccent,
-                            child: user.photoUrl == null
-                                ? Icon(
-                                    Icons.person,
-                                    color: appThemeColors.backgroundLightGrey,
-                                  )
-                                : null,
-                          ),
+                          leading: UserAvatarWithFrame(size: 22,
+                            role: user.role,
+                            uid: user.uid,
+                            photoUrl: user.photoUrl,
+                            frame: user.frame,),
                           title: Text(
-                            user.fullName ??
-                                user.displayName ??
-                                'Невідомий користувач',
-                            style: TextStyleHelper.instance.title16Bold
-                                .copyWith(color: appThemeColors.primaryBlack),
-                          ),
-                          subtitle: Text(
-                            user.city != null ? 'м. ${user.city}' : '',
-                            style: TextStyleHelper.instance.title14Regular
-                                .copyWith(color: appThemeColors.textMediumGrey),
-                          ),
-                          trailing: _buildAddFriendButton(user, viewModel),
-                          onTap: () {
-                            Navigator.of(context).pushNamed(
-                              AppRoutes.volunteerProfileScreen,
-                              arguments: user.uid,
-                            );
-                          },
+                        user.fullName ??
+                        user.displayName ??
+                          'Невідомий користувач',
+                          style: TextStyleHelper.instance.title16Bold
+                              .copyWith(color: appThemeColors.primaryBlack),
                         ),
-                      );
+                        subtitle: Text(
+                          user.city != null ? 'м. ${user.city}' : '',
+                          style: TextStyleHelper.instance.title14Regular
+                              .copyWith(color: appThemeColors.textMediumGrey),
+                        ),
+                        trailing: _buildAddFriendButton(user, viewModel),
+                        onTap: () {
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.volunteerProfileScreen,
+                            arguments: user.uid,
+                          );
+                        },
+                      ),);
                     },
                   );
                 },
@@ -199,10 +192,8 @@ class _FindFriendsScreenState extends State<FindFriendsScreen> {
     );
   }
 
-  Widget _buildAddFriendButton(
-    VolunteerModel user,
-    ProfileViewModel viewModel,
-  ) {
+  Widget _buildAddFriendButton(VolunteerModel user,
+      ProfileViewModel viewModel,) {
     return FutureBuilder<FriendshipStatus>(
       future: viewModel.getFriendshipStatus(user.uid!),
       builder: (context, snapshot) {

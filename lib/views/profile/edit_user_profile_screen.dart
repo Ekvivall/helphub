@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/data/models/base_profile_model.dart';
@@ -18,6 +16,8 @@ import '../../core/utils/constants.dart';
 import '../../data/models/volunteer_model.dart';
 import '../../theme/theme_helper.dart';
 import '../../widgets/custom_dropdown.dart';
+import '../../widgets/profile/avatar_selection_dialog.dart';
+import '../../widgets/profile/photo_options_bottom_sheet.dart';
 import '../../widgets/user_avatar_with_frame.dart';
 
 class EditUserProfileScreen extends StatefulWidget {
@@ -55,9 +55,20 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
     return Consumer<ProfileViewModel>(
       builder: (context, viewModel, child) {
         if (viewModel.user == null) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: appThemeColors.lightGreenColor,
+          return Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment(0.9, -0.4),
+                end: Alignment(-0.9, 0.4),
+                colors: [appThemeColors.blueAccent, appThemeColors.cyanAccent],
+              ),
+            ),
+            child: Center(
+              child: CircularProgressIndicator(
+                color: appThemeColors.lightGreenColor,
+              ),
             ),
           );
         }
@@ -334,7 +345,6 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                     ),
                   ),
                 ),
-
               ],
             ),
           ),
@@ -363,18 +373,12 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
           children: [
             CustomElevatedButton(
               text: 'Змінити фото',
-              onPressed: () async {
-                final XFile? image = await _picker.pickImage(
-                  source: ImageSource.gallery,
-                );
-                if (image != null) {
-                  await viewModel.updateProfilePhoto(File(image.path));
-                }
-              },
-              backgroundColor: appThemeColors.textMediumGrey,
+              onPressed: () => _showPhotoOptionsDialog(context, viewModel),
+              backgroundColor: appThemeColors.blueMixedColor,
+              borderColor: appThemeColors.textMediumGrey,
               borderRadius: 12,
               textStyle: TextStyleHelper.instance.title14Regular.copyWith(
-                color: appThemeColors.backgroundLightGrey,
+                color: appThemeColors.primaryBlack,
               ),
               width: 150,
               height: 35,
@@ -383,13 +387,13 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
             if (user.role == UserRole.volunteer)
               CustomElevatedButton(
                 text: 'Змінити рамку',
-                onPressed: () {
-                  //TODO: Додати логіку зміни рамки,
-                },
-                backgroundColor: appThemeColors.textMediumGrey,
+                onPressed: () =>
+                    _showFrameSelectionDialog(context, viewModel, volunteer!),
+                backgroundColor: appThemeColors.blueMixedColor,
+                borderColor: appThemeColors.textMediumGrey,
                 borderRadius: 12,
                 textStyle: TextStyleHelper.instance.title14Regular.copyWith(
-                  color: appThemeColors.backgroundLightGrey,
+                  color: appThemeColors.primaryBlack,
                 ),
                 width: 150,
                 height: 35,
@@ -397,6 +401,248 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
           ],
         ),
       ],
+    );
+  }
+
+  void _showPhotoOptionsDialog(
+    BuildContext context,
+    ProfileViewModel viewModel,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => PhotoOptionsBottomSheet(
+        viewModel: viewModel,
+        picker: _picker,
+        onSelectAvatar: (volunteer) {
+          showDialog(
+            context: context,
+            builder: (dialogContext) => AvatarSelectionDialog(
+              viewModel: viewModel,
+              volunteer: volunteer,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showFrameSelectionDialog(
+    BuildContext context,
+    ProfileViewModel viewModel,
+    VolunteerModel volunteer,
+  ) {
+    final int currentLevel = volunteer.currentLevel ?? 0;
+    final List<String> unlockedFrames = Constants.allLevels
+        .where((level) => level.level <= currentLevel)
+        .map((level) => level.framePath)
+        .toList();
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: appThemeColors.primaryWhite,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.7,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Виберіть рамку',
+                    style: TextStyleHelper.instance.title18Bold,
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.close,
+                      color: appThemeColors.textMediumGrey,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Доступно ${unlockedFrames.length} з ${Constants.allLevels.length}',
+                style: TextStyleHelper.instance.title14Regular.copyWith(
+                  color: appThemeColors.textMediumGrey,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 0.85,
+                  ),
+                  itemCount: Constants.allLevels.length,
+                  itemBuilder: (context, index) {
+                    final level = Constants.allLevels[index];
+                    final isUnlocked = unlockedFrames.contains(level.framePath);
+                    final isSelected = volunteer.frame == level.framePath;
+                    return GestureDetector(
+                      onTap: isUnlocked
+                          ? () async {
+                              await viewModel.updateSelectedFrame(
+                                level.framePath,
+                              );
+                              Navigator.pop(context);
+                              Constants.showSuccessMessage(
+                                context,
+                                'Рамку успішно змінено!',
+                              );
+                            }
+                          : null,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isUnlocked
+                              ? appThemeColors.primaryWhite
+                              : appThemeColors.grey100,
+                          border: Border.all(
+                            color: isSelected
+                                ? appThemeColors.successGreen
+                                : isUnlocked
+                                ? appThemeColors.blueAccent.withAlpha(147)
+                                : appThemeColors.grey200,
+                            width: isSelected ? 3 : 2,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (!isUnlocked)
+                                  Icon(
+                                    Icons.lock,
+                                    size: 40,
+                                    color: appThemeColors.textMediumGrey,
+                                  )
+                                else
+                                  Stack(
+                                    children: [
+                                      Positioned(
+                                        top: 12,
+                                        left: 6,
+                                        child: CircleAvatar(
+                                          radius: 34,
+                                          backgroundColor:
+                                              appThemeColors.lightGreenColor,
+                                          backgroundImage:
+                                              (volunteer.photoUrl != null)
+                                              ? (volunteer.photoUrl!.startsWith(
+                                                          'http',
+                                                        ) ||
+                                                        volunteer.photoUrl!
+                                                            .startsWith(
+                                                              'https',
+                                                            ))
+                                                    ? NetworkImage(
+                                                        volunteer.photoUrl!,
+                                                      )
+                                                    : AssetImage(
+                                                            volunteer.photoUrl!,
+                                                          )
+                                                          as ImageProvider
+                                              : null,
+                                          child: volunteer.photoUrl == null
+                                              ? Icon(
+                                                  Icons.person,
+                                                  size: 40,
+                                                  color: appThemeColors
+                                                      .primaryWhite,
+                                                )
+                                              : null,
+                                        ),
+                                      ),
+                                      CustomImageView(
+                                        imagePath: level.framePath,
+                                        height: 87,
+                                        fit: BoxFit.contain,
+                                      ),
+                                    ],
+                                  ),
+
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isUnlocked
+                                        ? appThemeColors.lightGreenColor
+                                              .withAlpha(11)
+                                        : appThemeColors.grey200,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'Рівень ${level.level}',
+                                    style: TextStyleHelper
+                                        .instance
+                                        .title13Regular
+                                        .copyWith(
+                                          color: appThemeColors.primaryBlack,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ),
+                                if (!isUnlocked) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Потрібно ${level.minPoints} балів',
+                                    style: TextStyleHelper
+                                        .instance
+                                        .title13Regular
+                                        .copyWith(
+                                          color: appThemeColors.textMediumGrey,
+                                          fontSize: 11,
+                                        ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ],
+                            ),
+                            if (isSelected)
+                              Positioned(
+                                top: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: appThemeColors.successGreen,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.check,
+                                    size: 16,
+                                    color: appThemeColors.primaryWhite,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

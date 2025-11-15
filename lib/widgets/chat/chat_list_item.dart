@@ -315,7 +315,7 @@ class _ChatListItemState extends State<ChatListItem> {
                               _getLastMessagePreview(),
                               style: TextStyleHelper.instance.title14Regular
                                   .copyWith(
-                                    color: appThemeColors.backgroundLightGrey
+                                    color: appThemeColors.primaryWhite
                                         .withAlpha(180),
                                   ),
                               maxLines: 1,

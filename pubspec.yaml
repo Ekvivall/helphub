@@ -102,6 +102,8 @@ flutter:
     - assets/
     - assets/images/
     - assets/images/achievements/
+    - assets/images/frames/
+    - assets/images/avatars/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

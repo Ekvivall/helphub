@@ -14,6 +14,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../data/models/achievement_item_model.dart';
+import '../../data/models/level_model.dart';
 import '../../data/models/notification_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/theme_helper.dart';
@@ -99,7 +100,9 @@ class Constants {
             photoUrl: user.photoURL,
             lastSignInAt: DateTime.now(),
             createdAt: DateTime.now(),
-            levelProgress: 1,
+            currentLevel: 1,
+            points: 0,
+            frame: Constants.getLevelByNumber(1).framePath,
             projectsCount: 0,
             eventsCount: 0,
           );
@@ -449,9 +452,7 @@ class Constants {
     }
   }
 
-  static
-
-  void showImageDialog(BuildContext context, String imageUrl) {
+  static void showImageDialog(BuildContext context, String imageUrl) {
     showDialog(
       context: context,
       builder: (context) {
@@ -518,10 +519,9 @@ class Constants {
     );
   }
 
-  static const Map<NotificationCategory, List<NotificationType>> notificationGroups = {
-    NotificationCategory.messagesAndChat: [
-      NotificationType.chat,
-    ],
+  static const Map<NotificationCategory, List<NotificationType>>
+  notificationGroups = {
+    NotificationCategory.messagesAndChat: [NotificationType.chat],
     NotificationCategory.projectActivities: [
       NotificationType.projectApplication,
       NotificationType.projectApplicationEdit,
@@ -548,6 +548,7 @@ class Constants {
     ],
     NotificationCategory.accountAndSystem: [
       NotificationType.achievement,
+      NotificationType.levelUp,
       NotificationType.adminNotification,
       NotificationType.systemMaintenance,
       NotificationType.appUpdate,
@@ -646,4 +647,102 @@ class Constants {
       order: 11,
     ),
   ];
+
+  static List<LevelModel> allLevels = [
+    LevelModel(
+      level: 1,
+      minPoints: 0,
+      maxPoints: 9,
+      title: 'Лама-новачок',
+      description: 'Тільки почала, але вже з ентузіазмом!',
+      framePath: 'assets/images/frames/frame_level_1.png',
+      avatarPath: 'assets/images/avatars/avatar_level_1.gif',
+    ),
+    LevelModel(
+      level: 2,
+      minPoints: 10,
+      maxPoints: 29,
+      title: 'Старанна лама',
+      description: 'Приходить на кожну подію і завжди готова допомогти.',
+      framePath: 'assets/images/frames/frame_level_2.png',
+      avatarPath: 'assets/images/avatars/avatar_level_2.gif',
+    ),
+    LevelModel(
+      level: 3,
+      minPoints: 30,
+      maxPoints: 59,
+      title: 'Лама-організатор',
+      description: 'Планує краще, ніж Google Calendar.',
+      framePath: 'assets/images/frames/frame_level_3.png',
+      avatarPath: 'assets/images/avatars/avatar_level_3.gif',
+    ),
+    LevelModel(
+      level: 4,
+      minPoints: 60,
+      maxPoints: 99,
+      title: 'Лама-двигун',
+      description: 'Енергії вистачить на всю Україну.',
+      framePath: 'assets/images/frames/frame_level_4.gif',
+      avatarPath: 'assets/images/avatars/avatar_level_4.gif',
+    ),
+    LevelModel(
+      level: 5,
+      minPoints: 100,
+      maxPoints: 159,
+      title: 'Лама-натхнення',
+      description:
+          'Може зібрати людей навіть на суботник у понеділок о 6 ранку.',
+      framePath: 'assets/images/frames/frame_level_5.gif',
+      avatarPath: 'assets/images/avatars/avatar_level_5.gif',
+    ),
+    LevelModel(
+      level: 6,
+      minPoints: 160,
+      maxPoints: 239,
+      title: 'Лама-приклад',
+      description: 'Її цитують організатори інших подій.',
+      framePath: 'assets/images/frames/frame_level_6.gif',
+      avatarPath: 'assets/images/avatars/avatar_level_6.gif',
+    ),
+    LevelModel(
+      level: 7,
+      minPoints: 240,
+      maxPoints: 319,
+      title: 'Лама-світло',
+      description:
+          'Може організувати концерт навіть під час відключення світла.',
+      framePath: 'assets/images/frames/frame_level_7.gif',
+      avatarPath: 'assets/images/avatars/avatar_level_7.gif',
+    ),
+    LevelModel(
+      level: 8,
+      minPoints: 320,
+      maxPoints: 999999,
+      title: 'Лама-легенда',
+      description: 'Її портрет повинен висіти в кожному волонтерському центрі.',
+      framePath: 'assets/images/frames/frame_level_8.gif',
+      avatarPath: 'assets/images/avatars/avatar_level_8.gif',
+    ),
+  ];
+
+  static LevelModel getLevelByPoints(int points) {
+    for (int i = allLevels.length - 1; i >= 0; i--) {
+      if (points >= allLevels[i].minPoints) {
+        return allLevels[i];
+      }
+    }
+    return allLevels[0];
+  }
+
+  static LevelModel? getNextLevel(int currentLevel) {
+    if (currentLevel >= allLevels.length) return null;
+    return allLevels[currentLevel];
+  }
+
+  static LevelModel getLevelByNumber(int levelNumber) {
+    if (levelNumber < 1 || levelNumber > allLevels.length) {
+      return allLevels[0];
+    }
+    return allLevels[levelNumber - 1];
+  }
 }

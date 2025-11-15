@@ -10,6 +10,7 @@ import 'package:helphub/data/models/notification_model.dart';
 import '../../core/utils/constants.dart';
 import '../../data/models/user_achievement_model.dart';
 import '../../widgets/achievement/achievement_notification_dialog.dart';
+import '../../widgets/level/level_up_dialog.dart';
 
 class NotificationViewModel with ChangeNotifier {
   final NotificationService _notificationService = NotificationService();
@@ -27,6 +28,8 @@ class NotificationViewModel with ChangeNotifier {
 
   bool get isAllNotificationsEnabled =>
       _notificationSettings.values.any((enabled) => enabled);
+  StreamSubscription<DocumentSnapshot>? _userLevelSubscription;
+  int _previousLevel = 0;
 
   List<NotificationModel> get notifications => _notifications;
 
@@ -58,6 +61,7 @@ class NotificationViewModel with ChangeNotifier {
     _startListeningToSettings();
     _startListening();
     _startListeningForAchievements();
+    _startListeningForLevelUp();
   }
   void _startListeningForAchievements() {
     _achievementsSubscription?.cancel();
@@ -88,6 +92,42 @@ class NotificationViewModel with ChangeNotifier {
       }
     });
   }
+
+  void _startListeningForLevelUp() {
+    _userLevelSubscription?.cancel();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    _userLevelSubscription = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .snapshots()
+        .listen((snapshot) {
+      if (!snapshot.exists || snapshot.data() == null) return;
+      final data = snapshot.data()!;
+      final role = data['role'] as String?;
+      if (role != 'volunteer') {
+        return;
+      }
+      final newLevel = data['currentLevel'] as int? ?? 1;
+      final newPoints = data['points'] as int? ?? 0;
+      if (_previousLevel == 0) {
+        _previousLevel = newLevel;
+        return;
+      }
+      if (newLevel > _previousLevel) {
+        final context = NotificationService.navigatorKey?.currentContext;
+        if (context != null) {
+          final levelData = Constants.allLevels.firstWhere(
+                (l) => l.level == newLevel,
+            orElse: () => Constants.allLevels.first,
+          );
+          LevelUpDialog.show(context, levelData, newPoints);
+        }
+        _previousLevel = newLevel;
+      }
+    });
+  }
+
   void _startListeningToSettings() {
     _userSettingsSubscription?.cancel();
     final user = FirebaseAuth.instance.currentUser;
@@ -455,6 +495,8 @@ class NotificationViewModel with ChangeNotifier {
   void dispose() {
     stopListening();
     _userSettingsSubscription?.cancel();
+    _achievementsSubscription?.cancel();
+    _userLevelSubscription?.cancel();
     super.dispose();
   }
 }

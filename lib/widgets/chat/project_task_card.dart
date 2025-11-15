@@ -254,7 +254,10 @@ class ProjectTaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildOrganizerActions(BuildContext context, ChatTaskViewModel viewModel) {
+  Widget _buildOrganizerActions(
+    BuildContext context,
+    ChatTaskViewModel viewModel,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -274,7 +277,7 @@ class ProjectTaskCard extends StatelessWidget {
                     viewModel.markTaskAsCompleted(
                       projectId: projectId,
                       task: task,
-                      volunteerId: viewModel.currentUserId,
+                      volunteerId: viewModel.currentUserId!,
                     );
                   },
                   style: _actionButtonStyle(
@@ -314,7 +317,10 @@ class ProjectTaskCard extends StatelessWidget {
     );
   }
 
-  Widget _buildVolunteerActions(BuildContext context, ChatTaskViewModel viewModel) {
+  Widget _buildVolunteerActions(
+    BuildContext context,
+    ChatTaskViewModel viewModel,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -326,7 +332,7 @@ class ProjectTaskCard extends StatelessWidget {
                 viewModel.markTaskAsCompleted(
                   projectId: projectId,
                   task: task,
-                  volunteerId: viewModel.currentUserId,
+                  volunteerId: viewModel.currentUserId!,
                 );
               },
               style: _actionButtonStyle(
@@ -409,10 +415,13 @@ class ProjectTaskCard extends StatelessWidget {
                 Row(
                   children: [
                     UserAvatarWithFrame(
-                      size: 18,
+                      size: 22,
                       photoUrl: volunteerProfile?.photoUrl,
                       role: volunteerProfile?.role,
                       uid: volunteerProfile?.uid,
+                      frame: volunteerProfile is VolunteerModel
+                          ? volunteerProfile.frame
+                          : null,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -431,7 +440,7 @@ class ProjectTaskCard extends StatelessWidget {
                                 .copyWith(color: appThemeColors.primaryBlack),
                           ),
                           Text(
-                            'м. ${volunteerProfile?.city ?? 'Невідомо'}, ${volunteerProfile is VolunteerModel ? "${(volunteerProfile).levelProgress} рівень" : ""}',
+                            'м. ${volunteerProfile?.city ?? 'Невідомо'}, ${volunteerProfile is VolunteerModel ? "${(volunteerProfile).currentLevel} рівень" : ""}',
                             style: TextStyleHelper.instance.title13Regular
                                 .copyWith(color: appThemeColors.textMediumGrey),
                           ),
@@ -556,7 +565,7 @@ class ProjectTaskCard extends StatelessWidget {
                   viewModel.markTaskAsCompleted(
                     projectId: projectId,
                     task: task,
-                    volunteerId: viewModel.currentUserId,
+                    volunteerId: viewModel.currentUserId!,
                   );
                 }
               },
