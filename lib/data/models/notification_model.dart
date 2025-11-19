@@ -23,6 +23,8 @@ enum NotificationType {
   projectDeadline, // Нагадування про дедлайн проєктів
   achievement, // Досягнення
   levelUp, // Підняття рівня
+  tournamentSeasonStart, // Початок турніру
+  tournamentMedal, // Перемога в турніні
   general, // Загальні сповіщення
   systemMaintenance, // Технічні роботи
   appUpdate, // Оновлення додатку
@@ -36,6 +38,7 @@ enum NotificationCategory {
   fundraisingActivities,
   eventActivities,
   social,
+  game,
   accountAndSystem,
 }
 

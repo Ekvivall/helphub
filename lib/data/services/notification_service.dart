@@ -299,7 +299,8 @@ class NotificationService {
 
   Future<void> navigateFromNotificationData(
     Map<String, dynamic> data,
-    NotificationType? type) async {
+    NotificationType? type,
+  ) async {
     final navigator = navigatorKey?.currentState;
     if (navigator == null) {
       return;
@@ -406,6 +407,7 @@ class NotificationService {
         navigator.pushNamed(AppRoutes.achievementsScreen);
         break;
       case NotificationType.levelUp:
+      case NotificationType.tournamentMedal:
         navigator.pushNamed(AppRoutes.volunteerProfileScreen);
         break;
       case NotificationType.adminNotification:
@@ -413,6 +415,9 @@ class NotificationService {
       case NotificationType.appUpdate:
       case NotificationType.general:
         navigator.pushNamed(AppRoutes.notificationsScreen);
+        break;
+      case NotificationType.tournamentSeasonStart:
+        navigator.pushNamed(AppRoutes.tournamentScreen);
         break;
     }
   }

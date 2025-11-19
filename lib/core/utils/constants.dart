@@ -546,9 +546,13 @@ class Constants {
       NotificationType.friendRequest,
       NotificationType.friendRequestEdit,
     ],
-    NotificationCategory.accountAndSystem: [
+    NotificationCategory.game: [
       NotificationType.achievement,
       NotificationType.levelUp,
+      NotificationType.tournamentSeasonStart,
+      NotificationType.tournamentMedal
+    ],
+    NotificationCategory.accountAndSystem: [
       NotificationType.adminNotification,
       NotificationType.systemMaintenance,
       NotificationType.appUpdate,

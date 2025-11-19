@@ -328,6 +328,8 @@ String _getCategoryName(NotificationCategory category) {
       return 'Системні та адміністративні';
     case NotificationCategory.eventActivities:
       return 'Активності в подіях';
+    case NotificationCategory.game:
+      return 'Ігрові';
   }
 }
 
@@ -342,10 +344,12 @@ String _getCategoryDescription(NotificationCategory category) {
     case NotificationCategory.social:
       return 'Запити дружби та інші соціальні взаємодії';
     case NotificationCategory.accountAndSystem:
-      return 'Сповіщення про оновлення, технічні роботи, звіти та досягнення';
+      return 'Сповіщення про оновлення, технічні роботи та звіти';
 
     case NotificationCategory.eventActivities:
       return 'Нагадування та оновлення, пов\'язані з подіями';
+    case NotificationCategory.game:
+      return 'Сповіщення про досягнення, нові рівні, турніри';
   }
 }
 
@@ -363,6 +367,8 @@ IconData _getCategoryIcon(NotificationCategory category) {
       return Icons.settings_applications_outlined;
     case NotificationCategory.eventActivities:
       return Icons.event_available_outlined;
+    case NotificationCategory.game:
+      return Icons.celebration_outlined;
   }
 }
 
@@ -380,5 +386,7 @@ Color _getCategoryColor(NotificationCategory category) {
       return appThemeColors.textMediumGrey;
     case NotificationCategory.eventActivities:
       return appThemeColors.successGreen;
+    case NotificationCategory.game:
+      return appThemeColors.purpleColor;
   }
 }

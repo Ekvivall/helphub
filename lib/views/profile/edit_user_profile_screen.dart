@@ -47,7 +47,6 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Висота кнопок та відступів знизу для футера
     final double bottomButtonHeight = 44.0;
     final double bottomButtonPadding = 16.0;
     final double totalBottomSpace =

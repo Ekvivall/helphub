@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../data/models/base_profile_model.dart';
 import '../../data/models/category_chip_model.dart';
-import '../../data/models/medal_item_model.dart';
+import '../../data/models/medal_model.dart';
 
 class VolunteerModel extends BaseProfileModel {
   final String? fullName;
@@ -11,7 +11,10 @@ class VolunteerModel extends BaseProfileModel {
   final int? currentLevel;
   final int? points;
   final int? achievementsCount;
-  final List<MedalItemModel>? medals;
+  final int? seasonPoints; // Бали за поточний сезон
+  final List<MedalModel>? medals;
+  final String? currentGroupId;
+  final String? currentSeasonId;
 
   VolunteerModel({
     // Поля базового класу
@@ -35,7 +38,10 @@ class VolunteerModel extends BaseProfileModel {
     this.currentLevel,
     this.points,
     this.achievementsCount,
+    this.seasonPoints,
     this.medals,
+    this.currentGroupId,
+    this.currentSeasonId,
   }) : super(role: UserRole.volunteer); // Встановлюємо роль для волонтера
 
   @override
@@ -65,13 +71,15 @@ class VolunteerModel extends BaseProfileModel {
       'currentLevel': currentLevel,
       'points': points,
       'achievementsCount': achievementsCount,
+      'seasonPoints': seasonPoints,
       'medals': medals?.map((e) => e.toMap()).toList(),
+      'currentGroupId': currentGroupId,
+      'currentSeasonId': currentSeasonId,
     };
   }
 
   factory VolunteerModel.fromMap(Map<String, dynamic> map) {
-    // Helper function to parse DateTime from Timestamp
-    DateTime? _timestampToDateTime(dynamic ts) {
+    DateTime? timestampToDateTime(dynamic ts) {
       if (ts is Timestamp) {
         return ts.toDate();
       } else if (ts is String) {
@@ -85,8 +93,8 @@ class VolunteerModel extends BaseProfileModel {
       email: map['email'] as String?,
       displayName: map['displayName'] as String?,
       photoUrl: map['photoUrl'] as String?,
-      lastSignInAt: _timestampToDateTime(map['lastSignInAt']),
-      createdAt: _timestampToDateTime(map['createdAt']),
+      lastSignInAt: timestampToDateTime(map['lastSignInAt']),
+      createdAt: timestampToDateTime(map['createdAt']),
       city: map['city'] as String?,
       aboutMe: map['aboutMe'] as String?,
       projectsCount: map['projectsCount'] as int?,
@@ -97,7 +105,7 @@ class VolunteerModel extends BaseProfileModel {
       points: map['points'] as int?,
       achievementsCount: map['achievementsCount'] as int?,
       medals: (map['medals'] as List<dynamic>?)
-          ?.map((e) => MedalItemModel.fromMap(e as Map<String, dynamic>))
+          ?.map((e) => MedalModel.fromMap(e as Map<String, dynamic>))
           .toList(),
       categoryChips: (map['categoryChips'] as List<dynamic>?)
           ?.map((e) => CategoryChipModel.fromMap(e as Map<String, dynamic>))
@@ -105,6 +113,9 @@ class VolunteerModel extends BaseProfileModel {
       phoneNumber: map['phoneNumber'] as String?,
       telegramLink: map['telegramLink'] as String?,
       instagramLink: map['instagramLink'] as String?,
+      seasonPoints: map['seasonPoints'] as int?,
+      currentGroupId: map['currentGroupId'] as String?,
+      currentSeasonId: map['currentSeasonId'] as String?,
     );
   }
 
@@ -124,11 +135,14 @@ class VolunteerModel extends BaseProfileModel {
     int? currentLevel,
     int? points,
     int? achievementsCount,
-    List<MedalItemModel>? medals,
+    List<MedalModel>? medals,
     List<CategoryChipModel>? categoryChips,
     String? phoneNumber,
     String? telegramLink,
     String? instagramLink,
+    int? seasonPoints,
+    String? currentGroupId,
+    String? currentSeasonId
   }) {
     return VolunteerModel(
       uid: uid ?? this.uid,
@@ -151,6 +165,9 @@ class VolunteerModel extends BaseProfileModel {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       telegramLink: telegramLink ?? this.telegramLink,
       instagramLink: instagramLink ?? this.instagramLink,
+      seasonPoints: seasonPoints ?? this.seasonPoints,
+      currentGroupId: currentGroupId ?? this.currentGroupId,
+      currentSeasonId: currentSeasonId ?? this.currentSeasonId,
     );
   }
 }

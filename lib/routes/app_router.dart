@@ -33,6 +33,7 @@ import 'package:helphub/views/project/project_list_screen.dart';
 import 'package:helphub/views/report/create_report_screen.dart';
 import 'package:helphub/views/report/view_report_screen.dart';
 import 'package:helphub/views/splash/splash_screen.dart';
+import 'package:helphub/views/tournament/tournament_leaderboard_screen.dart';
 
 import '../data/services/notification_service.dart';
 import '../views/auth/register_organization_step2_screen.dart';
@@ -43,6 +44,7 @@ import '../views/fundraising/create_fundraising_application_screen.dart';
 import '../views/fundraising/create_fundraising_screen.dart';
 import '../views/profile/all_activities_screen.dart';
 import '../views/profile/all_fundraiser_applications_screen.dart';
+import '../views/profile/all_medals_screen.dart';
 import '../views/profile/friend_requests_screen.dart';
 import '../views/project/create_project_screen.dart';
 import '../views/settings/settings_screen.dart';
@@ -115,8 +117,11 @@ class AppRoutes {
   static const String calendarScreen = '/calendar';
   static const String notificationsScreen = '/notifications';
   static const String settingsScreen = '/settings';
-  static String achievementsScreen = '/all_achievements';
-  static String faqScreen = '/faq';
+  static const String achievementsScreen = '/all_achievements';
+  static const String faqScreen = '/faq';
+  static const String tournamentScreen = '/tournament';
+  static const String allMedalsScreen = '/all_medals';
+
 
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
@@ -149,8 +154,9 @@ class AppRoutes {
     settingsScreen: (context) => SettingsScreen(),
     faqScreen: (context) => FAQScreen(),
     achievementsScreen: (context) => AllAchievementsScreen(),
+    tournamentScreen: (context) => TournamentLeaderboardScreen(),
+    allMedalsScreen: (context) => AllMedalsScreen(),
   };
-
 
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {

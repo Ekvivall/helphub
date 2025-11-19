@@ -4,7 +4,7 @@ import 'package:helphub/data/services/achievement_service.dart';
 import 'package:helphub/data/services/friend_service.dart';
 import 'package:helphub/core/utils/image_constant.dart';
 import 'package:helphub/data/models/achievement_item_model.dart';
-import 'package:helphub/data/models/medal_item_model.dart';
+import 'package:helphub/data/models/medal_model.dart';
 import 'package:helphub/data/models/base_profile_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/view_models/profile/profile_view_model.dart';
@@ -154,7 +154,7 @@ class VolunteerProfileScreen extends StatelessWidget {
                           _buildAchievementsSection(volunteer, context),
                           _buildAchievementsList(volunteer),
                           if (volunteer.medals != null)
-                            _buildMedalsSection(viewModel),
+                            _buildMedalsSection(viewModel, context),
                           if (volunteer.medals != null)
                             _buildMedalsList(volunteer),
                           _buildRecentActivityScreen(viewModel, context),
@@ -642,7 +642,7 @@ class VolunteerProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMedalsSection(ProfileViewModel viewModel) {
+  Widget _buildMedalsSection(ProfileViewModel viewModel, BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
       child: Row(
@@ -655,7 +655,9 @@ class VolunteerProfileScreen extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.allMedalsScreen);
+            },
             child: Text(
               'Всі медалі',
               style: TextStyleHelper.instance.title16Regular.copyWith(
@@ -671,13 +673,19 @@ class VolunteerProfileScreen extends StatelessWidget {
   }
 
   Widget _buildMedalsList(VolunteerModel user) {
-    List<MedalItemModel> medals = user.medals!;
+    final List<MedalModel> allMedals = user.medals ?? [];
+    final displayMedals = allMedals.reversed.take(4).toList();
+    if (displayMedals.isEmpty) return const SizedBox.shrink();
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
       child: Row(
-        children: medals
-            .map((medal) => MedalItemWidget(medalItemModel: medal))
-            .toList(),
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: displayMedals.map((medal) {
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: MedalItemWidget(medalItemModel: medal),
+          );
+        }).toList(),
       ),
     );
   }
