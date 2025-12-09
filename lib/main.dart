@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:helphub/data/services/notification_service.dart';
 import 'package:helphub/routes/app_router.dart';
 import 'package:helphub/theme/theme_helper.dart';
+import 'package:helphub/view_models/admin/admin_view_model.dart';
 import 'package:helphub/view_models/auth/auth_view_model.dart';
 import 'package:helphub/view_models/auth/organization_register_view_model.dart';
 import 'package:helphub/view_models/chat/chat_task_view_model.dart';
@@ -112,6 +113,7 @@ class _HelpHubAppState extends State<HelpHubApp> with WidgetsBindingObserver {
         ChangeNotifierProvider(create: (_) => NotificationViewModel()),
         ChangeNotifierProvider(create: (_) => SettingsViewModel()),
         ChangeNotifierProvider(create: (_) => FAQViewModel()),
+        ChangeNotifierProvider(create: (_) => AdminViewModel()),
       ],
       child: NotificationInitWrapper(
         child: MaterialApp(

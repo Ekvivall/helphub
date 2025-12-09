@@ -13,6 +13,7 @@ import '../../data/models/volunteer_model.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/chat/chat_view_model.dart';
 import '../../widgets/chat/chat_list_item.dart';
+import '../../widgets/custom_admin_icon_button.dart';
 import '../../widgets/custom_bottom_navigation_bar.dart';
 import '../../widgets/custom_notification_icon_button.dart';
 import '../../widgets/user_avatar_with_frame.dart';
@@ -139,7 +140,8 @@ class _ChatListScreenState extends State<ChatListScreen>
           ),
           Row(
             children: [
-              CustomTournamentIconButton(),
+              if (user.role == UserRole.volunteer) CustomTournamentIconButton(),
+              if (user.role == UserRole.admin) CustomAdminIconButton(),
               CustomNotificationIconButton(),
             ],
           ),

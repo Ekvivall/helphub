@@ -46,6 +46,10 @@ class UserAvatarWithFrame extends StatelessWidget {
             Navigator.of(
               context,
             ).pushNamed(AppRoutes.organizationProfileScreen, arguments: uid);
+          } else if (role == UserRole.admin) {
+            Navigator.of(
+              context,
+            ).pushNamed(AppRoutes.adminProfileScreen, arguments: uid);
           } else {
             Navigator.of(context).pushNamed(AppRoutes.loginScreen);
           }

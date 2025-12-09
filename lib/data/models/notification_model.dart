@@ -24,10 +24,9 @@ enum NotificationType {
   achievement, // Досягнення
   levelUp, // Підняття рівня
   tournamentSeasonStart, // Початок турніру
+  supportReply, // Відповідь від адміністратора
   tournamentMedal, // Перемога в турніні
   general, // Загальні сповіщення
-  systemMaintenance, // Технічні роботи
-  appUpdate, // Оновлення додатку
   adminNotification, // Сповіщення для адмінів
 }
 
@@ -160,8 +159,6 @@ class NotificationModel {
       case NotificationType.achievement:
         return Icons.stars_outlined;
       case NotificationType.adminNotification:
-      case NotificationType.systemMaintenance:
-      case NotificationType.appUpdate:
         return Icons.admin_panel_settings_outlined;
       default:
         return Icons.notifications_outlined;
@@ -200,8 +197,6 @@ class NotificationModel {
       case NotificationType.achievement:
         return appThemeColors.goldColor;
       case NotificationType.adminNotification:
-      case NotificationType.systemMaintenance:
-      case NotificationType.appUpdate:
         return appThemeColors.textLightColor;
       default:
         return appThemeColors.textMediumGrey;

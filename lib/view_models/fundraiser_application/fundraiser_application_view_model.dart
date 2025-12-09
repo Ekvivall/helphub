@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:helphub/data/models/admin_model.dart';
 import 'package:helphub/data/services/category_service.dart';
 import 'package:helphub/data/services/fundraiser_application_service.dart';
 import 'package:helphub/data/models/volunteer_model.dart';
@@ -125,7 +126,7 @@ class FundraiserApplicationViewModel extends ChangeNotifier {
   void _listenToUserApplications() {
     if (_currentAuthUserId == null) return;
     _applicationsSubscription?.cancel();
-    if (_user is VolunteerModel) {
+    if (_user is VolunteerModel || _user is AdminModel) {
       // Для волонтерів - завантаження їх заявок
       _applicationsSubscription = _applicationService
           .getFundraiserApplicationsForVolunteer(_currentAuthUserId!)

@@ -20,6 +20,7 @@ class CustomTextField extends StatelessWidget {
   final bool readOnly;
   final Color? fillColor;
   final Widget? prefixIcon;
+  final Widget? suffixIcon;
   final bool isRequired;
   final List<TextInputFormatter>? inputFormatters;
   final Color? errorColor;
@@ -42,6 +43,7 @@ class CustomTextField extends StatelessWidget {
     this.readOnly = false,
     this.fillColor,
     this.prefixIcon,
+    this.suffixIcon,
     this.isRequired = true,
     this.inputFormatters,
     this.errorColor, this.initialValue
@@ -84,6 +86,7 @@ class CustomTextField extends StatelessWidget {
           inputFormatters: inputFormatters,
           errorColor: errorColor,
           initialValue: initialValue,
+          suffixIcon: suffixIcon,
         ),
       ],
     );

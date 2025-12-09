@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/utils/constants.dart';
+import '../../data/models/admin_model.dart';
 import '../../data/models/base_profile_model.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
@@ -304,6 +305,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                                             : organizer is OrganizationModel
                                             ? organizer.organizationName ??
                                                   'Благодійний фонд'
+                                            : organizer is AdminModel
+                                            ? (organizer).fullName ?? 'Адмін'
                                             : 'Невідомий користувач',
                                         style: TextStyleHelper
                                             .instance

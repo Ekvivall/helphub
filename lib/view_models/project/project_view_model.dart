@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:geolocator/geolocator.dart' hide ActivityType;
+import 'package:helphub/data/models/admin_model.dart';
 import 'package:helphub/data/services/friend_service.dart';
 import 'package:helphub/data/services/project_application_service.dart';
 
@@ -128,6 +129,8 @@ class ProjectViewModel extends ChangeNotifier {
           return VolunteerModel.fromMap(data);
         } else if (data['role'] == 'organization') {
           return OrganizationModel.fromMap(data);
+        } else if (data['role'] == 'admin') {
+          return AdminModel.fromMap(data);
         }
       }
     } catch (e) {
@@ -403,6 +406,8 @@ class ProjectViewModel extends ChangeNotifier {
                   'Волонтер'
             : _user is OrganizationModel
             ? (_user as OrganizationModel).organizationName ?? 'Фонд'
+            : _user is AdminModel
+            ? (_user as AdminModel).fullName ?? 'Адмін'
             : 'Невідомий користувач',
         city: _user!.city ?? city,
         timestamp: DateTime.now(),

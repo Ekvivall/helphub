@@ -411,10 +411,13 @@ class NotificationService {
         navigator.pushNamed(AppRoutes.volunteerProfileScreen);
         break;
       case NotificationType.adminNotification:
-      case NotificationType.systemMaintenance:
-      case NotificationType.appUpdate:
+        navigator.pushNamed(AppRoutes.adminPanelScreen);
+        break;
       case NotificationType.general:
         navigator.pushNamed(AppRoutes.notificationsScreen);
+        break;
+      case NotificationType.supportReply:
+        navigator.pushNamed(AppRoutes.userSupportHistoryScreen);
         break;
       case NotificationType.tournamentSeasonStart:
         navigator.pushNamed(AppRoutes.tournamentScreen);

@@ -5,6 +5,7 @@ import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';
 
+import '../../data/models/admin_model.dart';
 import '../../data/models/organization_model.dart';
 import '../../theme/text_style_helper.dart';
 
@@ -50,7 +51,7 @@ class MessageBubble extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: isMine
-                    ? appThemeColors.backgroundLightGrey.withAlpha(147)
+                    ? appThemeColors.backgroundLightGrey.withAlpha(211)
                     : appThemeColors.primaryWhite,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
@@ -81,6 +82,8 @@ class MessageBubble extends StatelessWidget {
                             ? (senderProfile as OrganizationModel)
                                       .organizationName ??
                                   'Фонд'
+                            : senderProfile is AdminModel
+                            ? (senderProfile as AdminModel).fullName ?? 'Адмін'
                             : 'Завантаження...'),
                         style: TextStyleHelper.instance.title13Regular.copyWith(
                           color: appThemeColors.blueAccent,

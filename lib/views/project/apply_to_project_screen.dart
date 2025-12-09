@@ -4,6 +4,7 @@ import 'package:helphub/widgets/custom_checkbox.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/admin_model.dart';
 import '../../data/models/base_profile_model.dart';
 import '../../data/models/category_chip_model.dart';
 import '../../data/models/organization_model.dart';
@@ -266,6 +267,8 @@ class _ApplyToProjectScreenState extends State<ApplyToProjectScreen> {
                               'Волонтер'
                         : organizer is OrganizationModel
                         ? (organizer).organizationName ?? 'Фонд'
+                        : organizer is AdminModel
+                        ? (organizer).fullName ?? 'Адмін'
                         : 'Невідомий користувач',
                     style: TextStyleHelper.instance.title18Bold.copyWith(
                       color: appThemeColors.backgroundLightGrey,

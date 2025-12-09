@@ -7,6 +7,7 @@ import 'package:helphub/widgets/chat/message_input_widget.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';
 import 'package:provider/provider.dart';
 
+import '../../data/models/admin_model.dart';
 import '../../data/services/notification_service.dart';
 import '../../data/models/message_model.dart';
 import '../../data/models/organization_model.dart';
@@ -115,6 +116,8 @@ class _ChatFriendScreenState extends State<ChatFriendScreen> {
                         ? friendProfile
                                   .organizationName ??
                               'Фонд'
+                        : friendProfile is AdminModel
+                        ? (friendProfile).fullName ?? 'Адмін'
                         : 'Завантаження...'),
                     style: TextStyleHelper.instance.title16Bold.copyWith(
                       color: appThemeColors.primaryWhite,

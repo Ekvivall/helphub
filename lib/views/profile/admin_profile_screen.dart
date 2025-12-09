@@ -1,0 +1,1177 @@
+import 'package:flutter/material.dart';
+import 'package:helphub/data/models/admin_model.dart';
+import 'package:helphub/data/services/friend_service.dart';
+import 'package:helphub/core/utils/image_constant.dart';
+import 'package:helphub/data/models/base_profile_model.dart';
+import 'package:helphub/theme/text_style_helper.dart';
+import 'package:helphub/view_models/profile/profile_view_model.dart';
+import 'package:helphub/widgets/custom_elevated_button.dart';
+import 'package:helphub/widgets/custom_image_view.dart';
+import 'package:helphub/widgets/profile/statistic_item_widget.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import '../../core/utils/constants.dart';
+import '../../data/models/friend_request_model.dart';
+import '../../routes/app_router.dart';
+import '../../theme/theme_helper.dart';
+import '../../widgets/profile/avatar_selection_dialog.dart';
+import '../../widgets/profile/category_chip_widget.dart';
+import '../../widgets/profile/fundraiser_application_item_widget.dart';
+import '../../widgets/profile/photo_options_bottom_sheet.dart';
+import '../../widgets/profile/project_application_item.dart';
+import '../../widgets/profile/saved_fundraising_item.dart';
+import '../../widgets/user_avatar_with_frame.dart';
+import '../../widgets/profile/latest_activities.dart';
+import 'all_applications_screen.dart';
+
+class AdminProfileScreen extends StatelessWidget {
+  AdminProfileScreen({super.key, this.userId});
+
+  final String? userId; //ID користувача, чий профіль переглядаємо
+  final ImagePicker _picker = ImagePicker();
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) =>
+      ProfileViewModel(viewingUserId: userId)..fetchUserProfile(),
+      child: Consumer<ProfileViewModel>(
+        builder: (context, viewModel, child) {
+          final bool isOwner =
+              userId == null || userId == viewModel.currentAuthUserId;
+          final AdminModel? admin = viewModel.user is AdminModel
+              ? viewModel.user as AdminModel
+              : null;
+          return Scaffold(
+            backgroundColor: appThemeColors.blueAccent,
+            appBar: AppBar(
+              backgroundColor: appThemeColors.appBarBg,
+              leading: IconButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                icon: Icon(
+                  Icons.arrow_back,
+                  size: 40,
+                  color: appThemeColors.backgroundLightGrey,
+                ),
+              ),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    isOwner ? 'Мій профіль' : 'Профіль',
+                    style: TextStyleHelper.instance.headline24SemiBold.copyWith(
+                      color: appThemeColors.backgroundLightGrey,
+                    ),
+                  ),
+                  if (isOwner)
+                    IconButton(
+                      onPressed: () {
+                        Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.settingsScreen);
+                      },
+                      icon: Icon(
+                        Icons.settings,
+                        size: 32,
+                        color: appThemeColors.backgroundLightGrey,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            body: Container(
+              width: double.infinity,
+              height: double.infinity,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: const Alignment(0.9, -0.4),
+                  end: const Alignment(-0.9, 0.4),
+                  colors: [
+                    appThemeColors.blueAccent,
+                    appThemeColors.cyanAccent,
+                  ],
+                ),
+              ),
+              child: viewModel.isLoading && viewModel.user == null
+                  ? Center(
+                child: CircularProgressIndicator(
+                  color: appThemeColors.primaryWhite,
+                ),
+              )
+                  : viewModel.user == null
+                  ? Center(
+                child: Text(
+                  'Профіль не знайдено або стався збій',
+                  style: TextStyleHelper.instance.title14Regular.copyWith(
+                    color: appThemeColors.primaryWhite,
+                  ),
+                ),
+              )
+                  : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    //Блок інформації про користувача (шапка)
+                    _buildProfileSection(
+                      admin!,
+                      isOwner,
+                      viewModel,
+                      context,
+                    ),
+                    _buildStatistics(admin),
+                    if (admin.aboutMe != null) _buildBio(admin),
+                    _buildContactInfo(context, admin),
+                    if (admin.categoryChips != null)
+                      _buildBadge(admin),
+                    _buildEditProfileButton(context, viewModel),
+                    _buildAdminDashboardButton(context, viewModel, isOwner),
+                    _buildRecentActivityScreen(viewModel, context),
+                    if (viewModel.latestActivities.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
+                        child: Text(
+                          'Немає останніх активностей.',
+                          style: TextStyleHelper.instance.title16Regular
+                              .copyWith(
+                            color: appThemeColors.backgroundLightGrey,
+                          ),
+                        ),
+                      )
+                    else
+                      LatestActivities(
+                        isOwner: isOwner,
+                        displayItems: viewModel.latestActivities
+                            .take(3)
+                            .toList(),
+                        currentAuthId: viewModel.currentAuthUserId!,
+                      ),
+                    _buildSavedFees(viewModel, context),
+                    if (isOwner) ...[
+                      _buildAllApplications(viewModel, context),
+                      _buildFollowedOrganizationsSection(
+                        context,
+                        viewModel,
+                      ),
+                      _buildMyFriends(context, viewModel),
+                      _buildFriendList(context, viewModel),
+                      _buildFooterMyFriends(context, viewModel),
+                    ],
+                    SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildProfileSection(
+      AdminModel user,
+      bool isOwner,
+      ProfileViewModel viewModel,
+      BuildContext context,
+      ) {
+    final String displayName = user.fullName ??'Адмін';
+    final String displayCity = user.city != null && user.city!.isNotEmpty
+        ? 'м. ${user.city}'
+        : 'Місто не вказано';
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 36, vertical: 7),
+      child: Row(
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              UserAvatarWithFrame(
+                size: 50,
+                role: UserRole.admin,
+                uid: user.uid,
+                photoUrl: user.photoUrl,
+              ),
+              if (isOwner)
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: CustomImageView(
+                    imagePath: ImageConstant.penIcon,
+                    height: 32,
+                    width: 32,
+                    onTap: () {
+                      showModalBottomSheet(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        isScrollControlled: true,
+                        builder: (context) => PhotoOptionsBottomSheet(
+                          viewModel: viewModel,
+                          picker: _picker,
+                          onSelectAvatar: (admin) {
+                            showDialog(
+                              context: context,
+                              builder: (dialogContext) => AvatarSelectionDialog(
+                                viewModel: viewModel,
+                                volunteer: admin,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+            ],
+          ),
+          SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  displayName,
+                  style: TextStyleHelper.instance.headline24SemiBold.copyWith(
+                    color: appThemeColors.backgroundLightGrey,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    CustomImageView(
+                      imagePath: ImageConstant.placeholderIcon,
+                      height: 16,
+                      width: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      displayCity,
+                      style: TextStyleHelper.instance.title16Regular.copyWith(
+                        color: appThemeColors.backgroundLightGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatistics(AdminModel user) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 48, vertical: 7),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          StatisticItemWidget(value: user.projectsCount, label: 'проєктів'),
+          SizedBox(width: 48),
+          StatisticItemWidget(value: user.eventsCount, label: 'подій'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBio(AdminModel user) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Про мене',
+            style: TextStyleHelper.instance.title16Bold.copyWith(
+              color: appThemeColors.backgroundLightGrey,
+            ),
+          ),
+          Text(
+            user.aboutMe ?? '',
+            style: TextStyleHelper.instance.title16Regular.copyWith(
+              color: appThemeColors.backgroundLightGrey,
+              height: 1.2,
+            ),
+            textAlign: TextAlign.justify,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditProfileButton(
+      BuildContext context,
+      ProfileViewModel viewModel,
+      ) {
+    if (viewModel.currentUserRole != UserRole.organization) {
+      return FutureBuilder<FriendshipStatus>(
+        future: viewModel.getFriendshipStatus(viewModel.user!.uid!),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            );
+          }
+          if (snapshot.hasError) {
+            return Text('Помилка: ${snapshot.error}');
+          }
+          final FriendshipStatus status =
+              snapshot.data ?? FriendshipStatus.notFriends;
+          switch (status) {
+            case FriendshipStatus.self:
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+                child: CustomElevatedButton(
+                  text: 'Редагувати профіль',
+                  onPressed: () {
+                    Navigator.of(
+                      context,
+                    ).pushNamed(AppRoutes.editUserProfileScreen).then((_) {
+                      viewModel.fetchUserProfile();
+                    });
+                  },
+                  width: double.infinity,
+                  height: 44,
+                  borderRadius: 24,
+                  textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                    color: appThemeColors.backgroundLightGrey,
+                  ),
+                ),
+              );
+            case FriendshipStatus.notFriends:
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+                child: CustomElevatedButton(
+                  text: 'Додати в друзі',
+                  onPressed: () => viewModel.sendFriendRequest(userId!),
+                  width: double.infinity,
+                  height: 44,
+                  borderRadius: 24,
+                  textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                    color: appThemeColors.backgroundLightGrey,
+                  ),
+                  backgroundColor: appThemeColors.successGreen,
+                ),
+              );
+            case FriendshipStatus.requestSent:
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+                child: CustomElevatedButton(
+                  text: 'Запит відправлено',
+                  onPressed: null,
+                  // Disabled button
+                  width: double.infinity,
+                  height: 44,
+                  borderRadius: 24,
+                  backgroundColor: appThemeColors.blueTransparent,
+                  textStyle: TextStyleHelper.instance.title16Regular.copyWith(
+                    color: appThemeColors.backgroundLightGrey.withAlpha(179),
+                  ),
+                ),
+              );
+            case FriendshipStatus.requestReceived:
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 7),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: CustomElevatedButton(
+                        text: 'Прийняти',
+                        onPressed: () =>
+                            viewModel.acceptFriendRequestFromUser(userId!),
+                        height: 44,
+                        borderRadius: 24,
+                        textStyle: TextStyleHelper.instance.title16Regular
+                            .copyWith(
+                          color: appThemeColors.backgroundLightGrey,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: CustomElevatedButton(
+                        text: 'Відхилити',
+                        onPressed: () =>
+                            viewModel.rejectFriendRequestFromUser(userId!),
+                        height: 44,
+                        borderRadius: 24,
+                        backgroundColor: appThemeColors.blueTransparent,
+                        textStyle: TextStyleHelper.instance.title16Regular
+                            .copyWith(
+                          color: appThemeColors.backgroundLightGrey,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            case FriendshipStatus.friends:
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 7),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: CustomElevatedButton(
+                        text: 'Написати',
+                        onPressed: () async {
+                          final friendHelper = FriendService();
+                          String? chatId = await friendHelper
+                              .getOrCreateFriendChat(
+                            viewModel.currentAuthUserId!,
+                            viewModel.user!.uid!,
+                          );
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.chatFriendScreen,
+                            arguments: chatId,
+                          );
+                        },
+                        height: 44,
+                        borderRadius: 24,
+                        backgroundColor: appThemeColors.blueTransparent,
+                        textStyle: TextStyleHelper.instance.title16Regular
+                            .copyWith(color: appThemeColors.primaryBlack),
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: CustomElevatedButton(
+                        text: 'Видалити з друзів',
+                        onPressed: () {
+                          Constants.showConfirmationDialog(
+                            context,
+                            'Підтвердження видалення',
+                            'Ви впевнені, що хочете видалити цього користувача зі своїх друзів?',
+                            'Видалити',
+                            viewModel,
+                            userId!,
+                          );
+                        },
+                        height: 44,
+                        borderRadius: 24,
+                        backgroundColor: appThemeColors.errorRed.withAlpha(120),
+                        textStyle: TextStyleHelper.instance.title16Regular
+                            .copyWith(color: appThemeColors.primaryWhite),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+          }
+        },
+      );
+    } else {
+      return SizedBox.shrink();
+    }
+  }
+
+  Widget _buildBadge(AdminModel user) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Сфери інтересів',
+            style: TextStyleHelper.instance.title16Bold.copyWith(
+              color: appThemeColors.backgroundLightGrey,
+            ),
+          ),
+          SizedBox(height: 7),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: user.categoryChips!
+                .map((chip) => CategoryChipWidget(chip: chip))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentActivityScreen(
+      ProfileViewModel viewModel,
+      BuildContext context,
+      ) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Остання активність',
+            style: TextStyleHelper.instance.title16Bold.copyWith(
+              color: appThemeColors.backgroundLightGrey,
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.allActivitiesScreen);
+            },
+            child: Text(
+              'Всі дії',
+              style: TextStyleHelper.instance.title16Regular.copyWith(
+                color: appThemeColors.lightGreenColor,
+                decoration: TextDecoration.underline,
+                decorationColor: appThemeColors.lightGreenColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSavedFees(ProfileViewModel viewModel, BuildContext context) {
+    final savedFundraisers = viewModel.savedFundraiser;
+    final displayItems = savedFundraisers.take(3).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Збережені збори',
+                style: TextStyleHelper.instance.title16Bold.copyWith(
+                  color: appThemeColors.backgroundLightGrey,
+                ),
+              ),
+              if (savedFundraisers.length > 3)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(
+                      context,
+                    ).pushNamed(AppRoutes.allSavedFundraisersScreen);
+                  },
+                  child: Text(
+                    'Переглянути всі',
+                    style: TextStyleHelper.instance.title16Regular.copyWith(
+                      color: appThemeColors.lightGreenColor,
+                      decoration: TextDecoration.underline,
+                      decorationColor: appThemeColors.lightGreenColor,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        // Відображення списку або повідомлення, якщо список порожній
+        if (savedFundraisers.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              'У вас немає збережених зборів.',
+              style: TextStyleHelper.instance.title14Regular.copyWith(
+                color: appThemeColors.backgroundLightGrey.withAlpha(150),
+              ),
+            ),
+          )
+        else
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: displayItems.length,
+            itemBuilder: (context, index) {
+              final fundraising = displayItems[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12.0),
+                child: SavedFundraisingItem(fundraising: fundraising),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildAllApplications(
+      ProfileViewModel viewModel,
+      BuildContext context,
+      ) {
+    // Створюємо об'єднаний список заявок
+    List<ApplicationItem> allItems = [];
+
+    // Додаємо заявки на проєкти
+    for (var app in viewModel.volunteerProjectApplications) {
+      final project = viewModel.projectsData[app.projectId];
+      allItems.add(ApplicationItem.project(app, project));
+    }
+
+    // Додаємо заявки на збори
+    for (var app in viewModel.volunteerFundraiserApplications) {
+      allItems.add(ApplicationItem.fundraiser(app));
+    }
+
+    // Сортуємо за часом (найновіші спочатку) та беремо перші 3
+    allItems.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    final displayItems = allItems.take(3).toList();
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Мої заявки',
+                style: TextStyleHelper.instance.title16Bold.copyWith(
+                  color: appThemeColors.backgroundLightGrey,
+                ),
+              ),
+              if (allItems.length > 3)
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(
+                      context,
+                    ).pushNamed(AppRoutes.allApplicationsScreen);
+                  },
+                  child: Text(
+                    'Переглянути всі',
+                    style: TextStyleHelper.instance.title16Regular.copyWith(
+                      color: appThemeColors.lightGreenColor,
+                      decoration: TextDecoration.underline,
+                      decorationColor: appThemeColors.lightGreenColor,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (allItems.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.inbox_outlined,
+                  size: 48,
+                  color: appThemeColors.backgroundLightGrey.withAlpha(100),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Ви ще не подавали заявок.',
+                  style: TextStyleHelper.instance.title14Regular.copyWith(
+                    color: appThemeColors.backgroundLightGrey,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Заявки на проєкти та збори з\'являться тут',
+                  style: TextStyleHelper.instance.title13Regular.copyWith(
+                    color: appThemeColors.backgroundLightGrey.withAlpha(150),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        if (displayItems.isNotEmpty)
+          ...displayItems.map((item) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: item.isProject
+                  ? ProjectApplicationItem(
+                application: item.projectApplication!,
+                project: item.project,
+              )
+                  : FundraiserApplicationItem(
+                application: item.fundraiserApplication!,
+              ),
+            );
+          }),
+      ],
+    );
+  }
+
+  Widget _buildMyFriends(BuildContext context, ProfileViewModel viewModel) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Мої друзі',
+            style: TextStyleHelper.instance.title16Bold.copyWith(
+              color: appThemeColors.backgroundLightGrey,
+            ),
+          ),
+          if (viewModel.friendProfiles.length > 3)
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).pushNamed(AppRoutes.friendsListScreen);
+              },
+              child: Text(
+                'Переглянути всі',
+                style: TextStyleHelper.instance.title16Regular.copyWith(
+                  color: appThemeColors.lightGreenColor,
+                  decoration: TextDecoration.underline,
+                  decorationColor: appThemeColors.lightGreenColor,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFriendList(BuildContext context, ProfileViewModel viewModel) {
+    final int friendsToShow = viewModel.friendProfiles.length > 3
+        ? 3
+        : viewModel.friendProfiles.length;
+    if (friendsToShow == 0) {
+      return const SizedBox.shrink();
+    }
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        children: List.generate(friendsToShow, (index) {
+          final friend = viewModel.friendProfiles[index];
+          return Card(
+            color: appThemeColors.backgroundLightGrey,
+            margin: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              // Дозволяє натискати на картку
+              onTap: () {
+                Navigator.of(context).pushNamed(
+                  AppRoutes.adminProfileScreen,
+                  arguments: friend.uid,
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    UserAvatarWithFrame(
+                      size: 20,
+                      role: UserRole.admin,
+                      photoUrl: friend.photoUrl,
+                      frame: friend.frame,
+                      uid: friend.uid,
+                    ),
+
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            friend.fullName ??
+                                friend.displayName ??
+                                'Невідомий користувач',
+                            style: TextStyleHelper.instance.title14Regular
+                                .copyWith(
+                              color: appThemeColors.primaryBlack,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          if (friend.city != null && friend.city!.isNotEmpty)
+                            Text(
+                              'м. ${friend.city}',
+                              style: TextStyleHelper.instance.title13Regular
+                                  .copyWith(
+                                color: appThemeColors.textMediumGrey,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildFooterMyFriends(
+      BuildContext context,
+      ProfileViewModel viewModel,
+      ) {
+    final int requestCount = viewModel.incomingFriendRequestsCount;
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.findFriendsScreen);
+            },
+            child: Text(
+              'Знайти і додати друга',
+              style: TextStyleHelper.instance.title16Regular.copyWith(
+                color: appThemeColors.lightGreenColor,
+                decoration: TextDecoration.underline,
+                decorationColor: appThemeColors.lightGreenColor,
+              ),
+            ),
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.friendRequestsScreen);
+            },
+            child: Row(
+              children: [
+                Text(
+                  'Заявки в друзі',
+                  style: TextStyleHelper.instance.title16Regular.copyWith(
+                    color: appThemeColors.lightGreenColor,
+                    decoration: TextDecoration.underline,
+                    decorationColor: appThemeColors.lightGreenColor,
+                  ),
+                ),
+                if (requestCount > 0) ...[
+                  SizedBox(width: 7),
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: appThemeColors.lightGreenColor,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '$requestCount',
+                      style: TextStyleHelper.instance.title14Regular.copyWith(
+                        color: appThemeColors.textMediumGrey,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactInfo(BuildContext context, AdminModel user) {
+    bool hasContactInfo =
+        (user.email != null && user.email!.isNotEmpty) ||
+            (user.phoneNumber != null && user.phoneNumber!.isNotEmpty) ||
+            (user.telegramLink != null && user.telegramLink!.isNotEmpty) ||
+            (user.instagramLink != null && user.instagramLink!.isNotEmpty);
+    if (!hasContactInfo) {
+      return const SizedBox.shrink(); // Не відображати секцію, якщо немає даних
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Контактна інформація',
+            style: TextStyleHelper.instance.title16Bold.copyWith(
+              color: appThemeColors.backgroundLightGrey,
+            ),
+          ),
+          if (user.email != null && user.email!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.email,
+                    color: appThemeColors.backgroundLightGrey,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    user.email!,
+                    style: TextStyleHelper.instance.title16Regular.copyWith(
+                      color: appThemeColors.backgroundLightGrey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (user.phoneNumber != null && user.phoneNumber!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: GestureDetector(
+                onTap: () async {
+                  final Uri phoneUri = Uri(
+                    scheme: 'tel',
+                    path: user.phoneNumber!,
+                  );
+                  if (await canLaunchUrl(phoneUri)) {
+                    await launchUrl(phoneUri);
+                  } else {
+                    // Обробка помилки, якщо неможливо зателефонувати
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Неможливо відкрити додаток для дзвінків.',
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.phone,
+                      color: appThemeColors.backgroundLightGrey,
+                      size: 20,
+                    ), // Приклад іконки
+                    const SizedBox(width: 12),
+                    Text(
+                      user.phoneNumber!,
+                      style: TextStyleHelper.instance.title16Regular.copyWith(
+                        color: appThemeColors.backgroundLightGrey,
+                        decoration: TextDecoration.underline,
+                        // Для підкреслення, що це посилання
+                        decorationColor: appThemeColors.backgroundLightGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (user.telegramLink != null && user.telegramLink!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: GestureDetector(
+                onTap: () async {
+                  String link = user.telegramLink!;
+                  if (!link.startsWith('http')) {
+                    link = 'https://t.me/${link.replaceAll('@', '')}';
+                  }
+                  final Uri telegramUri = Uri.parse(link);
+                  if (await canLaunchUrl(telegramUri)) {
+                    await launchUrl(telegramUri);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Неможливо відкрити посилання на Telegram.',
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.telegram,
+                      size: 20,
+                      color: appThemeColors.backgroundLightGrey,
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      user.telegramLink!,
+                      style: TextStyleHelper.instance.title16Regular.copyWith(
+                        color: appThemeColors.backgroundLightGrey,
+                        decoration: TextDecoration.underline,
+                        decorationColor: appThemeColors.backgroundLightGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (user.instagramLink != null && user.instagramLink!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: GestureDetector(
+                onTap: () async {
+                  String link = user.instagramLink!;
+                  if (!link.startsWith('http')) {
+                    link =
+                    'https://instagram.com/${link.replaceAll('@', '')}'; // Форматуємо для Instagram
+                  }
+                  final Uri instagramUri = Uri.parse(link);
+                  if (await canLaunchUrl(instagramUri)) {
+                    await launchUrl(instagramUri);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Неможливо відкрити посилання на Instagram.',
+                        ),
+                      ),
+                    );
+                  }
+                },
+                child: Row(
+                  children: [
+                    CustomImageView(
+                      imagePath: ImageConstant.instagramIcon,
+                      height: 20,
+                      width: 20,
+                      color: appThemeColors.backgroundLightGrey,
+                    ),
+                    // Приклад іконки
+                    const SizedBox(width: 12),
+                    Text(
+                      user.instagramLink!,
+                      style: TextStyleHelper.instance.title16Regular.copyWith(
+                        color: appThemeColors.backgroundLightGrey,
+                        decoration: TextDecoration.underline,
+                        decorationColor: appThemeColors.backgroundLightGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFollowedOrganizationsSection(
+      BuildContext context,
+      ProfileViewModel viewModel,
+      ) {
+    final int organizationsToShow = viewModel.followedOrganizations.length > 2
+        ? 2
+        : viewModel.followedOrganizations.length;
+    if (organizationsToShow == 0) {
+      return const SizedBox.shrink();
+    }
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Фонди, на які підписані',
+                style: TextStyleHelper.instance.title16Bold.copyWith(
+                  color: appThemeColors.backgroundLightGrey,
+                ),
+              ),
+              if (viewModel.followedOrganizations.length > organizationsToShow)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: CustomElevatedButton(
+                    text: 'Показати всі підписки',
+                    onPressed: () {
+                      Navigator.of(
+                        context,
+                      ).pushNamed(AppRoutes.allFollowedOrganizationsScreen);
+                    },
+                    backgroundColor: appThemeColors.lightGreenColor,
+                    borderRadius: 8,
+                    textStyle: TextStyleHelper.instance.title16Bold.copyWith(
+                      color: appThemeColors.primaryWhite,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 10.0,
+              mainAxisSpacing: 10.0,
+              childAspectRatio: 1.0,
+            ),
+            itemCount: organizationsToShow,
+            // Use limited count here
+            itemBuilder: (context, index) {
+              final organization = viewModel.followedOrganizations[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.of(context).pushNamed(
+                    AppRoutes.organizationProfileScreen,
+                    arguments: organization.uid,
+                  );
+                },
+                child: Card(
+                  color: appThemeColors.blueTransparent,
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: appThemeColors.transparent,
+                        backgroundImage: organization.photoUrl != null
+                            ? NetworkImage(organization.photoUrl!)
+                            : null,
+                        child: organization.photoUrl == null
+                            ? Icon(
+                          Icons.business,
+                          size: 80,
+                          color: appThemeColors.primaryWhite,
+                        )
+                            : null,
+                      ),
+                      const SizedBox(height: 8),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Text(
+                          organization.organizationName ?? 'Невідомий Фонд',
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyleHelper.instance.title16Bold.copyWith(
+                            color: appThemeColors.primaryWhite,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAdminDashboardButton(
+      BuildContext context,
+      ProfileViewModel viewModel,
+      bool isOwner,
+      ) {
+    // Показуємо кнопку тільки власнику профілю, якщо він адмін
+    if (isOwner && viewModel.user!.role == UserRole.admin) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+        width: double.infinity,
+        child: CustomElevatedButton(
+          text: 'ПАНЕЛЬ АДМІНІСТРАТОРА',
+          onPressed: () {
+            Navigator.of(context).pushNamed(AppRoutes.adminPanelScreen);
+          },
+          leftIcon: Icon(Icons.admin_panel_settings, color: appThemeColors.primaryWhite),
+          backgroundColor: appThemeColors.errorRed,
+          textStyle: TextStyleHelper.instance.title16Bold.copyWith(
+            color: appThemeColors.primaryWhite,
+            letterSpacing: 1.2,
+          ),
+          borderRadius: 24,
+          height: 50,
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+}

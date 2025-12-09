@@ -554,8 +554,7 @@ class Constants {
     ],
     NotificationCategory.accountAndSystem: [
       NotificationType.adminNotification,
-      NotificationType.systemMaintenance,
-      NotificationType.appUpdate,
+      NotificationType.supportReply,
       NotificationType.general,
       NotificationType.reportCreated,
     ],

@@ -133,7 +133,8 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                                 viewModel,
                               ),
                               const SizedBox(height: 16),
-                              if (user.role == UserRole.volunteer)
+                              if (user.role == UserRole.volunteer ||
+                                  user.role == UserRole.admin)
                                 CustomTextField(
                                   label: 'Ім\'я та прізвище',
                                   hintText: 'Введіть ваше ім\'я та прізвище',

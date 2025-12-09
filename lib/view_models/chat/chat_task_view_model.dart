@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/widgets.dart';
+import 'package:helphub/data/models/admin_model.dart';
 import 'package:helphub/data/services/project_application_service.dart';
 import 'package:helphub/data/services/project_service.dart';
 import 'package:helphub/data/models/base_profile_model.dart';
@@ -170,8 +171,10 @@ class ChatTaskViewModel extends ChangeNotifier {
           final roleString = data?['role'] as String?;
           if (roleString == UserRole.volunteer.name) {
             _volunteersData[id] = VolunteerModel.fromMap(doc.data()!);
-          } else {
+          } else if(roleString == UserRole.organization.name) {
             _volunteersData[id] = OrganizationModel.fromMap(doc.data()!);
+          }else if(roleString == UserRole.admin.name) {
+            _volunteersData[id] = AdminModel.fromMap(doc.data()!);
           }
         }
       }

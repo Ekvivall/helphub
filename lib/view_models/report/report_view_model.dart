@@ -5,6 +5,7 @@ import 'package:helphub/data/models/base_profile_model.dart';
 import 'package:helphub/data/models/report_model.dart';
 import 'package:helphub/data/services/report_service.dart';
 
+import '../../data/models/admin_model.dart';
 import '../../data/services/user_service.dart';
 import '../../data/models/organization_model.dart';
 import '../../data/models/organizer_feedback_model.dart';
@@ -41,6 +42,7 @@ class ReportViewModel extends ChangeNotifier {
 
   String? get currentUserId => _currentUserId;
   BaseProfileModel? _user;
+
   BaseProfileModel? get user => _user;
 
   ReportViewModel() {
@@ -50,7 +52,6 @@ class ReportViewModel extends ChangeNotifier {
       notifyListeners();
     });
   }
-
 
   void clearError() {
     _errorMessage = null;
@@ -162,7 +163,11 @@ class ReportViewModel extends ChangeNotifier {
             ? 'Анонімний учасник'
             : _user is VolunteerModel
             ? (_user as VolunteerModel).displayName ?? 'Користувач'
-            : (_user as OrganizationModel).organizationName ?? 'Фонд',
+            : user is OrganizationModel
+            ? (_user as OrganizationModel).organizationName ?? 'Фонд'
+            : _user is AdminModel
+            ? (_user as AdminModel).fullName ?? 'Адмін'
+            : 'Невідомий користувач',
         feedback: feedback,
         rating: rating,
         isAnonymous: isAnonymous,

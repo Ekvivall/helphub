@@ -4,6 +4,7 @@ import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:helphub/widgets/user_avatar_with_frame.dart';
 import 'package:provider/provider.dart';
+import '../../data/models/admin_model.dart';
 import '../../data/models/chat_model.dart';
 import '../../data/models/base_profile_model.dart';
 import '../../data/models/event_model.dart';
@@ -91,6 +92,9 @@ class _ChatListItemState extends State<ChatListItem> {
         _friendProfile = OrganizationModel.fromMap(data);
         final org = _friendProfile as OrganizationModel;
         _chatTitle = org.organizationName ?? 'Організація';
+      }else if (data['role'] == 'admin') {
+        _friendProfile =  AdminModel.fromMap(data);
+        _chatTitle = 'Адміністратор';
       }
     }
   }
@@ -194,17 +198,11 @@ class _ChatListItemState extends State<ChatListItem> {
 
         // Використовуємо UserAvatarWithFrame для друзів
         return UserAvatarWithFrame(
-          photoUrl: _friendProfile is VolunteerModel
-              ? (_friendProfile as VolunteerModel).photoUrl
-              : _friendProfile is OrganizationModel
-              ? (_friendProfile as OrganizationModel).photoUrl
-              : null,
+          photoUrl: _friendProfile?.photoUrl,
           frame: _friendProfile is VolunteerModel
               ? (_friendProfile as VolunteerModel).frame
               : null,
-          role: _friendProfile is VolunteerModel
-              ? UserRole.volunteer
-              : UserRole.organization,
+          role: _friendProfile?.role,
           size: 28,
           uid: widget.chat.participants.firstWhere(
             (id) => id != widget.currentUserId,

@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
+import 'package:helphub/data/models/admin_model.dart';
 import 'package:helphub/data/services/activity_service.dart';
 import 'package:helphub/data/services/category_service.dart';
 import 'package:helphub/data/services/event_service.dart';
@@ -96,7 +97,9 @@ class EventViewModel extends ChangeNotifier {
   String? _geocodingError;
 
   GeoPoint? get eventCoordinates => _eventCoordinates;
+
   bool get isGeocodingLoading => _isGeocodingLoading;
+
   String? get geocodingError => _geocodingError;
 
   String? _currentAuthUserId; // UID поточного авторизованого користувача
@@ -284,7 +287,9 @@ class EventViewModel extends ChangeNotifier {
           .listen(
             (event) async {
               _currentEvent = event;
-              _organizer = await _userService.fetchUserProfile(event.organizerId);
+              _organizer = await _userService.fetchUserProfile(
+                event.organizerId,
+              );
               if (currentAuthUserId != null) {
                 _participatingFriends = await _fetchParticipatingFriends(
                   event.participantIds,
@@ -472,9 +477,12 @@ class EventViewModel extends ChangeNotifier {
   }
 
   void setEventCoordinates(double? latitude, double? longitude) {
-    if (latitude != null && longitude != null &&
-        latitude >= -90 && latitude <= 90 &&
-        longitude >= -180 && longitude <= 180) {
+    if (latitude != null &&
+        longitude != null &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180) {
       _eventCoordinates = GeoPoint(latitude, longitude);
       _geocodingError = null;
     } else {
@@ -500,7 +508,7 @@ class EventViewModel extends ChangeNotifier {
     required List<CategoryChipModel> categories,
     required int maxParticipants,
     required String duration,
-    required String city
+    required String city,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -538,15 +546,15 @@ class EventViewModel extends ChangeNotifier {
                   'Волонтер'
             : _user is OrganizationModel
             ? (_user as OrganizationModel).organizationName ?? 'Фонд'
+            : _user is AdminModel
+            ? (_user as AdminModel).fullName ?? 'Адмін'
             : 'Невідомий користувач',
         city: _user!.city ?? city,
         reportId: null,
       );
       _eventService.createEvent(newEvent);
       final userRef = _firestore.collection('users').doc(_currentAuthUserId!);
-      await userRef.update({
-        'eventsCount': FieldValue.increment(1),
-      });
+      await userRef.update({'eventsCount': FieldValue.increment(1)});
       final activity = ActivityModel(
         type: ActivityType.eventOrganization,
         entityId: newEvent.id!,
@@ -576,7 +584,7 @@ class EventViewModel extends ChangeNotifier {
     required List<CategoryChipModel> categories,
     required int maxParticipants,
     required String duration,
-    required String city
+    required String city,
   }) async {
     _isLoading = true;
     _errorMessage = null;
@@ -618,7 +626,6 @@ class EventViewModel extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return null;
-
     } catch (e) {
       _errorMessage = 'Помилка при оновленні події: $e';
       _isLoading = false;

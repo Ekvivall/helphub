@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:helphub/data/models/admin_model.dart';
 import 'package:helphub/data/models/project_task_model.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -74,6 +75,8 @@ class ProjectTaskCard extends StatelessWidget {
               return profile.fullName ?? profile.displayName ?? 'Волонтер';
             } else if (profile is OrganizationModel) {
               return profile.organizationName ?? 'Фонд';
+            } else if (profile is AdminModel) {
+              return profile.fullName ?? 'Адмін';
             }
             return 'Невідомий користувач';
           })
@@ -193,6 +196,8 @@ class ProjectTaskCard extends StatelessWidget {
                 return profile.fullName ?? profile.displayName ?? 'Волонтер';
               } else if (profile is OrganizationModel) {
                 return profile.organizationName ?? 'Фонд';
+              } else if (profile is AdminModel) {
+                return profile.fullName ?? 'Адмін';
               }
               return 'Невідомий користувач';
             })
@@ -435,6 +440,8 @@ class ProjectTaskCard extends StatelessWidget {
                                       'Волонтер'
                                 : volunteerProfile is OrganizationModel
                                 ? (volunteerProfile).organizationName ?? 'Фонд'
+                                : volunteerProfile is AdminModel
+                                ? (volunteerProfile).fullName ?? 'Адмін'
                                 : 'Невідомий користувач',
                             style: TextStyleHelper.instance.title16Bold
                                 .copyWith(color: appThemeColors.primaryBlack),
@@ -544,6 +551,8 @@ class ProjectTaskCard extends StatelessWidget {
               'Волонтер'
         : volunteerProfile is OrganizationModel
         ? (volunteerProfile).organizationName ?? 'Фонд'
+        : volunteerProfile is AdminModel
+        ? (volunteerProfile).fullName ?? 'Адмін'
         : 'Невідомий користувач';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

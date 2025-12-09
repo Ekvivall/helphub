@@ -1,7 +1,7 @@
 
-enum PointAction{
+/*enum PointAction{
   eventParticipation(10, 'Участь у події'),
-  //eventCompletionWithReport(5, 'Звіт про подію'),
+  eventCompletionWithReport(5, 'Звіт про подію'),
   projectParticipation(15, 'Участь у проєкті'),
   taskCompletion(10, 'Виконання завдання'),
   applicationApproved(3, 'Схвалена заявка'),
@@ -22,7 +22,7 @@ enum PointAction{
   static int getDonationPoints(double amount){
     return (amount / 100).floor();
   }
-}
+}*/
 
 class LevelModel {
   final int level;

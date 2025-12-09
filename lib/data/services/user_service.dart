@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../data/models/base_profile_model.dart';
 import '../../data/models/organization_model.dart';
 import '../../data/models/volunteer_model.dart';
+import '../models/admin_model.dart';
 
 class UserService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -16,8 +17,12 @@ class UserService {
         final roleString = data?['role'] as String?;
         if (roleString == UserRole.volunteer.name) {
           return VolunteerModel.fromMap(doc.data()!);
-        } else {
+        } else if(roleString == UserRole.organization.name){
           return OrganizationModel.fromMap(doc.data()!);
+        }else if (roleString == UserRole.admin.name) {
+          return AdminModel.fromMap(doc.data()!);
+        }else{
+          return null;
         }
       } else {
         return null;

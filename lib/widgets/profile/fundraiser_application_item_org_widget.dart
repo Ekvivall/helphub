@@ -4,6 +4,7 @@ import 'package:helphub/widgets/profile/category_chip_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../data/models/admin_model.dart';
 import '../../data/models/fundraiser_application_model.dart';
 import '../../data/models/volunteer_model.dart';
 import '../../theme/text_style_helper.dart';
@@ -214,7 +215,7 @@ class FundraiserApplicationItemOrg extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Документ №${index+1}',
+                              'Документ №${index + 1}',
                               style: TextStyleHelper.instance.title14Regular
                                   .copyWith(color: appThemeColors.primaryBlack),
                               overflow: TextOverflow.ellipsis,
@@ -302,6 +303,8 @@ class FundraiserApplicationItemOrg extends StatelessWidget {
                               ? (user).fullName ??
                                     (user).displayName ??
                                     'Волонтер'
+                              : user is AdminModel
+                              ? (user).fullName ?? 'Адмін'
                               : 'Невідомий користувач',
                           style: TextStyleHelper.instance.title18Bold,
                         ),

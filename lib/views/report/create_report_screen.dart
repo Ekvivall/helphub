@@ -14,6 +14,7 @@ import 'package:helphub/widgets/custom_elevated_button.dart';
 import 'package:helphub/widgets/custom_text_field.dart';
 import 'package:helphub/widgets/custom_multi_document_upload_field.dart';
 
+import '../../data/models/admin_model.dart';
 import '../../data/services/user_service.dart';
 import '../../data/models/organization_model.dart';
 import '../../data/models/participant_feedback_model.dart';
@@ -34,14 +35,14 @@ class CreateReportScreen extends StatefulWidget {
 class _CreateReportScreenState extends State<CreateReportScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _workDescriptionController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _achievementsController = TextEditingController();
   final TextEditingController _difficultiesController = TextEditingController();
   final TextEditingController _participantsCountController =
-  TextEditingController();
+      TextEditingController();
   final TextEditingController _fundsRaisedController = TextEditingController();
   final TextEditingController _tasksCompletedController =
-  TextEditingController();
+      TextEditingController();
   Map<String, TextEditingController> _feedbackControllers = {};
 
   List<File> _selectedPhotos = [];
@@ -163,7 +164,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                 project.tasks
                     ?.where((task) => task.status == TaskStatus.confirmed)
                     .length ??
-                    0;
+                0;
             _tasksCompletedController.text = completedTasks.toString();
           });
           await _loadParticipantsFeedback(_participants!);
@@ -202,6 +203,8 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             ? user.fullName ?? user.displayName ?? 'Користувач'
             : user is OrganizationModel
             ? user.organizationName ?? 'Фонд'
+            : user is AdminModel
+            ? (user).fullName ?? 'Адмін'
             : 'Учасник $participantId';
 
         feedbackList.add(
@@ -249,24 +252,23 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
       final report = ReportModel(
         id: widget.reportId,
         entityId:
-        widget.activity?.entityId ??
+            widget.activity?.entityId ??
             _reportViewModel.currentReport!.entityId,
         activityType: _activityType!,
         activityTitle: _activityTitle,
         organizerId: currentUser.uid!,
         organizerName: currentUser is VolunteerModel
             ? currentUser.fullName ?? currentUser.displayName ?? 'Організатор'
-            : (currentUser as OrganizationModel).organizationName ??
-            'Організація',
+            : currentUser is OrganizationModel
+            ? (currentUser).organizationName ?? 'Організація'
+            : currentUser is AdminModel
+            ? (currentUser).fullName ?? 'Адмін'
+            : 'Невідомий користувач',
         workDescription: _workDescriptionController.text.trim(),
-        achievements: _achievementsController.text
-            .trim()
-            .isEmpty
+        achievements: _achievementsController.text.trim().isEmpty
             ? null
             : _achievementsController.text.trim(),
-        difficulties: _difficultiesController.text
-            .trim()
-            .isEmpty
+        difficulties: _difficultiesController.text.trim().isEmpty
             ? null
             : _difficultiesController.text.trim(),
         participantsFeedback: _participantsFeedback
@@ -364,241 +366,241 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
             ),
             child: _isLoading || viewModel.isLoading
                 ? Center(
-              child: CircularProgressIndicator(
-                color: appThemeColors.backgroundLightGrey,
-              ),
-            )
+                    child: CircularProgressIndicator(
+                      color: appThemeColors.backgroundLightGrey,
+                    ),
+                  )
                 : _errorMessage != null || viewModel.errorMessage != null
                 ? Center(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.error_outline,
-                      size: 64,
-                      color: appThemeColors.errorRed,
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _errorMessage ?? viewModel.errorMessage!,
-                      textAlign: TextAlign.center,
-                      style: TextStyleHelper.instance.title16Regular
-                          .copyWith(
-                        color: appThemeColors.backgroundLightGrey,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    CustomElevatedButton(
-                      onPressed: _loadData,
-                      text: 'Спробувати знову',
-                      backgroundColor: appThemeColors.blueAccent,
-                      textStyle: TextStyleHelper.instance.title16Bold
-                          .copyWith(color: appThemeColors.primaryWhite),
-                      borderRadius: 10,
-                    ),
-                  ],
-                ),
-              ),
-            )
-                : SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Заголовок активності
-                    Container(
-                      width: double.infinity,
+                    child: Padding(
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: appThemeColors.primaryWhite.withAlpha(25),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: appThemeColors.backgroundLightGrey
-                              .withAlpha(77),
-                        ),
-                      ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            'Звіт для активності',
-                            style: TextStyleHelper.instance.title14Regular
-                                .copyWith(
-                              color: appThemeColors
-                                  .backgroundLightGrey
-                                  .withAlpha(180),
-                            ),
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: appThemeColors.errorRed,
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 16),
                           Text(
-                            _activityTitle,
-                            style: TextStyleHelper.instance.title18Bold
+                            _errorMessage ?? viewModel.errorMessage!,
+                            textAlign: TextAlign.center,
+                            style: TextStyleHelper.instance.title16Regular
                                 .copyWith(
-                              color:
-                              appThemeColors.backgroundLightGrey,
-                            ),
+                                  color: appThemeColors.backgroundLightGrey,
+                                ),
                           ),
-                          const SizedBox(height: 8),
-
-                          // Статистика залежно від типу активності
-                          _buildStatisticsSection(),
-                          const SizedBox(height: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: appThemeColors.blueAccent.withAlpha(
-                                77,
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              _getActivityTypeLabel(),
-                              style: TextStyleHelper
-                                  .instance
-                                  .title13Regular
-                                  .copyWith(
-                                color: appThemeColors
-                                    .backgroundLightGrey,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                          const SizedBox(height: 16),
+                          CustomElevatedButton(
+                            onPressed: _loadData,
+                            text: 'Спробувати знову',
+                            backgroundColor: appThemeColors.blueAccent,
+                            textStyle: TextStyleHelper.instance.title16Bold
+                                .copyWith(color: appThemeColors.primaryWhite),
+                            borderRadius: 10,
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-
-                    // Опис виконаної роботи
-                    CustomTextField(
-                      controller: _workDescriptionController,
-                      label: 'Опис виконаної роботи',
-                      hintText:
-                      'Детально опишіть що було зроблено, як проходила активність...',
-                      labelColor: appThemeColors.backgroundLightGrey,
-                      inputType: TextInputType.multiline,
-                      maxLines: 6,
-                      validator: (value) {
-                        if (value == null || value
-                            .trim()
-                            .isEmpty) {
-                          return 'Будь ласка, опишіть виконану роботу';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Досягнуті результати
-                    CustomTextField(
-                      controller: _achievementsController,
-                      label: 'Досягнуті результати',
-                      hintText:
-                      'Опишіть основні досягнення та позитивні результати...',
-                      labelColor: appThemeColors.backgroundLightGrey,
-                      inputType: TextInputType.multiline,
-                      maxLines: 4,
-                      isRequired: false,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Труднощі та рекомендації
-                    CustomTextField(
-                      controller: _difficultiesController,
-                      label: 'Труднощі та рекомендації',
-                      hintText:
-                      'Опишіть труднощі, з якими зіткнулись, та рекомендації на майбутнє...',
-                      labelColor: appThemeColors.backgroundLightGrey,
-                      inputType: TextInputType.multiline,
-                      maxLines: 4,
-                      isRequired: false,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Фото
-                    CustomMultiImageUploadField(
-                      labelText: 'Фото звіту',
-                      onChanged: (files) {
-                        setState(() {
-                          _selectedPhotos = files;
-                        });
-                      },
-                      initialImageUrls: widget.reportId != null ? viewModel
-                          .currentReport?.photoUrls : null,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Документи
-                    CustomMultiDocumentUploadField(
-                      labelText: 'Додаткові документи (необов\'язково)',
-                      onChanged: (files) {
-                        setState(() {
-                          _selectedDocuments = files;
-                        });
-                      },
-                      initialDocumentUrls:widget.reportId != null ?
-                      viewModel.currentReport?.documentUrls : null,
-                    ),
-                    const SizedBox(height: 20),
-
-                    // Відгуки про учасників
-                    if (_participantsFeedback.isNotEmpty) ...[
-                      _buildParticipantsFeedbackSection(),
-                      const SizedBox(height: 20),
-                    ],
-
-                    // Кнопки
-                    Row(
-                      children: [
-                        Expanded(
-                          child: CustomElevatedButton(
-                            onPressed: viewModel.isUploadingFiles
-                                ? null
-                                : () => Navigator.of(context).pop(),
-                            text: 'Скасувати',
-                            backgroundColor:
-                            appThemeColors.textMediumGrey,
-                            textStyle: TextStyleHelper
-                                .instance
-                                .title16Bold
-                                .copyWith(
-                              color: appThemeColors.primaryWhite,
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Заголовок активності
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: appThemeColors.primaryWhite.withAlpha(25),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: appThemeColors.backgroundLightGrey
+                                    .withAlpha(77),
+                              ),
                             ),
-                            borderRadius: 10,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: CustomElevatedButton(
-                            onPressed: viewModel.isUploadingFiles
-                                ? null
-                                : _submitReport,
-                            isLoading: viewModel.isUploadingFiles,
-                            text: isEditing
-                                ? 'Зберегти зміни'
-                                : 'Створити звіт',
-                            backgroundColor: appThemeColors.successGreen,
-                            textStyle: TextStyleHelper
-                                .instance
-                                .title16Bold
-                                .copyWith(
-                              color: appThemeColors.primaryWhite,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Звіт для активності',
+                                  style: TextStyleHelper.instance.title14Regular
+                                      .copyWith(
+                                        color: appThemeColors
+                                            .backgroundLightGrey
+                                            .withAlpha(180),
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _activityTitle,
+                                  style: TextStyleHelper.instance.title18Bold
+                                      .copyWith(
+                                        color:
+                                            appThemeColors.backgroundLightGrey,
+                                      ),
+                                ),
+                                const SizedBox(height: 8),
+
+                                // Статистика залежно від типу активності
+                                _buildStatisticsSection(),
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: appThemeColors.blueAccent.withAlpha(
+                                      77,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    _getActivityTypeLabel(),
+                                    style: TextStyleHelper
+                                        .instance
+                                        .title13Regular
+                                        .copyWith(
+                                          color: appThemeColors
+                                              .backgroundLightGrey,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                  ),
+                                ),
+                              ],
                             ),
-                            borderRadius: 10,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 24),
+
+                          // Опис виконаної роботи
+                          CustomTextField(
+                            controller: _workDescriptionController,
+                            label: 'Опис виконаної роботи',
+                            hintText:
+                                'Детально опишіть що було зроблено, як проходила активність...',
+                            labelColor: appThemeColors.backgroundLightGrey,
+                            inputType: TextInputType.multiline,
+                            maxLines: 6,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Будь ласка, опишіть виконану роботу';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Досягнуті результати
+                          CustomTextField(
+                            controller: _achievementsController,
+                            label: 'Досягнуті результати',
+                            hintText:
+                                'Опишіть основні досягнення та позитивні результати...',
+                            labelColor: appThemeColors.backgroundLightGrey,
+                            inputType: TextInputType.multiline,
+                            maxLines: 4,
+                            isRequired: false,
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Труднощі та рекомендації
+                          CustomTextField(
+                            controller: _difficultiesController,
+                            label: 'Труднощі та рекомендації',
+                            hintText:
+                                'Опишіть труднощі, з якими зіткнулись, та рекомендації на майбутнє...',
+                            labelColor: appThemeColors.backgroundLightGrey,
+                            inputType: TextInputType.multiline,
+                            maxLines: 4,
+                            isRequired: false,
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Фото
+                          CustomMultiImageUploadField(
+                            labelText: 'Фото звіту',
+                            onChanged: (files) {
+                              setState(() {
+                                _selectedPhotos = files;
+                              });
+                            },
+                            initialImageUrls: widget.reportId != null
+                                ? viewModel.currentReport?.photoUrls
+                                : null,
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Документи
+                          CustomMultiDocumentUploadField(
+                            labelText: 'Додаткові документи (необов\'язково)',
+                            onChanged: (files) {
+                              setState(() {
+                                _selectedDocuments = files;
+                              });
+                            },
+                            initialDocumentUrls: widget.reportId != null
+                                ? viewModel.currentReport?.documentUrls
+                                : null,
+                          ),
+                          const SizedBox(height: 20),
+
+                          // Відгуки про учасників
+                          if (_participantsFeedback.isNotEmpty) ...[
+                            _buildParticipantsFeedbackSection(),
+                            const SizedBox(height: 20),
+                          ],
+
+                          // Кнопки
+                          Row(
+                            children: [
+                              Expanded(
+                                child: CustomElevatedButton(
+                                  onPressed: viewModel.isUploadingFiles
+                                      ? null
+                                      : () => Navigator.of(context).pop(),
+                                  text: 'Скасувати',
+                                  backgroundColor:
+                                      appThemeColors.textMediumGrey,
+                                  textStyle: TextStyleHelper
+                                      .instance
+                                      .title16Bold
+                                      .copyWith(
+                                        color: appThemeColors.primaryWhite,
+                                      ),
+                                  borderRadius: 10,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: CustomElevatedButton(
+                                  onPressed: viewModel.isUploadingFiles
+                                      ? null
+                                      : _submitReport,
+                                  isLoading: viewModel.isUploadingFiles,
+                                  text: isEditing
+                                      ? 'Зберегти зміни'
+                                      : 'Створити звіт',
+                                  backgroundColor: appThemeColors.successGreen,
+                                  textStyle: TextStyleHelper
+                                      .instance
+                                      .title16Bold
+                                      .copyWith(
+                                        color: appThemeColors.primaryWhite,
+                                      ),
+                                  borderRadius: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
           ),
         );
       },
@@ -625,9 +627,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         if (_activityType == ActivityReportType.event ||
             _activityType == ActivityReportType.project) ...[
           Text(
-            'Кількість учасників: ${_participantsCountController.text.isNotEmpty
-                ? _participantsCountController.text
-                : "0"}',
+            'Кількість учасників: ${_participantsCountController.text.isNotEmpty ? _participantsCountController.text : "0"}',
             style: TextStyleHelper.instance.title14Regular.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
@@ -637,9 +637,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
         if (_activityType == ActivityReportType.project) ...[
           const SizedBox(height: 8),
           Text(
-            'Виконано завдань: ${_tasksCompletedController.text.isNotEmpty
-                ? _tasksCompletedController.text
-                : "0"}',
+            'Виконано завдань: ${_tasksCompletedController.text.isNotEmpty ? _tasksCompletedController.text : "0"}',
             style: TextStyleHelper.instance.title14Regular.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
@@ -648,9 +646,7 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
 
         if (_activityType == ActivityReportType.fundraising) ...[
           Text(
-            'Зібрано коштів (грн): ${_fundsRaisedController.text.isNotEmpty
-                ? _fundsRaisedController.text
-                : "0.00"}',
+            'Зібрано коштів (грн): ${_fundsRaisedController.text.isNotEmpty ? _fundsRaisedController.text : "0.00"}',
             style: TextStyleHelper.instance.title14Regular.copyWith(
               color: appThemeColors.backgroundLightGrey,
             ),
@@ -718,19 +714,18 @@ class _CreateReportScreenState extends State<CreateReportScreen> {
                   // Текстовий відгук
                   TextField(
                     controller: _feedbackControllers[participant.participantId],
-                    onChanged: (value) =>
-                        _updateParticipantFeedback(
-                          index,
-                          value.isEmpty ? null : value,
-                        ),
+                    onChanged: (value) => _updateParticipantFeedback(
+                      index,
+                      value.isEmpty ? null : value,
+                    ),
                     decoration: InputDecoration(
                       hintText: 'Залишити відгук про учасника...',
                       hintStyle: TextStyleHelper.instance.title14Regular
                           .copyWith(
-                        color: appThemeColors.backgroundLightGrey.withAlpha(
-                          128,
-                        ),
-                      ),
+                            color: appThemeColors.backgroundLightGrey.withAlpha(
+                              128,
+                            ),
+                          ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(

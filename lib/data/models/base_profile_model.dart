@@ -1,11 +1,11 @@
 
 import 'category_chip_model.dart';
 
-enum UserRole { volunteer, organization }
+enum UserRole { volunteer, organization, admin }
 abstract class BaseProfileModel {
   final String? uid;
   final String? email;
-  final UserRole? role; // Важливо зберегти роль для розрізнення
+  final UserRole? role;
   final String? photoUrl;
   final DateTime? lastSignInAt;
   final DateTime? createdAt;

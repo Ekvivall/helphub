@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:helphub/data/models/admin_model.dart';
 import 'package:helphub/data/services/donation_service.dart';
 import 'package:helphub/data/models/donation_model.dart';
 import 'package:helphub/data/models/organization_model.dart';
@@ -26,23 +27,27 @@ class DonationViewModel extends ChangeNotifier {
     required String fundraisingId,
     required BaseProfileModel donor,
     required bool isAnonymous,
-    required FundraisingModel fundraising
+    required FundraisingModel fundraising,
   }) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
     try {
-      final newDonation = DonationModel(fundraisingId: fundraisingId,
-          donorId: donor.uid!,
-          donorName: isAnonymous
-              ? 'Анонімний донатер'
-              : (donor is VolunteerModel ? donor.fullName ??
-              donor.displayName ?? 'Волонтер' : donor is OrganizationModel
-              ? donor.organizationName ?? 'Фонд'
-              : 'Невідомий користувач'),
-          amount: amount,
-          timestamp: DateTime.now(),
-          isAnonymous: isAnonymous
+      final newDonation = DonationModel(
+        fundraisingId: fundraisingId,
+        donorId: donor.uid!,
+        donorName: isAnonymous
+            ? 'Анонімний донатер'
+            : (donor is VolunteerModel
+                  ? donor.fullName ?? donor.displayName ?? 'Волонтер'
+                  : donor is OrganizationModel
+                  ? donor.organizationName ?? 'Фонд'
+                  : donor is AdminModel
+                  ? donor.fullName ?? 'Адмін'
+                  : 'Невідомий користувач'),
+        amount: amount,
+        timestamp: DateTime.now(),
+        isAnonymous: isAnonymous,
       );
       await _donationService.addDonation(newDonation);
       final activity = ActivityModel(
@@ -54,10 +59,10 @@ class DonationViewModel extends ChangeNotifier {
       );
       await _activityService.logActivity(donor.uid!, activity);
       return true;
-    } catch(e){
+    } catch (e) {
       _errorMessage = 'Помилка під час надсилання донату: $e';
       return false;
-    } finally{
+    } finally {
       _isLoading = false;
       notifyListeners();
     }

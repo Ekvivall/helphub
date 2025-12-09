@@ -42,6 +42,12 @@ Widget buildBottomNavigationBar(BuildContext context, int currentIndex) {
               // Екран "Чати"
               Navigator.pushReplacementNamed(context, AppRoutes.chatListScreen);
               break;
+            case 5:
+              Navigator.pushReplacementNamed(
+                context,
+                AppRoutes.adminPanelScreen,
+              );
+              break;
           }
         },
         selectedItemColor: appThemeColors.blueAccent,
@@ -51,7 +57,10 @@ Widget buildBottomNavigationBar(BuildContext context, int currentIndex) {
         type: BottomNavigationBarType.fixed,
         backgroundColor: appThemeColors.primaryWhite,
         items: [
-          const BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Події'),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.event),
+            label: 'Події',
+          ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.assignment),
             label: 'Проєкти',

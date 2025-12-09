@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:helphub/data/models/admin_model.dart';
 import 'package:helphub/data/models/organization_model.dart';
 import 'package:helphub/theme/theme_helper.dart';
 import 'package:provider/provider.dart';
@@ -9,6 +10,7 @@ import '../../data/models/volunteer_model.dart';
 import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../view_models/fundraising/fundraising_view_model.dart';
+import '../../widgets/custom_admin_icon_button.dart';
 import '../../widgets/custom_bottom_navigation_bar.dart';
 import '../../widgets/custom_input_field.dart';
 import '../../widgets/custom_notification_icon_button.dart';
@@ -105,7 +107,7 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
                       size: 37,
                     ),
                   )
-                : user is VolunteerModel
+                : user is VolunteerModel || user is AdminModel
                 ? FloatingActionButton(
                     onPressed: () {
                       Navigator.of(context).pushNamed(
@@ -178,7 +180,8 @@ class _FundraisingListScreenState extends State<FundraisingListScreen> {
               ),
             ),
           ),
-          CustomTournamentIconButton(),
+          if (user.role == UserRole.volunteer) CustomTournamentIconButton(),
+          if (user.role == UserRole.admin) CustomAdminIconButton(),
           CustomNotificationIconButton(),
         ],
       ),

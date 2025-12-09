@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:helphub/data/models/activity_model.dart';
 import 'package:helphub/data/models/fundraising_model.dart';
+import 'package:helphub/views/admin/admin_statistics_screen.dart';
+import 'package:helphub/views/admin/admin_support_screen.dart';
+import 'package:helphub/views/admin/admin_verifications_screen.dart';
 import 'package:helphub/views/auth/forgot_password_screen.dart';
 import 'package:helphub/views/auth/register_organization_step1_screen.dart';
 import 'package:helphub/views/auth/register_type_screen.dart';
@@ -36,18 +39,25 @@ import 'package:helphub/views/splash/splash_screen.dart';
 import 'package:helphub/views/tournament/tournament_leaderboard_screen.dart';
 
 import '../data/services/notification_service.dart';
+import '../views/admin/admin_feedback_screen.dart';
+import '../views/admin/admin_panel_screen.dart';
+import '../views/admin/admin_tournament_screen.dart';
+import '../views/admin/admin_volunteers_screen.dart';
 import '../views/auth/register_organization_step2_screen.dart';
 import '../views/chat/chat_friend_screen.dart';
 import '../views/chat/chat_list_screen.dart';
 import '../views/event/event_map_screen.dart';
 import '../views/fundraising/create_fundraising_application_screen.dart';
 import '../views/fundraising/create_fundraising_screen.dart';
+import '../views/profile/admin_profile_screen.dart';
 import '../views/profile/all_activities_screen.dart';
 import '../views/profile/all_fundraiser_applications_screen.dart';
 import '../views/profile/all_medals_screen.dart';
 import '../views/profile/friend_requests_screen.dart';
 import '../views/project/create_project_screen.dart';
 import '../views/settings/settings_screen.dart';
+import '../views/settings/user_support_history_screen.dart';
+
 class AppLifecycleObserver with WidgetsBindingObserver {
   final NotificationService _notificationService = NotificationService();
 
@@ -70,6 +80,7 @@ class AppLifecycleObserver with WidgetsBindingObserver {
     }
   }
 }
+
 class AppRoutes {
   static const String splashScreen = '/splash';
   static const String loginScreen = '/login';
@@ -82,6 +93,7 @@ class AppRoutes {
   static const String eventMapScreen = '/event_map';
   static const String volunteerProfileScreen = '/volunteer_profile';
   static const String organizationProfileScreen = '/organization_profile';
+  static const String adminProfileScreen = '/admin_profile';
   static const String editUserProfileScreen = '/edit_user_profile';
   static const String forgotPasswordScreen = '/forgot_password';
   static const String findFriendsScreen = '/find_friends';
@@ -121,7 +133,14 @@ class AppRoutes {
   static const String faqScreen = '/faq';
   static const String tournamentScreen = '/tournament';
   static const String allMedalsScreen = '/all_medals';
-
+  static const String adminPanelScreen = '/admin_panel';
+  static const String adminVerificationsScreen = '/admin_verifications';
+  static const String adminSupportScreen = '/admin_support';
+  static const String adminFeedbackScreen = '/admin_feedback';
+  static const String adminStatisticsScreen = '/admin_statistics';
+  static const String adminVolunteersScreen = '/admin_volunteers';
+  static const String adminTournamentScreen = '/admin_tournament';
+  static const String userSupportHistoryScreen = '/user_support_history';
 
   static Map<String, WidgetBuilder> routes = {
     splashScreen: (context) => SplashScreen(),
@@ -156,8 +175,15 @@ class AppRoutes {
     achievementsScreen: (context) => AllAchievementsScreen(),
     tournamentScreen: (context) => TournamentLeaderboardScreen(),
     allMedalsScreen: (context) => AllMedalsScreen(),
+    adminPanelScreen: (context) => AdminPanelScreen(),
+    adminVerificationsScreen: (context) => AdminVerificationsScreen(),
+    adminSupportScreen: (context) => AdminSupportScreen(),
+    adminFeedbackScreen: (context) => AdminFeedbackScreen(),
+    adminStatisticsScreen: (context) => AdminStatisticsScreen(),
+    adminVolunteersScreen: (context) => AdminVolunteersScreen(),
+    userSupportHistoryScreen: (context) => UserSupportHistoryScreen(),
+    adminTournamentScreen: (context) => AdminTournamentScreen(),
   };
-
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -165,6 +191,11 @@ class AppRoutes {
         final String? userId = settings.arguments as String?;
         return MaterialPageRoute(
           builder: (context) => VolunteerProfileScreen(userId: userId),
+        );
+      case adminProfileScreen:
+        final String? userId = settings.arguments as String?;
+        return MaterialPageRoute(
+          builder: (context) => AdminProfileScreen(userId: userId),
         );
       case organizationProfileScreen:
         final String? userId = settings.arguments as String?;
@@ -255,14 +286,12 @@ class AppRoutes {
       case chatFriendScreen:
         final chatId = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (context) =>
-              ChatFriendScreen(chatId: chatId),
+          builder: (context) => ChatFriendScreen(chatId: chatId),
         );
       case chatEventScreen:
         final chatId = settings.arguments as String;
         return MaterialPageRoute(
-          builder: (context) =>
-              ChatEventScreen(chatId: chatId),
+          builder: (context) => ChatEventScreen(chatId: chatId),
         );
       default:
         if (routes.containsKey(settings.name)) {

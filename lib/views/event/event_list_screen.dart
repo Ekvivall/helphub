@@ -11,6 +11,7 @@ import '../../routes/app_router.dart';
 import '../../theme/text_style_helper.dart';
 import '../../theme/theme_helper.dart';
 import '../../view_models/profile/profile_view_model.dart';
+import '../../widgets/custom_admin_icon_button.dart';
 import '../../widgets/custom_bottom_navigation_bar.dart';
 import '../../widgets/custom_input_field.dart';
 import '../../widgets/custom_notification_icon_button.dart';
@@ -147,7 +148,8 @@ class _EventListScreenState extends State<EventListScreen> {
               ),
             ),
           ),
-          CustomTournamentIconButton(),
+          if (user.role == UserRole.volunteer) CustomTournamentIconButton(),
+          if (user.role == UserRole.admin) CustomAdminIconButton(),
           CustomNotificationIconButton(),
         ],
       ),

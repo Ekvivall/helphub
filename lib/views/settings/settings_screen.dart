@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:helphub/core/utils/constants.dart';
+import 'package:helphub/data/models/support_ticket_model.dart';
 import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:helphub/theme/text_style_helper.dart';
 import 'package:helphub/theme/theme_helper.dart';
@@ -10,8 +11,8 @@ import 'package:helphub/widgets/user_avatar_with_frame.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 
+import '../../data/models/admin_model.dart';
 import '../../data/models/base_profile_model.dart';
 import '../../data/models/organization_model.dart';
 import '../../routes/app_router.dart';
@@ -118,7 +119,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         'Центр підтримки',
                         'Зв\'яжіться з нами',
                         Icons.support_agent,
-                        () => _openSupport(),
+                        () => _openSupport(context),
+                      ),
+                      buildSettingsItem(
+                        'Історія звернень',
+                        'Переглянути мої запити та відповіді',
+                        Icons.history,
+                        () => Navigator.pushNamed(
+                          context,
+                          AppRoutes.userSupportHistoryScreen,
+                        ),
                       ),
                       buildSettingsItem(
                         'Часто задавані питання',
@@ -196,7 +206,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 32),
                   _buildSignOutButton(),
-
                 ],
               ),
             ),
@@ -233,6 +242,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ? user.fullName ?? user.displayName ?? 'Волонтер'
                       : user is OrganizationModel
                       ? user.organizationName ?? 'Благодійний фонд'
+                      : user is AdminModel
+                      ? (user).fullName ?? 'Адмін'
                       : 'Користувач',
                   style: TextStyleHelper.instance.title16Bold.copyWith(
                     color: appThemeColors.primaryBlack,
@@ -254,24 +265,146 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _openSupport() async {
-    const supportEmail = 'support@helphub.com';
-    final uri = Uri.parse('mailto:$supportEmail?subject=Підтримка HelpHub');
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
-      } else {
-        _showInfoDialog(
-          'Контакти підтримки',
-          'Email: $supportEmail\nТелефон: +38 (123) 456-78-90',
+  Future<void> _openSupport(BuildContext context) async {
+    final viewModel = Provider.of<SettingsViewModel>(context, listen: false);
+    final userProfile = viewModel.user;
+    final authUser = FirebaseAuth.instance.currentUser;
+    if (userProfile == null || authUser == null) return;
+    final TextEditingController subjectController = TextEditingController();
+    final TextEditingController messageController = TextEditingController();
+    final GlobalKey<FormState> supportFormKey = GlobalKey<FormState>();
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: appThemeColors.primaryWhite,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Написати у підтримку',
+            style: TextStyleHelper.instance.title18Bold.copyWith(
+              color: appThemeColors.primaryBlack,
+            ),
+          ),
+          content: SingleChildScrollView(
+            child: Form(
+              key: supportFormKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Опишіть вашу проблему, і ми зв\'яжемося з вами найближчим часом.',
+                    style: TextStyleHelper.instance.title14Regular.copyWith(
+                      color: appThemeColors.textMediumGrey,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: subjectController,
+                    label: 'Тема',
+                    hintText: 'Коротко про проблему...',
+                    labelColor: appThemeColors.textMediumGrey,
+                    inputType: TextInputType.text,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Введіть тему звернення';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  CustomTextField(
+                    controller: messageController,
+                    label: 'Повідомлення',
+                    hintText: 'Детальний опис...',
+                    labelColor: appThemeColors.textMediumGrey,
+                    inputType: TextInputType.multiline,
+                    maxLines: 5,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Введіть текст повідомлення';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                'Скасувати',
+                style: TextStyleHelper.instance.title16Regular.copyWith(
+                  color: appThemeColors.errorRed,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (supportFormKey.currentState!.validate()) {
+                  Navigator.of(dialogContext).pop();
+                  try {
+                    String userName = 'Користувач';
+                    if (userProfile is VolunteerModel) {
+                      userName =
+                          userProfile.fullName ??
+                          userProfile.displayName ??
+                          'Волонтер';
+                    } else if (userProfile is OrganizationModel) {
+                      userName = userProfile.organizationName ?? 'Фонд';
+                    } else if (userProfile is AdminModel) {
+                      userName = userProfile.fullName ?? 'Адмін';
+                    }
+                    final newTicketRef = FirebaseFirestore.instance
+                        .collection('supportTickets')
+                        .doc();
+                    final ticket = SupportTicketModel(
+                      id: newTicketRef.id,
+                      userId: authUser.uid,
+                      userName: userName,
+                      userPhotoUrl: userProfile.photoUrl,
+                      subject: subjectController.text.trim(),
+                      message: messageController.text.trim(),
+                      status: SupportTicketStatus.open,
+                      createdAt: DateTime.now(),
+                    );
+                    await newTicketRef.set(ticket.toMap());
+                    if (mounted) {
+                      Constants.showSuccessMessage(
+                        context,
+                        'Ваш запит успішно відправлено!',
+                      );
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      Constants.showErrorMessage(
+                        context,
+                        'Помилка відправки запиту: $e',
+                      );
+                    }
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: appThemeColors.blueAccent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Надіслати',
+                style: TextStyleHelper.instance.title16Bold.copyWith(
+                  color: appThemeColors.primaryWhite,
+                ),
+              ),
+            ),
+          ],
         );
-      }
-    } catch (e) {
-      _showInfoDialog(
-        'Контакти підтримки',
-        'Email: $supportEmail\nТелефон: +38 (123) 456-78-90',
-      );
-    }
+      },
+    );
   }
 
   void _showInfoDialog(String title, String message) {

@@ -24,6 +24,7 @@ import 'package:helphub/data/models/project_application_model.dart';
 import 'package:helphub/data/models/volunteer_model.dart';
 import 'package:helphub/data/services/user_service.dart';
 
+import '../../data/models/admin_model.dart';
 import '../../data/services/event_service.dart';
 import '../../data/models/event_model.dart';
 import '../../data/models/project_model.dart';
@@ -36,9 +37,9 @@ class ProfileViewModel extends ChangeNotifier {
   final FriendService _friendService = FriendService();
   final FundraisingService _fundraiserService = FundraisingService();
   final ProjectApplicationService _projectApplicationService =
-  ProjectApplicationService();
+      ProjectApplicationService();
   final FundraiserApplicationService _fundraiserApplicationService =
-  FundraiserApplicationService();
+      FundraiserApplicationService();
   final FollowService _followService = FollowService();
   final ProjectService _projectService = ProjectService();
   final UserService _userService = UserService();
@@ -261,7 +262,7 @@ class ProfileViewModel extends ChangeNotifier {
             _listenToFundraiserApplicationsForVolunteer(_user!.uid!);
             _listenToFollowingOrganizations(_user!.uid!);
           }
-        } else {
+        } else if (roleString == UserRole.organization.name) {
           _user = OrganizationModel.fromMap(doc.data()!);
           if (viewingUserId == null ||
               viewingUserId == _auth.currentUser!.uid) {
@@ -272,6 +273,9 @@ class ProfileViewModel extends ChangeNotifier {
             _listenToIsFollowing(_auth.currentUser!.uid, uidToFetch);
             _listenToFollowersCount(_user!.uid!);
           }
+        }
+        else if(roleString == UserRole.admin.name){
+          _user = AdminModel.fromMap(doc.data()!);
         }
         if (uidToFetch == _currentAuthUserId) {
           _fillControllersFromUser();
@@ -326,15 +330,16 @@ class ProfileViewModel extends ChangeNotifier {
       _incomingRequestsSubscription = _friendService
           .listenToIncomingRequests()
           .listen((requests) {
-        _incomingFriendRequests = requests;
-        notifyListeners();
-      });
-      _friendsListSubscription =
-          _friendService.getFriendList().listen((friends,) {
-            _friendsList = friends;
-            _fetchFriendProfiles();
+            _incomingFriendRequests = requests;
             notifyListeners();
           });
+      _friendsListSubscription = _friendService.getFriendList().listen((
+        friends,
+      ) {
+        _friendsList = friends;
+        _fetchFriendProfiles();
+        notifyListeners();
+      });
     }
   }
 
@@ -424,31 +429,21 @@ class ProfileViewModel extends ChangeNotifier {
           }
         }
         updatedUser = (_user as VolunteerModel).copyWith(
-          fullName: fullNameController.text
-              .trim()
-              .isNotEmpty
+          fullName: fullNameController.text.trim().isNotEmpty
               ? fullNameController.text.trim()
               : null,
           city: _selectedCity,
-          aboutMe: aboutMeController.text
-              .trim()
-              .isNotEmpty
+          aboutMe: aboutMeController.text.trim().isNotEmpty
               ? aboutMeController.text.trim()
               : null,
           displayName: newDisplayName.isNotEmpty ? newDisplayName : null,
-          phoneNumber: phoneNumberController.text
-              .trim()
-              .isNotEmpty
+          phoneNumber: phoneNumberController.text.trim().isNotEmpty
               ? phoneNumberController.text.trim()
               : null,
-          telegramLink: telegramLinkController.text
-              .trim()
-              .isNotEmpty
+          telegramLink: telegramLinkController.text.trim().isNotEmpty
               ? telegramLinkController.text.trim()
               : null,
-          instagramLink: instagramLinkController.text
-              .trim()
-              .isNotEmpty
+          instagramLink: instagramLinkController.text.trim().isNotEmpty
               ? instagramLinkController.text.trim()
               : null,
           categoryChips: selectedInterests.isNotEmpty
@@ -457,39 +452,46 @@ class ProfileViewModel extends ChangeNotifier {
         );
       } else if (_user is OrganizationModel) {
         updatedUser = (_user as OrganizationModel).copyWith(
-          organizationName: organizationNameController.text
-              .trim()
-              .isNotEmpty
+          organizationName: organizationNameController.text.trim().isNotEmpty
               ? organizationNameController.text.trim()
               : null,
-          website: websiteController.text
-              .trim()
-              .isNotEmpty
+          website: websiteController.text.trim().isNotEmpty
               ? websiteController.text.trim()
               : null,
           city: _selectedCity,
-          aboutMe: aboutMeController.text
-              .trim()
-              .isNotEmpty
+          aboutMe: aboutMeController.text.trim().isNotEmpty
               ? aboutMeController.text.trim()
               : null,
-          phoneNumber: phoneNumberController.text
-              .trim()
-              .isNotEmpty
+          phoneNumber: phoneNumberController.text.trim().isNotEmpty
               ? phoneNumberController.text.trim()
               : null,
-          telegramLink: telegramLinkController.text
-              .trim()
-              .isNotEmpty
+          telegramLink: telegramLinkController.text.trim().isNotEmpty
               ? telegramLinkController.text.trim()
               : null,
-          instagramLink: instagramLinkController.text
-              .trim()
-              .isNotEmpty
+          instagramLink: instagramLinkController.text.trim().isNotEmpty
               ? instagramLinkController.text.trim()
               : null,
           categoryChips: selectedInterests.isNotEmpty
               ? _selectedInterests
+              : null,
+        );
+      }else if (_user is AdminModel) {
+        updatedUser = (_user as AdminModel).copyWith(
+          fullName: fullNameController.text.trim().isNotEmpty
+              ? fullNameController.text.trim()
+              : null,
+          city: _selectedCity,
+          aboutMe: aboutMeController.text.trim().isNotEmpty
+              ? aboutMeController.text.trim()
+              : null,
+          phoneNumber: phoneNumberController.text.trim().isNotEmpty
+              ? phoneNumberController.text.trim()
+              : null,
+          telegramLink: telegramLinkController.text.trim().isNotEmpty
+              ? telegramLinkController.text.trim()
+              : null,
+          instagramLink: instagramLinkController.text.trim().isNotEmpty
+              ? instagramLinkController.text.trim()
               : null,
         );
       } else {
@@ -528,6 +530,8 @@ class ProfileViewModel extends ChangeNotifier {
         _user = (_user as VolunteerModel).copyWith(photoUrl: downloadUrl);
       } else if (_user is OrganizationModel) {
         _user = (_user as OrganizationModel).copyWith(photoUrl: downloadUrl);
+      }else if (_user is AdminModel) {
+        _user = (_user as AdminModel).copyWith(photoUrl: downloadUrl);
       }
     } finally {
       _setLoading(false);
@@ -539,31 +543,31 @@ class ProfileViewModel extends ChangeNotifier {
     _setLoading(true);
     try {
       await _userService.updateProfilePhoto(_user!.uid!, avatarPath);
-      if(_user is VolunteerModel){
+      if (_user is VolunteerModel) {
         _user = (_user as VolunteerModel).copyWith(photoUrl: avatarPath);
       }
       notifyListeners();
-    } catch(e){
+    } catch (e) {
       print('Error updating avatar: $e');
       rethrow;
-    } finally{
+    } finally {
       _setLoading(false);
     }
   }
 
-  Future<void> updateSelectedFrame(String framePath)async{
-    if(_user == null || _user!.uid == null) return;
+  Future<void> updateSelectedFrame(String framePath) async {
+    if (_user == null || _user!.uid == null) return;
     _setLoading(true);
-    try{
+    try {
       await _userService.updateSelectedFrame(_user!.uid!, framePath);
-      if(_user is VolunteerModel){
+      if (_user is VolunteerModel) {
         _user = (_user as VolunteerModel).copyWith(frame: framePath);
       }
       notifyListeners();
-    } catch(e){
+    } catch (e) {
       print('Error updating frame: $e');
       rethrow;
-    } finally{
+    } finally {
       _setLoading(false);
     }
   }
@@ -584,7 +588,6 @@ class ProfileViewModel extends ChangeNotifier {
       fullNameController.text = volunteer.fullName ?? '';
       nicknameController.text = volunteer.displayName ?? '';
       aboutMeController.text = volunteer.aboutMe ?? '';
-      nicknameController.text = volunteer.displayName ?? '';
       phoneNumberController.text = volunteer.phoneNumber ?? '';
       telegramLinkController.text = volunteer.telegramLink ?? '';
       instagramLinkController.text = volunteer.instagramLink ?? '';
@@ -606,8 +609,20 @@ class ProfileViewModel extends ChangeNotifier {
       fullNameController.text = '';
       _selectedCity = organization.city;
       nicknameController.text = '';
-    } else {
-      // Clear all if user is null or unknown type
+    } else if (_user is AdminModel) {
+      final volunteer = _user as AdminModel;
+      fullNameController.text = volunteer.fullName ?? '';
+      aboutMeController.text = volunteer.aboutMe ?? '';
+      nicknameController.text = '';
+      phoneNumberController.text = volunteer.phoneNumber ?? '';
+      telegramLinkController.text = volunteer.telegramLink ?? '';
+      instagramLinkController.text = volunteer.instagramLink ?? '';
+      _selectedInterests = _user?.categoryChips ?? [];
+      // Clear organization specific controllers
+      organizationNameController.text = '';
+      websiteController.text = '';
+      _selectedCity = volunteer.city;
+    }else {
       fullNameController.text = '';
       nicknameController.text = '';
       organizationNameController.text = '';
@@ -619,9 +634,7 @@ class ProfileViewModel extends ChangeNotifier {
   }
 
   Future<bool> isDisplayNameUnique(String displayName) async {
-    if (displayName
-        .trim()
-        .isEmpty) {
+    if (displayName.trim().isEmpty) {
       return false;
     }
     final querySnapshot = await _firestore
@@ -637,9 +650,7 @@ class ProfileViewModel extends ChangeNotifier {
     _searchResults = [];
     _searchError = null;
     notifyListeners();
-    if (query
-        .trim()
-        .isEmpty) {
+    if (query.trim().isEmpty) {
       _isSearching = false;
       notifyListeners();
       return;
@@ -690,7 +701,7 @@ class ProfileViewModel extends ChangeNotifier {
 
   void toggleInterest(CategoryChipModel interest) {
     final existingInterestIndex = _selectedInterests.indexWhere(
-          (element) => element.title == interest.title,
+      (element) => element.title == interest.title,
     );
     if (existingInterestIndex != -1) {
       _selectedInterests.removeAt(existingInterestIndex);
@@ -746,31 +757,31 @@ class ProfileViewModel extends ChangeNotifier {
           .getSavedFundraisers(_user!.uid!)
           .listen(
             (fundraisers) {
-          _savedFundraisers = fundraisers
-            ..sort((a, b) {
-              // Пріоритет для термінових зборів
-              final isAUrgent = a.isUrgent ?? false;
-              final isBUrgent = b.isUrgent ?? false;
+              _savedFundraisers = fundraisers
+                ..sort((a, b) {
+                  // Пріоритет для термінових зборів
+                  final isAUrgent = a.isUrgent ?? false;
+                  final isBUrgent = b.isUrgent ?? false;
 
-              if (isAUrgent && !isBUrgent) {
-                return -1;
-              }
-              if (!isAUrgent && isBUrgent) {
-                return 1;
-              }
+                  if (isAUrgent && !isBUrgent) {
+                    return -1;
+                  }
+                  if (!isAUrgent && isBUrgent) {
+                    return 1;
+                  }
 
-              // сортуємо за часом (новіші перші)
-              final aTimestamp = a.timestamp ?? DateTime(1970);
-              final bTimestamp = b.timestamp ?? DateTime(1970);
+                  // сортуємо за часом (новіші перші)
+                  final aTimestamp = a.timestamp ?? DateTime(1970);
+                  final bTimestamp = b.timestamp ?? DateTime(1970);
 
-              return bTimestamp.compareTo(aTimestamp);
-            });
-          notifyListeners();
-        },
-        onError: (error) {
-          print('Error listening to saved fundraisers: $error');
-        },
-      );
+                  return bTimestamp.compareTo(aTimestamp);
+                });
+              notifyListeners();
+            },
+            onError: (error) {
+              print('Error listening to saved fundraisers: $error');
+            },
+          );
     }
   }
 
@@ -785,10 +796,7 @@ class ProfileViewModel extends ChangeNotifier {
     _setLoading(true);
     try {
       final newApplication = ProjectApplicationModel(
-        id: _firestore
-            .collection('projectApplications')
-            .doc()
-            .id,
+        id: _firestore.collection('projectApplications').doc().id,
         volunteerId: _user!.uid!,
         projectId: projectId,
         taskId: taskId,
@@ -820,10 +828,7 @@ class ProfileViewModel extends ChangeNotifier {
     _setLoading(true);
     try {
       final newApplication = FundraiserApplicationModel(
-        id: _firestore
-            .collection('fundraiserApplications')
-            .doc()
-            .id,
+        id: _firestore.collection('fundraiserApplications').doc().id,
         volunteerId: _user!.uid!,
         organizationId: organizationId,
         title: title,
@@ -851,17 +856,17 @@ class ProfileViewModel extends ChangeNotifier {
     _projectApplicationsForVolunteerSubscription = _projectApplicationService
         .getProjectApplicationsForVolunteer(volunteerUid)
         .listen((applications) async {
-      _volunteerProjectApplications = applications;
-      final projectIds = applications.map((app) => app.projectId).toSet();
-      final projects = await Future.wait(
-        projectIds.map((id) => _projectService.getProjectById(id)),
-      );
-      _projectsData = {
-        for (var project in projects.where((p) => p != null))
-          project!.id!: project,
-      };
-      notifyListeners();
-    });
+          _volunteerProjectApplications = applications;
+          final projectIds = applications.map((app) => app.projectId).toSet();
+          final projects = await Future.wait(
+            projectIds.map((id) => _projectService.getProjectById(id)),
+          );
+          _projectsData = {
+            for (var project in projects.where((p) => p != null))
+              project!.id!: project,
+          };
+          notifyListeners();
+        });
   }
 
   void _listenToFundraiserApplicationsForVolunteer(String volunteerUid) {
@@ -870,9 +875,9 @@ class ProfileViewModel extends ChangeNotifier {
         _fundraiserApplicationService
             .getFundraiserApplicationsForVolunteer(volunteerUid)
             .listen((applications) {
-          _volunteerFundraiserApplications = applications;
-          notifyListeners();
-        });
+              _volunteerFundraiserApplications = applications;
+              notifyListeners();
+            });
   }
 
   void _listenToFundraiserApplicationsForOrganization(String organizationUid) {
@@ -881,9 +886,9 @@ class ProfileViewModel extends ChangeNotifier {
         _fundraiserApplicationService
             .getFundraiserApplicationsForOrganizer(organizationUid)
             .listen((applications) {
-          _organizationFundraiserApplications = applications;
-          notifyListeners();
-        });
+              _organizationFundraiserApplications = applications;
+              notifyListeners();
+            });
   }
 
   Future<void> toggleFollow(String organizationUid) async {
@@ -915,9 +920,9 @@ class ProfileViewModel extends ChangeNotifier {
     _followersCountSubscription = _followService
         .getFollowersCount(organizationUid)
         .listen((count) {
-      _followersCount = count;
-      notifyListeners();
-    });
+          _followersCount = count;
+          notifyListeners();
+        });
   }
 
   void _listenToIsFollowing(String volunteerUid, String organizationUid) {
@@ -925,9 +930,9 @@ class ProfileViewModel extends ChangeNotifier {
     _isFollowingSubscription = _followService
         .isFollowing(volunteerUid, organizationUid)
         .listen((status) {
-      _isFollowing = status;
-      notifyListeners();
-    });
+          _isFollowing = status;
+          notifyListeners();
+        });
   }
 
   void _listenToFollowingOrganizations(String volunteerUid) {
@@ -935,36 +940,36 @@ class ProfileViewModel extends ChangeNotifier {
     _followingOrganizationsSubscription = _followService
         .getFollowingOrganizations(volunteerUid)
         .listen((organizationUids) async {
-      if (organizationUids.isEmpty) {
-        _followedOrganizations = [];
-        _filteredFollowedOrganizations = [];
-        notifyListeners();
-        return;
-      }
-      List<OrganizationModel> organizations = [];
-      for (String orgUid in organizationUids) {
-        try {
-          DocumentSnapshot orgDoc = await _firestore
-              .collection('users')
-              .doc(orgUid)
-              .get();
-          if (orgDoc.exists &&
-              (orgDoc.data() as Map<String, dynamic>)['role'] ==
-                  UserRole.organization.name) {
-            organizations.add(
-              OrganizationModel.fromMap(
-                orgDoc.data() as Map<String, dynamic>,
-              ),
-            );
+          if (organizationUids.isEmpty) {
+            _followedOrganizations = [];
+            _filteredFollowedOrganizations = [];
+            notifyListeners();
+            return;
           }
-        } catch (e) {
-          print('Error fetching organization $orgUid: $e');
-        }
-      }
-      _followedOrganizations = organizations;
-      _filteredFollowedOrganizations = List.from(organizations);
-      notifyListeners();
-    });
+          List<OrganizationModel> organizations = [];
+          for (String orgUid in organizationUids) {
+            try {
+              DocumentSnapshot orgDoc = await _firestore
+                  .collection('users')
+                  .doc(orgUid)
+                  .get();
+              if (orgDoc.exists &&
+                  (orgDoc.data() as Map<String, dynamic>)['role'] ==
+                      UserRole.organization.name) {
+                organizations.add(
+                  OrganizationModel.fromMap(
+                    orgDoc.data() as Map<String, dynamic>,
+                  ),
+                );
+              }
+            } catch (e) {
+              print('Error fetching organization $orgUid: $e');
+            }
+          }
+          _followedOrganizations = organizations;
+          _filteredFollowedOrganizations = List.from(organizations);
+          notifyListeners();
+        });
   }
 
   void searchFriends(String query) {
@@ -1053,12 +1058,14 @@ class ProfileViewModel extends ChangeNotifier {
       _eventsData = await eventService.getEventsByIds(eventIds.toList());
     }
     if (projectIds.isNotEmpty) {
-      _projectsDataActivities =
-      await _projectService.getProjectByIds(projectIds.toList());
+      _projectsDataActivities = await _projectService.getProjectByIds(
+        projectIds.toList(),
+      );
     }
     if (fundraisingIds.isNotEmpty) {
-      _fundraisingsData =
-      await _fundraiserService.getFundraisingsByIds(fundraisingIds.toList());
+      _fundraisingsData = await _fundraiserService.getFundraisingsByIds(
+        fundraisingIds.toList(),
+      );
     }
   }
 
@@ -1071,8 +1078,12 @@ class ProfileViewModel extends ChangeNotifier {
         final roleString = data?['role'] as String?;
         if (roleString == UserRole.volunteer.name) {
           return VolunteerModel.fromMap(doc.data()!);
-        } else {
+        } else if (roleString == UserRole.organization.name) {
           return OrganizationModel.fromMap(doc.data()!);
+        } else if (roleString == UserRole.admin.name) {
+          return AdminModel.fromMap(doc.data()!);
+        } else {
+          return null;
         }
       } else {
         return null;
@@ -1088,26 +1099,26 @@ class ProfileViewModel extends ChangeNotifier {
     _activeFundraisingsSubscription = _fundraiserService
         .getOrganizationActiveFundraisingsStream(organizationId)
         .listen((fundraisings) {
-      _activeFundraisings = fundraisings
-        ..sort((a, b) {
-          // Пріоритет для термінових зборів
-          final isAUrgent = a.isUrgent ?? false;
-          final isBUrgent = b.isUrgent ?? false;
+          _activeFundraisings = fundraisings
+            ..sort((a, b) {
+              // Пріоритет для термінових зборів
+              final isAUrgent = a.isUrgent ?? false;
+              final isBUrgent = b.isUrgent ?? false;
 
-          if (isAUrgent && !isBUrgent) {
-            return -1;
-          }
-          if (!isAUrgent && isBUrgent) {
-            return 1;
-          }
+              if (isAUrgent && !isBUrgent) {
+                return -1;
+              }
+              if (!isAUrgent && isBUrgent) {
+                return 1;
+              }
 
-          // Сортуємо за часом (новіші перші)
-          final aTimestamp = a.timestamp ?? DateTime(1970);
-          final bTimestamp = b.timestamp ?? DateTime(1970);
+              // Сортуємо за часом (новіші перші)
+              final aTimestamp = a.timestamp ?? DateTime(1970);
+              final bTimestamp = b.timestamp ?? DateTime(1970);
 
-          return bTimestamp.compareTo(aTimestamp);
+              return bTimestamp.compareTo(aTimestamp);
+            });
+          notifyListeners();
         });
-      notifyListeners();
-    });
   }
 }

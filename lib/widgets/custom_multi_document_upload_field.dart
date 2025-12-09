@@ -176,7 +176,6 @@ class CustomMultiDocumentUploadField extends FormField<List<File>> {
                    ),
                  ),
                ),
-               const SizedBox(height: 8),
 
                // Існуючі документи
                if (hasExistingDocs) ...[
@@ -288,7 +287,7 @@ class CustomMultiDocumentUploadField extends FormField<List<File>> {
                  Container(
                    padding: const EdgeInsets.all(12),
                    decoration: BoxDecoration(
-                     color: appThemeColors.blueMixedColor.withAlpha(51),
+                     color: appThemeColors.cyanAccent.withAlpha(213),
                      borderRadius: BorderRadius.circular(10),
                      border: Border.all(
                        color: appThemeColors.backgroundLightGrey.withAlpha(77),
@@ -306,7 +305,7 @@ class CustomMultiDocumentUploadField extends FormField<List<File>> {
                            ),
                            const SizedBox(width: 8),
                            Text(
-                             'Нові файли для завантаження',
+                             'Нові файли',
                              style: TextStyleHelper.instance.title14Regular
                                  .copyWith(
                                    color: appThemeColors.backgroundLightGrey,

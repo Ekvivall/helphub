@@ -26,6 +26,7 @@ import '../../data/models/activity_model.dart';
 import '../../data/models/event_model.dart';
 import '../../data/models/project_model.dart';
 import '../../view_models/project/project_view_model.dart';
+import '../../widgets/custom_admin_icon_button.dart';
 import '../../widgets/profile/event_organization_activity_item.dart';
 import '../../widgets/profile/event_participation_activity_item.dart';
 
@@ -256,7 +257,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
             ),
           ),
-          CustomTournamentIconButton(),
+          if (user.role == UserRole.volunteer) CustomTournamentIconButton(),
+          if (user.role == UserRole.admin) CustomAdminIconButton(),
           CustomNotificationIconButton(),
         ],
       ),
