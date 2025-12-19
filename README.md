@@ -31,7 +31,7 @@ This project was developed as a **Master's Thesis**.
 
 |                     Events                      |                     Projects                      |                  Fundraising                   |                     Calendar                      |                 Gamification                  |
 |:-----------------------------------------------:|:-------------------------------------------------:|:----------------------------------------------:|:-------------------------------------------------:|:---------------------------------------------:|
-| <img src="screenshots/events.png" height="180"> | <img src="screenshots/projects.png" height="180"> | <img src="screenshots/funds.png" height="180"> | <img src="screenshots/calendar.png" height="180"> | <img src="screenshots/game.png" height="180"> |
+| <img src="screenshots/events.png" height="380"> | <img src="screenshots/projects.png" height="380"> | <img src="screenshots/funds.png" height="380"> | <img src="screenshots/calendar.png" height="380"> | <img src="screenshots/game.png" height="380"> |
 
 ---
 *Developed by Tetiana - Master of Software Engineering, 2025.*
