@@ -370,6 +370,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       message: messageController.text.trim(),
                       status: SupportTicketStatus.open,
                       createdAt: DateTime.now(),
+                      userRole: userProfile.role,
                     );
                     await newTicketRef.set(ticket.toMap());
                     if (mounted) {

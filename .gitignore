@@ -46,3 +46,7 @@ app.*.map.json
 
 #Firebase service accoount
 /assets/*.json
+
+# Google Services
+google-services.json
+GoogleService-Info.plist

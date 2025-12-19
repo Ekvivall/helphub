@@ -207,7 +207,7 @@ class _AdminSupportScreenState extends State<AdminSupportScreen>
                   size: 24,
                   photoUrl: ticket.userPhotoUrl,
                   uid: ticket.userId,
-                  role: null,
+                  role: ticket.userRole,
                 ),
                 const SizedBox(width: 12),
                 Expanded(

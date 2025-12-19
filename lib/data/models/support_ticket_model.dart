@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'base_profile_model.dart';
+
 enum SupportTicketStatus { open, inProgress, resolved, closed }
 
 class SupportTicketModel {
@@ -7,6 +9,7 @@ class SupportTicketModel {
   final String userId;
   final String userName;
   final String? userPhotoUrl;
+  final UserRole? userRole;
   final String subject;
   final String message;
   final SupportTicketStatus status;
@@ -19,6 +22,7 @@ class SupportTicketModel {
     required this.id,
     required this.userId,
     required this.userName,
+    required this.userRole,
     this.userPhotoUrl,
     required this.subject,
     required this.message,
@@ -34,6 +38,7 @@ class SupportTicketModel {
       'id': id,
       'userId': userId,
       'userName': userName,
+      'userRole': userRole?.name,
       'userPhotoUrl': userPhotoUrl,
       'subject': subject,
       'message': message,
@@ -50,6 +55,9 @@ class SupportTicketModel {
       id: id,
       userId: map['userId'] as String,
       userName: map['userName'] as String,
+      userRole: UserRole.values.firstWhere(
+        (e) => e.name == map['userRole']
+    ),
       userPhotoUrl: map['userPhotoUrl'] as String?,
       subject: map['subject'] as String,
       message: map['message'] as String,
@@ -70,6 +78,7 @@ class SupportTicketModel {
     String? id,
     String? userId,
     String? userName,
+    UserRole? userRole,
     String? userPhotoUrl,
     String? subject,
     String? message,
@@ -83,6 +92,7 @@ class SupportTicketModel {
       id: id ?? this.id,
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
+      userRole: userRole ?? this.userRole,
       userPhotoUrl: userPhotoUrl ?? this.userPhotoUrl,
       subject: subject ?? this.subject,
       message: message ?? this.message,

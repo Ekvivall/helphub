@@ -51,8 +51,6 @@ class HelpHubApp extends StatefulWidget {
 }
 
 class _HelpHubAppState extends State<HelpHubApp> with WidgetsBindingObserver {
-  //final AppLifecycleObserver _lifecycleObserver = AppLifecycleObserver();
-  //final AchievementListenerService _achievementListener = AchievementListenerService();
 
   @override
   void initState() {
@@ -60,14 +58,7 @@ class _HelpHubAppState extends State<HelpHubApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     NotificationService.setNavigatorKey(HelpHubApp.navigatorKey);
-   /* FirebaseAuth.instance.authStateChanges().listen((user) {
-      if (user != null && mounted) {
-        _achievementListener.initialize();
-      }
-      else {
-        _achievementListener.stopListening();
-      }
-    });*/
+
   }
 
   @override

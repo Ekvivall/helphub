@@ -467,27 +467,31 @@ class VolunteerProfileScreen extends StatelessWidget {
                             .copyWith(color: appThemeColors.primaryBlack),
                       ),
                     ),
-                    const SizedBox(width: 7),
-                    Expanded(
-                      child: CustomElevatedButton(
-                        text: 'Видалити з друзів',
-                        onPressed: () {
-                          Constants.showConfirmationDialog(
-                            context,
-                            'Підтвердження видалення',
-                            'Ви впевнені, що хочете видалити цього користувача зі своїх друзів?',
-                            'Видалити',
-                            viewModel,
-                            userId!,
-                          );
-                        },
-                        height: 44,
-                        borderRadius: 24,
-                        backgroundColor: appThemeColors.errorRed.withAlpha(120),
-                        textStyle: TextStyleHelper.instance.title16Regular
-                            .copyWith(color: appThemeColors.primaryWhite),
+                    if (viewModel.currentUserRole != UserRole.admin) ...[
+                      const SizedBox(width: 7),
+                      Expanded(
+                        child: CustomElevatedButton(
+                          text: 'Видалити з друзів',
+                          onPressed: () {
+                            Constants.showConfirmationDialog(
+                              context,
+                              'Підтвердження видалення',
+                              'Ви впевнені, що хочете видалити цього користувача зі своїх друзів?',
+                              'Видалити',
+                              viewModel,
+                              userId!,
+                            );
+                          },
+                          height: 44,
+                          borderRadius: 24,
+                          backgroundColor: appThemeColors.errorRed.withAlpha(
+                            120,
+                          ),
+                          textStyle: TextStyleHelper.instance.title16Regular
+                              .copyWith(color: appThemeColors.primaryWhite),
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               );

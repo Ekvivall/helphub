@@ -273,8 +273,7 @@ class ProfileViewModel extends ChangeNotifier {
             _listenToIsFollowing(_auth.currentUser!.uid, uidToFetch);
             _listenToFollowersCount(_user!.uid!);
           }
-        }
-        else if(roleString == UserRole.admin.name){
+        } else if (roleString == UserRole.admin.name) {
           _user = AdminModel.fromMap(doc.data()!);
         }
         if (uidToFetch == _currentAuthUserId) {
@@ -302,7 +301,8 @@ class ProfileViewModel extends ChangeNotifier {
       return FriendshipStatus.self;
     }
     //Check if they are already friends
-    if (await _friendService.areFriends(currentAuthUserId!, targetUserId)) {
+    if (await _friendService.areFriends(currentAuthUserId!, targetUserId) ||
+        currentUserRole == UserRole.admin) {
       return FriendshipStatus.friends;
     }
     // Check for an outgoing request from current user to viewing user
@@ -475,7 +475,7 @@ class ProfileViewModel extends ChangeNotifier {
               ? _selectedInterests
               : null,
         );
-      }else if (_user is AdminModel) {
+      } else if (_user is AdminModel) {
         updatedUser = (_user as AdminModel).copyWith(
           fullName: fullNameController.text.trim().isNotEmpty
               ? fullNameController.text.trim()
@@ -530,7 +530,7 @@ class ProfileViewModel extends ChangeNotifier {
         _user = (_user as VolunteerModel).copyWith(photoUrl: downloadUrl);
       } else if (_user is OrganizationModel) {
         _user = (_user as OrganizationModel).copyWith(photoUrl: downloadUrl);
-      }else if (_user is AdminModel) {
+      } else if (_user is AdminModel) {
         _user = (_user as AdminModel).copyWith(photoUrl: downloadUrl);
       }
     } finally {
@@ -622,7 +622,7 @@ class ProfileViewModel extends ChangeNotifier {
       organizationNameController.text = '';
       websiteController.text = '';
       _selectedCity = volunteer.city;
-    }else {
+    } else {
       fullNameController.text = '';
       nicknameController.text = '';
       organizationNameController.text = '';

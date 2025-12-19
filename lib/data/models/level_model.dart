@@ -1,29 +1,3 @@
-
-/*enum PointAction{
-  eventParticipation(10, 'Участь у події'),
-  eventCompletionWithReport(5, 'Звіт про подію'),
-  projectParticipation(15, 'Участь у проєкті'),
-  taskCompletion(10, 'Виконання завдання'),
-  applicationApproved(3, 'Схвалена заявка'),
-  eventOrganization(20, 'Організація події'),
-  projectCreation(25, 'Створення проєкту'),
-  reportPublication(10, 'Публікація звіту'),
-  organizerFeedback(5, 'Відгук організатору'),
-  achievementUnlocked(5, 'Отримання досягнення'),
-  donation(0, 'Донат'), // Залежить від суми
-  friendAdded(2, 'Додавання друга');
-
-  final int points;
-  final String description;
-
-  const PointAction(this.points, this.description);
-
-  // 1 бал за кожні 100 грн
-  static int getDonationPoints(double amount){
-    return (amount / 100).floor();
-  }
-}*/
-
 class LevelModel {
   final int level;
   final int minPoints;
