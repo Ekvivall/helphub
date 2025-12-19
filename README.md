@@ -29,9 +29,9 @@ This project was developed as a **Master's Thesis**.
 
 ## Screenshots
 
-|                     Events                     |                     Projects                     |                  Fundraising                  |                     Calendar                     |                 Gamification                 |
-|:----------------------------------------------:|:------------------------------------------------:|:---------------------------------------------:|:------------------------------------------------:|:--------------------------------------------:|
-| <img src="screenshots/events.png" width="200"> | <img src="screenshots/projects.png" width="200"> | <img src="screenshots/funds.png" width="200"> | <img src="screenshots/calendar.png" width="200"> | <img src="screenshots/game.png" width="200"> |
+|                       Events                       |                       Projects                       |                    Fundraising                    |                       Calendar                       |                   Gamification                   |
+|:--------------------------------------------------:|:----------------------------------------------------:|:-------------------------------------------------:|:----------------------------------------------------:|:------------------------------------------------:|
+| <img src="screenshots/events.png?v=2" width="200"> | <img src="screenshots/projects.png?v=2" width="200"> | <img src="screenshots/funds.png?v=2" width="200"> | <img src="screenshots/calendar.png?v=2" width="200"> | <img src="screenshots/game.png?v=2" width="200"> |
 
 ---
 *Developed by Tetiana - Master of Software Engineering, 2025.*
