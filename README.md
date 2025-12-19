@@ -1,16 +1,37 @@
-# helphub
+# HelpHub: Integrated Volunteer Platform
 
-A new Flutter project.
+A comprehensive mobile platform designed to unify volunteer activities, fundraising, and project management into a single ecosystem.
+This project was developed as a **Master's Thesis**.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+### For Volunteers
+* **Event Discovery:** Search and filter volunteer events by category and geolocation.
+* **Project Management:** Participate in long-term projects with task tracking (Kanban-style) and deadlines.
+* **Gamification:** 8-level progression system, achievements, and monthly tournaments to boost motivation.
+* **Communication:** Built-in real-time chats (Group, Project, Private).
 
-A few resources to get you started if this is your first Flutter project:
+### For Charity Foundations
+* **Fundraising:** Create transparent fundraising campaigns with real-time progress tracking.
+* **Reporting:** Publish detailed reports with photos/videos to build trust.
+* **Verification:** Validate volunteer applications.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### For Administrators
+* **Verification System:** Validate organizations via document checks.
+* **Analytics & Support:** Monitor platform activity and handle support tickets.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Tech Stack
+
+* **Mobile:** Flutter, Dart
+* **Architecture:** MVVM, Provider
+* **Backend:** Firebase (Authentication, Firestore, Storage, Cloud Functions, Cloud Messaging)
+* **Tools:** Git, Android Studio
+
+## Screenshots
+
+|                     Events                     |                     Projects                     |                  Fundraising                  |                     Calendar                     |                 Gamification                 |
+|:----------------------------------------------:|:------------------------------------------------:|:---------------------------------------------:|:------------------------------------------------:|:--------------------------------------------:|
+| <img src="screenshots/events.png" width="200"> | <img src="screenshots/projects.png" width="200"> | <img src="screenshots/funds.png" width="200"> | <img src="screenshots/calendar.png" width="200"> | <img src="screenshots/game.png" width="200"> |
+
+---
+*Developed by Tetiana - Master of Software Engineering, 2025.*
